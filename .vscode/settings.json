@@ -1,0 +1,14 @@
+{
+  "editor.fontSize": 16,
+  "editor.fontFamily": "JetBrains Mono",
+  "files.autoSave": "afterDelay",
+  "editor.tabSize": 2,
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
