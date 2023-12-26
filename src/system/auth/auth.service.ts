@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common'
 import { DbService } from '../../db/db.service'
 import { LogInDto, LogOutDto, RefreshTokenDto, SignUpDto } from './dto'
@@ -116,7 +117,7 @@ export class AuthService {
     const pwMatches = await argon2.verify(user.hash, password)
 
     if (!pwMatches) {
-      throw new ForbiddenException('Passwords do not match.')
+      throw new UnauthorizedException('Passwords do not match.')
     }
 
     const tokens = await this.signTokens({

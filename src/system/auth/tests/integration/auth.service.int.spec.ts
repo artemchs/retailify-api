@@ -2,8 +2,13 @@ import { Test } from '@nestjs/testing'
 import { AppModule } from 'src/app.module'
 import { DbService } from 'src/db/db.service'
 import { AuthService } from '../../auth.service'
-import { SignUpDto } from '../../dto'
-import { BadRequestException } from '@nestjs/common'
+import { LogInDto, SignUpDto } from '../../dto'
+import {
+  BadRequestException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common'
+import * as argon2 from 'argon2'
 
 describe('AuthService Integration', () => {
   let db: DbService
@@ -27,7 +32,7 @@ describe('AuthService Integration', () => {
       password: 'password',
     }
 
-    it('should successfully sign up', async () => {
+    it('should create a new user', async () => {
       await authService.signUp(data)
 
       const usersCount = await db.systemUser.count()
@@ -69,6 +74,64 @@ describe('AuthService Integration', () => {
 
       expect(tokens.accessToken).toBeDefined()
       expect(tokens.refreshToken).toBeDefined()
+    })
+  })
+
+  describe('Log in', () => {
+    const data: LogInDto = {
+      username: 'username',
+      password: 'password',
+    }
+
+    beforeEach(async () => {
+      await db.systemUser.create({
+        data: {
+          username: data.username,
+          hash: await argon2.hash(data.password),
+          fullName: 'fullName',
+        },
+      })
+    })
+
+    it('should return access and refresh tokens', async () => {
+      const tokens = await authService.logIn(data)
+
+      expect(tokens.accessToken).toBeDefined()
+      expect(tokens.refreshToken).toBeDefined()
+    })
+
+    it('should throw a not found exception because the user does not exist', async () => {
+      let error: NotFoundException | null = null
+
+      try {
+        await authService.logIn({ ...data, username: 'non-existent-user' })
+      } catch (e) {
+        error = e
+      }
+
+      expect(error).not.toBeNull()
+      expect(error?.getStatus()).toBe(404)
+    })
+
+    it('should throw an unauthorized exception because the password in incorrect', async () => {
+      let error: UnauthorizedException | null = null
+
+      try {
+        await authService.logIn({ ...data, password: 'wrong-password' })
+      } catch (e) {
+        error = e
+      }
+
+      expect(error).not.toBeNull()
+      expect(error?.getStatus()).toBe(401)
+    })
+
+    it('should update the refresh token hash in the database', async () => {
+      await authService.logIn(data)
+
+      const user = await db.systemUser.findFirst()
+
+      expect(user?.rtHash).toBeDefined()
     })
   })
 })
