@@ -24,4 +24,20 @@ export class DbService
   async onModuleDestroy() {
     await this.$disconnect()
   }
+
+  async reset() {
+    const environment = this.configService.get<string>('NODE_ENV')
+
+    if (environment === 'production') {
+      console.log(
+        'WARNING! Tried to reset the database in the production environment. It is not allowed to do so.',
+      )
+    } else {
+      const models = Reflect.ownKeys(this).filter((key) => key[0] !== '_')
+
+      return Promise.all([
+        models.map((modelKey) => this[modelKey].deleteMany()),
+      ])
+    }
+  }
 }

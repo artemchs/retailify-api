@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-import { DbService } from 'src/db/db.service'
+import { DbService } from '../../db/db.service'
 import { LogInDto, LogOutDto, RefreshTokenDto, SignUpDto } from './dto'
 import * as argon2 from 'argon2'
 import { Tokens } from './types'

@@ -11,6 +11,14 @@ services:
       - POSTGRES_DB=retailify-erp-dev-db
     volumes:
       - postgres-data:/var/lib/postgresql/data
+  test-db:
+    image: postgres
+    ports:
+      - 5434:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=retailify-erp-test-db
 
 volumes:
   postgres-data:
