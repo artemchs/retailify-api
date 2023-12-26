@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common'
 import { AuthService } from './auth.service'
-import { SignUpDto, LogInDto } from './dto'
+import { SignUpDto, LogInDto, RefreshTokensDto, LogOutDto } from './dto'
 import { Tokens } from './types'
 import { AuthGuard } from '@nestjs/passport'
 import { Request } from 'express'
@@ -34,9 +34,23 @@ export class AuthController {
   @Post('log-out')
   logOut(@Req() req: Request) {
     const user = req.user
+    const params: LogOutDto = {
+      userId: user?.['sub'],
+    }
 
-    return this.authService.logOut({
-      userId: user?.['id'],
-    })
+    return this.authService.logOut(params)
+  }
+
+  @UseGuards(AuthGuard('jwt-refresh-token'))
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh-tokens')
+  refreshToken(@Req() req: Request) {
+    const user = req.user
+    const params: RefreshTokensDto = {
+      userId: user?.['sub'],
+      refreshToken: user?.['refreshToken'],
+    }
+
+    return this.authService.refreshTokens(params)
   }
 }

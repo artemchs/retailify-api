@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { DbService } from 'src/db/db.service'
-import { LogInDto, LogOutDto, SignUpDto } from './dto'
+import { LogInDto, LogOutDto, RefreshTokensDto, SignUpDto } from './dto'
 import * as argon2 from 'argon2'
 import { Tokens } from './types'
 import { JwtService } from '@nestjs/jwt'
@@ -138,14 +138,44 @@ export class AuthService {
   async logOut({ userId }: LogOutDto) {
     await this.db.systemUser.updateMany({
       where: {
-        id: userId,
-        rtHash: {
-          not: null,
+        AND: {
+          id: userId,
+          rtHash: {
+            not: null,
+          },
         },
       },
       data: {
         rtHash: null,
       },
     })
+  }
+
+  async refreshTokens({ userId, refreshToken }: RefreshTokensDto) {
+    const user = await this.db.systemUser.findUnique({
+      where: {
+        id: userId,
+      },
+    })
+
+    if (!user) {
+      throw new NotFoundException('User has not been found.')
+    }
+
+    if (!user.rtHash) {
+      throw new ForbiddenException('Access denied.')
+    }
+
+    const rtMatches = await argon2.verify(user.rtHash, refreshToken)
+
+    if (!rtMatches) {
+      throw new ForbiddenException('Access denied.')
+    }
+
+    const tokens = await this.signTokens(user.id, user.username, user.fullName)
+
+    await this.updateRefreshTokenHash(user.id, tokens.refreshToken)
+
+    return tokens
   }
 }
