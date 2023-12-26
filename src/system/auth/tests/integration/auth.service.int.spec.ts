@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing'
 import { AppModule } from 'src/app.module'
 import { DbService } from 'src/db/db.service'
 import { AuthService } from '../../auth.service'
-import { LogInDto, LogOutDto, SignUpDto } from '../../dto'
+import { LogInDto, LogOutDto, RefreshTokenDto, SignUpDto } from '../../dto'
 import {
   BadRequestException,
   NotFoundException,
@@ -183,6 +183,103 @@ describe('AuthService Integration', () => {
       })
 
       expect(otherUser?.rtHash).toBe('rtHash')
+    })
+  })
+
+  describe('Refresh token', () => {
+    const data: RefreshTokenDto = {
+      userId: 'id',
+      refreshToken: 'refreshToken',
+    }
+
+    let rtHash: string | null = null
+
+    beforeEach(async () => {
+      rtHash = await argon2.hash(data.refreshToken)
+
+      await db.systemUser.create({
+        data: {
+          id: 'id',
+          fullName: 'fullName',
+          username: 'username',
+          hash: 'hash',
+          rtHash,
+        },
+      })
+    })
+
+    it('should return new access and refresh tokens', async () => {
+      const tokens = await authService.refreshToken(data)
+
+      expect(tokens.accessToken).toBeDefined()
+      expect(tokens.refreshToken).toBeDefined()
+    })
+
+    it('should update the refresh token in the database', async () => {
+      await authService.refreshToken(data)
+
+      const user = await db.systemUser.findUnique({
+        where: {
+          id: 'id',
+        },
+      })
+
+      expect(user?.rtHash).not.toBeNull()
+      expect(user?.rtHash).not.toBe(rtHash)
+    })
+
+    it('should throw a not found exception if the user does not exist', async () => {
+      let error: NotFoundException | null = null
+
+      try {
+        await authService.refreshToken({ ...data, userId: 'non-existent' })
+      } catch (e) {
+        error = e
+      }
+
+      expect(error).not.toBeNull()
+      expect(error?.getStatus()).toBe(404)
+    })
+
+    it('should throw an unauthorized exception if the user does not have a refresh token hash in the database', async () => {
+      await db.systemUser.create({
+        data: {
+          id: 'userId',
+          username: 'user name',
+          fullName: 'fullName',
+          hash: 'hash',
+        },
+      })
+
+      let error: UnauthorizedException | null = null
+
+      try {
+        await authService.refreshToken({
+          userId: 'userId',
+          refreshToken: 'refreshToken',
+        })
+      } catch (e) {
+        error = e
+      }
+
+      expect(error).not.toBeNull()
+      expect(error?.getStatus()).toBe(401)
+    })
+
+    it('should throw an unauthorized exception if the provided refresh token does not match with the one in the database', async () => {
+      let error: UnauthorizedException | null = null
+
+      try {
+        await authService.refreshToken({
+          ...data,
+          refreshToken: 'wrong-refresh-token',
+        })
+      } catch (e) {
+        error = e
+      }
+
+      expect(error).not.toBeNull()
+      expect(error?.getStatus()).toBe(401)
     })
   })
 })

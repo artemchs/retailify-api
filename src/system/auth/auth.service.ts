@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -159,13 +158,13 @@ export class AuthService {
     }
 
     if (!user.rtHash) {
-      throw new ForbiddenException('Access denied.')
+      throw new UnauthorizedException('Access denied.')
     }
 
     const rtMatches = await argon2.verify(user.rtHash, refreshToken)
 
     if (!rtMatches) {
-      throw new ForbiddenException('Access denied.')
+      throw new UnauthorizedException('Access denied.')
     }
 
     const tokens = await this.signTokens({
