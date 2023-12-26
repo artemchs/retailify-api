@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { DbService } from 'src/db/db.service'
-import { LogInDto, SignUpDto } from './dto'
+import { LogInDto, LogOutDto, SignUpDto } from './dto'
 import * as argon2 from 'argon2'
 import { Tokens } from './types'
 import { JwtService } from '@nestjs/jwt'
@@ -133,5 +133,19 @@ export class AuthService {
     await this.updateRefreshTokenHash(user.id, tokens.refreshToken)
 
     return tokens
+  }
+
+  async logOut({ userId }: LogOutDto) {
+    await this.db.systemUser.updateMany({
+      where: {
+        id: userId,
+        rtHash: {
+          not: null,
+        },
+      },
+      data: {
+        rtHash: null,
+      },
+    })
   }
 }
