@@ -9,10 +9,11 @@ import {
 import { AuthService } from './auth.service'
 import { SignUpDto, LogInDto } from './dto'
 import { Tokens } from './types'
-import { AccessTokenGuard, RefreshTokenGuard } from '../common/guards'
+import { RefreshTokenGuard } from '../common/guards'
 import {
   GetCurrentUserAccessToken,
   GetCurrentUserRefreshToken,
+  Public,
 } from '../common/decorators'
 import { UserPayloadRefreshToken } from '../common/types'
 
@@ -20,25 +21,27 @@ import { UserPayloadRefreshToken } from '../common/types'
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Public()
   @HttpCode(HttpStatus.CREATED)
   @Post('sign-up')
   signUp(@Body() body: SignUpDto): Promise<Tokens> {
     return this.authService.signUp(body)
   }
 
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Post('log-in')
   logIn(@Body() body: LogInDto): Promise<Tokens> {
     return this.authService.logIn(body)
   }
 
-  @UseGuards(AccessTokenGuard)
   @HttpCode(HttpStatus.OK)
   @Post('log-out')
   logOut(@GetCurrentUserAccessToken('sub') userId: string) {
     return this.authService.logOut({ userId })
   }
 
+  @Public() // Bypass the access token guard
   @UseGuards(RefreshTokenGuard)
   @HttpCode(HttpStatus.OK)
   @Post('refresh-token')
