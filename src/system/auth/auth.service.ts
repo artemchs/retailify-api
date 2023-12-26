@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { DbService } from 'src/db/db.service'
-import { LogInDto, LogOutDto, RefreshTokensDto, SignUpDto } from './dto'
+import { LogInDto, LogOutDto, RefreshTokenDto, SignUpDto } from './dto'
 import * as argon2 from 'argon2'
 import { Tokens } from './types'
 import { JwtService } from '@nestjs/jwt'
@@ -151,7 +151,7 @@ export class AuthService {
     })
   }
 
-  async refreshTokens({ userId, refreshToken }: RefreshTokensDto) {
+  async refreshToken({ userId, refreshToken }: RefreshTokenDto) {
     const user = await this.db.systemUser.findUnique({
       where: {
         id: userId,
