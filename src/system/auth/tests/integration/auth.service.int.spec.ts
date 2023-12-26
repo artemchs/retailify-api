@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing'
 import { AppModule } from 'src/app.module'
 import { DbService } from 'src/db/db.service'
 import { AuthService } from '../../auth.service'
-import { LogInDto, SignUpDto } from '../../dto'
+import { LogInDto, LogOutDto, SignUpDto } from '../../dto'
 import {
   BadRequestException,
   NotFoundException,
@@ -132,6 +132,57 @@ describe('AuthService Integration', () => {
       const user = await db.systemUser.findFirst()
 
       expect(user?.rtHash).toBeDefined()
+    })
+  })
+
+  describe('Log out', () => {
+    const data: LogOutDto = {
+      userId: 'userId',
+    }
+
+    beforeEach(async () => {
+      await db.systemUser.createMany({
+        data: [
+          {
+            id: 'userId',
+            username: 'username1',
+            fullName: 'fullName',
+            hash: await argon2.hash('password'),
+            rtHash: 'rtHash',
+          },
+          {
+            id: 'otherUser',
+            username: 'username2',
+            fullName: 'fullName',
+            hash: await argon2.hash('password'),
+            rtHash: 'rtHash',
+          },
+        ],
+      })
+    })
+
+    it('should successfully remove the refresh token hash from the database', async () => {
+      await authService.logOut(data)
+
+      const user = await db.systemUser.findUnique({
+        where: {
+          id: 'userId',
+        },
+      })
+
+      expect(user?.rtHash).toBeNull()
+    })
+
+    it('should not remove refresh tokens from other users', async () => {
+      await authService.logOut(data)
+
+      const otherUser = await db.systemUser.findUnique({
+        where: {
+          id: 'otherUser',
+        },
+      })
+
+      expect(otherUser?.rtHash).toBe('rtHash')
     })
   })
 })
