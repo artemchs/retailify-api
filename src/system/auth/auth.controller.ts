@@ -4,14 +4,17 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common'
 import { AuthService } from './auth.service'
-import { SignUpDto, LogInDto, RefreshTokenDto, LogOutDto } from './dto'
+import { SignUpDto, LogInDto } from './dto'
 import { Tokens } from './types'
-import { Request } from 'express'
 import { AccessTokenGuard, RefreshTokenGuard } from '../common/guards'
+import {
+  GetCurrentUserAccessToken,
+  GetCurrentUserRefreshToken,
+} from '../common/decorators'
+import { UserPayloadRefreshToken } from '../common/types'
 
 @Controller('system/auth')
 export class AuthController {
@@ -32,25 +35,17 @@ export class AuthController {
   @UseGuards(AccessTokenGuard)
   @HttpCode(HttpStatus.OK)
   @Post('log-out')
-  logOut(@Req() req: Request) {
-    const user = req.user
-    const params: LogOutDto = {
-      userId: user?.['sub'],
-    }
-
-    return this.authService.logOut(params)
+  logOut(@GetCurrentUserAccessToken('sub') userId: string) {
+    return this.authService.logOut({ userId })
   }
 
   @UseGuards(RefreshTokenGuard)
   @HttpCode(HttpStatus.OK)
   @Post('refresh-token')
-  refreshToken(@Req() req: Request) {
-    const user = req.user
-    const params: RefreshTokenDto = {
-      userId: user?.['sub'],
-      refreshToken: user?.['refreshToken'],
-    }
-
-    return this.authService.refreshToken(params)
+  refreshToken(@GetCurrentUserRefreshToken() user: UserPayloadRefreshToken) {
+    return this.authService.refreshToken({
+      userId: user.sub,
+      refreshToken: user.refreshToken,
+    })
   }
 }

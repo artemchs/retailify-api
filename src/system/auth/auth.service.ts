@@ -10,6 +10,7 @@ import * as argon2 from 'argon2'
 import { Tokens } from './types'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
+import { UserPayloadAccessToken } from '../common/types'
 
 @Injectable()
 export class AuthService {
@@ -23,17 +24,7 @@ export class AuthService {
     return argon2.hash(data)
   }
 
-  async signTokens(
-    userId: string,
-    username: string,
-    fullName: string,
-  ): Promise<Tokens> {
-    const payload = {
-      sub: userId,
-      username,
-      fullName,
-    }
-
+  async signTokens(payload: UserPayloadAccessToken): Promise<Tokens> {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(payload, {
         expiresIn: 60 * 15,
@@ -100,11 +91,11 @@ export class AuthService {
       },
     })
 
-    const tokens = await this.signTokens(
-      newUser.id,
-      newUser.username,
-      newUser.fullName,
-    )
+    const tokens = await this.signTokens({
+      sub: newUser.id,
+      username: newUser.username,
+      fullName: newUser.fullName,
+    })
 
     await this.updateRefreshTokenHash(newUser.id, tokens.refreshToken)
 
@@ -128,7 +119,11 @@ export class AuthService {
       throw new ForbiddenException('Passwords do not match.')
     }
 
-    const tokens = await this.signTokens(user.id, user.username, user.fullName)
+    const tokens = await this.signTokens({
+      sub: user.id,
+      username: user.username,
+      fullName: user.fullName,
+    })
 
     await this.updateRefreshTokenHash(user.id, tokens.refreshToken)
 
@@ -172,7 +167,11 @@ export class AuthService {
       throw new ForbiddenException('Access denied.')
     }
 
-    const tokens = await this.signTokens(user.id, user.username, user.fullName)
+    const tokens = await this.signTokens({
+      sub: user.id,
+      username: user.username,
+      fullName: user.fullName,
+    })
 
     await this.updateRefreshTokenHash(user.id, tokens.refreshToken)
 
