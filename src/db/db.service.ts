@@ -33,11 +33,7 @@ export class DbService
         'WARNING! Tried to reset the database in the production environment. It is not allowed to do so.',
       )
     } else {
-      const models = Reflect.ownKeys(this).filter((key) => key[0] !== '_')
-
-      return Promise.all([
-        models.map((modelKey) => this[modelKey].deleteMany()),
-      ])
+      return this.$transaction([this.systemUser.deleteMany()])
     }
   }
 }
