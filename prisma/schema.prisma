@@ -15,8 +15,8 @@ model SystemUser {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  fullName           String
-  username           String  @unique
-  hash               String
-  hashedRefreshToken String?
+  fullName String
+  username String  @unique
+  hash     String
+  rtHash   String?
 }

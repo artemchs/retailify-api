@@ -8,6 +8,7 @@ import { SystemModule } from './system/system.module'
   imports: [
     ConfigModule.forRoot({
       validate: validateENVs,
+      isGlobal: true,
     }),
     DbModule,
     SystemModule,
