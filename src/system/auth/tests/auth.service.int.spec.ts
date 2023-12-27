@@ -1,8 +1,8 @@
 import { Test } from '@nestjs/testing'
 import { AppModule } from 'src/app.module'
 import { DbService } from 'src/db/db.service'
-import { AuthService } from '../../auth.service'
-import { LogInDto, LogOutDto, RefreshTokenDto, SignUpDto } from '../../dto'
+import { AuthService } from '../auth.service'
+import { LogInDto, LogOutDto, RefreshTokenDto, SignUpDto } from '../dto'
 import {
   BadRequestException,
   NotFoundException,
