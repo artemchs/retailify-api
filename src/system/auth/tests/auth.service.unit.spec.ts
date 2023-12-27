@@ -6,7 +6,7 @@ import { UserPayloadAccessToken } from 'src/system/common/types'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 
-describe('AuthService Unit', () => {
+describe('AuthService (unit)', () => {
   let authService: AuthService
 
   beforeEach(async () => {

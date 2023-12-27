@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common'
 import * as argon2 from 'argon2'
 
-describe('AuthService Integration', () => {
+describe('AuthService (int)', () => {
   let db: DbService
   let authService: AuthService
 
