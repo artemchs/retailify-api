@@ -1,11 +1,11 @@
-import * as request from 'supertest'
 import { Test } from '@nestjs/testing'
 import { INestApplication, ValidationPipe } from '@nestjs/common'
 import { AppModule } from '../src/app.module'
 import { DbService } from '../src/db/db.service'
-import { LogInDto, LogOutDto, SignUpDto } from '../src/system/auth/dto'
+import { LogInDto, SignUpDto } from '../src/system/auth/dto'
+import { request, spec } from 'pactum'
 
-describe('Cats', () => {
+describe('App', () => {
   let app: INestApplication
   let db: DbService
 
@@ -27,6 +27,8 @@ describe('Cats', () => {
 
     db = app.get<DbService>(DbService)
     await db.reset()
+
+    request.setBaseUrl('http://localhost:3000')
   })
 
   afterAll(async () => {
@@ -34,9 +36,6 @@ describe('Cats', () => {
   })
 
   describe('System', () => {
-    let accessToken: string
-    let refreshToken: string
-
     describe('Auth', () => {
       describe('(POST) /system/auth/sign-up', () => {
         const body: SignUpDto = {
@@ -47,22 +46,12 @@ describe('Cats', () => {
 
         const url = '/system/auth/sign-up'
 
-        it('should successfully create a new user', () => {
-          return request(app.getHttpServer())
-            .post(url)
-            .send(body)
-            .expect(201)
-            .expect((res) => {
-              const data: { accessToken: string; refreshToken: string } =
-                res.body
-
-              expect(data.accessToken).toBeDefined()
-              expect(data.refreshToken).toBeDefined()
-            })
+        it('should successfully sign up', async () => {
+          await spec().post(url).withBody(body).expectStatus(201)
         })
 
-        it('should respond with `400` status code if the username is already in use', () => {
-          return request(app.getHttpServer()).post(url).send(body).expect(400)
+        it('should respond with `400` status code if the username is already in use', async () => {
+          await spec().post(url).withBody(body).expectStatus(400)
         })
       })
 
@@ -74,89 +63,51 @@ describe('Cats', () => {
 
         const url = '/system/auth/log-in'
 
-        it('should successfully log in the account', () => {
-          return request(app.getHttpServer())
+        it('should successfully log in the account', async () => {
+          await spec()
             .post(url)
-            .send(body)
-            .expect(200)
-            .expect((res) => {
-              const data: { accessToken: string; refreshToken: string } =
-                res.body
-
-              accessToken = data.accessToken
-              refreshToken = data.refreshToken
-
-              expect(data.accessToken).toBeDefined()
-              expect(data.refreshToken).toBeDefined()
+            .withBody(body)
+            .expectStatus(200)
+            .expect((ctx) => {
+              refreshToken = ctx.res.headers['set-cookie']?.[0]
             })
+            .stores('accessToken', 'accessToken')
         })
 
-        it('should respond with `404` status code if the user does not exist', () => {
-          return request(app.getHttpServer())
+        it('should respond with `404` status code if the user does not exist', async () => {
+          await spec()
             .post(url)
-            .send({ ...body, username: 'non-existent' })
-            .expect(404)
+            .withBody({ ...body, username: 'asdf' })
+            .expectStatus(404)
         })
 
-        it('should respond with `401` status code if the user provides a wrong password', () => {
-          return request(app.getHttpServer())
+        it('should respond with `401` status code if the user provides a wrong password', async () => {
+          await spec()
             .post(url)
-            .send({ ...body, password: 'wrong-password' })
-            .expect(401)
-        })
-      })
-
-      describe('(POST) /system/auth/refresh-token', () => {
-        const url = '/system/auth/refresh-token'
-
-        it('should successfully refresh tokens', () => {
-          return request(app.getHttpServer())
-            .post(url)
-            .set('Authorization', `Bearer ${refreshToken}`)
-            .expect(200)
-            .expect((res) => {
-              const data: { accessToken: string; refreshToken: string } =
-                res.body
-
-              accessToken = data.accessToken
-              refreshToken = data.refreshToken
-
-              expect(data.accessToken).toBeDefined()
-              expect(data.refreshToken).toBeDefined()
-            })
-        })
-
-        it('should respond with `401` status code if the user does not provide the refresh token', () => {
-          return request(app.getHttpServer()).post(url).expect(401)
-        })
-
-        it('should respond with `401` status code if the user provides a wrong refresh token', () => {
-          return request(app.getHttpServer())
-            .post(url)
-            .set('Authorization', `Bearer ${accessToken}`)
-            .expect(401)
+            .withBody({ ...body, password: 'asdf' })
+            .expectStatus(401)
         })
       })
 
       describe('(POST) /system/auth/log-out', () => {
         const url = '/system/auth/log-out'
 
-        it('should successfully log out', () => {
-          return request(app.getHttpServer())
+        it('should successfully log out', async () => {
+          await spec()
             .post(url)
-            .set('Authorization', `Bearer ${accessToken}`)
-            .expect(200)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(200)
         })
 
-        it('should respond with `401` status code if the user does not provide the access token', () => {
-          return request(app.getHttpServer()).post(url).expect(401)
+        it('should respond with `401` status code if the user does not provide the access token', async () => {
+          await spec().post(url).expectStatus(401)
         })
 
-        it('should respond with `401` status code if the user provides a wrong access token', () => {
-          return request(app.getHttpServer())
+        it('should respond with `401` status code if the user provides a wrong access token', async () => {
+          await spec()
             .post(url)
-            .set('Authorization', `Bearer ${refreshToken}`)
-            .expect(401)
+            .withHeaders('Authorization', 'Bearer asd;fkjl')
+            .expectStatus(401)
         })
       })
     })

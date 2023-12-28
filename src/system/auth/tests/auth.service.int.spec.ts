@@ -21,6 +21,8 @@ describe('AuthService (int)', () => {
 
     db = moduleRef.get(DbService)
     authService = moduleRef.get(AuthService)
+
+    await db.reset()
   })
 
   afterEach(async () => await db.reset())
