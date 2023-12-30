@@ -8,6 +8,11 @@ async function bootstrap() {
   const port = process.env.PORT ? parseInt(process.env.PORT) : 3000
   app.useGlobalPipes(new ValidationPipe())
   app.use(cookieParser())
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  })
   await app.listen(port)
 }
 bootstrap()
