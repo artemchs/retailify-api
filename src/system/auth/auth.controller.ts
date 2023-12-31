@@ -17,18 +17,11 @@ import {
 } from '../common/decorators'
 import { UserPayloadRefreshToken } from '../common/types'
 import { Response } from 'express'
+import { setRefreshTokenCookie } from '../common/utils'
 
 @Controller('system/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
-
-  sendRefreshTokenCookie(response: Response, refreshToken: string) {
-    response.cookie('jwt-refresh-token', refreshToken, {
-      httpOnly: true,
-      sameSite: 'none',
-      secure: true,
-    })
-  }
 
   removeRefreshTokenCookie(response: Response) {
     response.cookie('jwt-refresh-token', '', {
@@ -44,7 +37,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const { accessToken, refreshToken } = await this.authService.signUp(body)
-    this.sendRefreshTokenCookie(response, refreshToken)
+    setRefreshTokenCookie(response, refreshToken)
 
     return {
       accessToken,
@@ -59,7 +52,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const { accessToken, refreshToken } = await this.authService.logIn(body)
-    this.sendRefreshTokenCookie(response, refreshToken)
+    setRefreshTokenCookie(response, refreshToken)
 
     return {
       accessToken,
@@ -88,7 +81,7 @@ export class AuthController {
       userId: user.sub,
       refreshToken: user.refreshToken,
     })
-    this.sendRefreshTokenCookie(response, refreshToken)
+    setRefreshTokenCookie(response, refreshToken)
 
     return {
       accessToken,

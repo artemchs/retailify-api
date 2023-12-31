@@ -4,6 +4,7 @@ import { AppModule } from '../src/app.module'
 import { DbService } from '../src/db/db.service'
 import { LogInDto, SignUpDto } from '../src/system/auth/dto'
 import { request, spec } from 'pactum'
+import { UpdateMeDto } from 'src/system/profile/dto/update-me.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -105,6 +106,41 @@ describe('App', () => {
           await spec()
             .post(url)
             .withHeaders('Authorization', 'Bearer asd;fkjl')
+            .expectStatus(401)
+        })
+      })
+    })
+
+    describe('Profile', () => {
+      describe('(PUT) /system/profile/me', () => {
+        const body: UpdateMeDto = {
+          email: 'new@email.com',
+          fullName: 'New Full Name',
+          phoneNumber: '0661165978',
+        }
+
+        const url = '/system/profile/me'
+
+        it('should successfully update the user profile', async () => {
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(body)
+            .expectStatus(200)
+        })
+
+        it('should respond with `400` status code if the user provides an incorrect field', async () => {
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody({ ...body, phoneNumber: 'not a phone number' })
+            .expectStatus(400)
+        })
+
+        it('should respond with `401` status code if the user does not provide an access token', async () => {
+          await spec()
+            .put(url)
+            .withBody({ ...body, phoneNumber: 'not a phone number' })
             .expectStatus(401)
         })
       })

@@ -11,6 +11,7 @@ import { Tokens } from './types'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { UserPayloadAccessToken } from '../common/types'
+import { hashData } from '../common/utils'
 
 @Injectable()
 export class AuthService {
@@ -19,10 +20,6 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
   ) {}
-
-  hashData(data: string) {
-    return argon2.hash(data)
-  }
 
   async signTokens(payload: UserPayloadAccessToken): Promise<Tokens> {
     const [at, rt] = await Promise.all([
@@ -53,7 +50,7 @@ export class AuthService {
       throw new NotFoundException('User has not been found.')
     }
 
-    const rtHash = await this.hashData(refreshToken)
+    const rtHash = await hashData(refreshToken)
 
     await this.db.systemUser.update({
       where: {
@@ -83,7 +80,7 @@ export class AuthService {
       )
     }
 
-    const hash = await this.hashData(password)
+    const hash = await hashData(password)
 
     const newUser = await this.db.systemUser.create({
       data: {

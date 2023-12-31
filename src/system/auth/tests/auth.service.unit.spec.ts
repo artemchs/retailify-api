@@ -41,15 +41,4 @@ describe('AuthService (unit)', () => {
       expect(result.refreshToken).toBeDefined()
     })
   })
-
-  describe('hashData', () => {
-    it('should return hashed data', async () => {
-      const data = 'Hello World!'
-
-      const result = await authService.hashData(data)
-
-      expect(result).toBeDefined()
-      expect(result).not.toBe(data)
-    })
-  })
 })
