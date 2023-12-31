@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { UpdateMeDto } from './dto/update-me.dto'
-import { DbService } from '../../../src/db/db.service'
+import { DbService } from '../../db/db.service'
 
 @Injectable()
 export class ProfileService {
