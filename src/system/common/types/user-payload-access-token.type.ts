@@ -1,5 +1,6 @@
 export type UserPayloadAccessToken = {
   sub: string
-  username: string
+  email: string
+  phoneNumber: string
   fullName: string
 }

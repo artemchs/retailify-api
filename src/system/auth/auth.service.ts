@@ -65,15 +65,22 @@ export class AuthService {
     })
   }
 
-  async signUp({ fullName, username, password }: SignUpDto): Promise<Tokens> {
+  async signUp({
+    email,
+    fullName,
+    password,
+    phoneNumber,
+  }: SignUpDto): Promise<Tokens> {
     const existingUser = await this.db.systemUser.findUnique({
       where: {
-        username,
+        email,
       },
     })
 
     if (existingUser) {
-      throw new BadRequestException('This username is already taken.')
+      throw new BadRequestException(
+        'Этот email уже используеться другим пользователем.',
+      )
     }
 
     const hash = await this.hashData(password)
@@ -81,49 +88,57 @@ export class AuthService {
     const newUser = await this.db.systemUser.create({
       data: {
         fullName,
-        username,
+        email,
+        phoneNumber,
         hash,
       },
       select: {
         id: true,
         fullName: true,
-        username: true,
+        email: true,
+        phoneNumber: true,
       },
     })
 
-    const tokens = await this.signTokens({
+    const payload: UserPayloadAccessToken = {
       sub: newUser.id,
-      username: newUser.username,
+      email: newUser.email,
       fullName: newUser.fullName,
-    })
+      phoneNumber: newUser.phoneNumber,
+    }
+
+    const tokens = await this.signTokens(payload)
 
     await this.updateRefreshTokenHash(newUser.id, tokens.refreshToken)
 
     return tokens
   }
 
-  async logIn({ username, password }: LogInDto): Promise<Tokens> {
+  async logIn({ email, password }: LogInDto): Promise<Tokens> {
     const user = await this.db.systemUser.findUnique({
       where: {
-        username,
+        email,
       },
     })
 
     if (!user) {
-      throw new NotFoundException('User has not been found.')
+      throw new NotFoundException('Пользователь не найден.')
     }
 
     const pwMatches = await argon2.verify(user.hash, password)
 
     if (!pwMatches) {
-      throw new UnauthorizedException('Passwords do not match.')
+      throw new UnauthorizedException('Неправильный пароль.')
     }
 
-    const tokens = await this.signTokens({
+    const payload: UserPayloadAccessToken = {
       sub: user.id,
-      username: user.username,
+      email: user.email,
       fullName: user.fullName,
-    })
+      phoneNumber: user.phoneNumber,
+    }
+
+    const tokens = await this.signTokens(payload)
 
     await this.updateRefreshTokenHash(user.id, tokens.refreshToken)
 
@@ -167,11 +182,14 @@ export class AuthService {
       throw new UnauthorizedException('Access denied.')
     }
 
-    const tokens = await this.signTokens({
+    const payload: UserPayloadAccessToken = {
       sub: user.id,
-      username: user.username,
+      email: user.email,
       fullName: user.fullName,
-    })
+      phoneNumber: user.phoneNumber,
+    }
+
+    const tokens = await this.signTokens(payload)
 
     await this.updateRefreshTokenHash(user.id, tokens.refreshToken)
 

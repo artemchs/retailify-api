@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsString, IsStrongPassword } from 'class-validator'
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsPhoneNumber,
+  IsString,
+  IsStrongPassword,
+} from 'class-validator'
 
 export class SignUpDto {
   @IsString({
@@ -9,13 +15,15 @@ export class SignUpDto {
   })
   fullName: string
 
-  @IsString({
-    message: 'Пожалуйста, введите ваше имя пользователя в виде строки.',
+  @IsEmail({}, { message: 'Пожалуйста, введите корректный email адрес.' })
+  @IsNotEmpty({ message: 'Email не должен быть пустым.' })
+  email: string
+
+  @IsPhoneNumber('UA', {
+    message: 'Пожалуйста, введите корректный номер телефона для Украины.',
   })
-  @IsNotEmpty({
-    message: 'Имя пользователя не должно быть пустым.',
-  })
-  username: string
+  @IsNotEmpty({ message: 'Номер телефона не должен быть пустым.' })
+  phoneNumber: string
 
   @IsStrongPassword(
     {

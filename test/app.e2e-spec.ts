@@ -39,7 +39,8 @@ describe('App', () => {
     describe('Auth', () => {
       describe('(POST) /system/auth/sign-up', () => {
         const body: SignUpDto = {
-          username: 'user1',
+          email: 'test@email.com',
+          phoneNumber: '+380661165978',
           fullName: 'New User',
           password: 'strongPassword12345!',
         }
@@ -57,7 +58,7 @@ describe('App', () => {
 
       describe('(POST) /system/auth/log-in', () => {
         const body: LogInDto = {
-          username: 'user1',
+          email: 'test@email.com',
           password: 'strongPassword12345!',
         }
 
@@ -68,16 +69,13 @@ describe('App', () => {
             .post(url)
             .withBody(body)
             .expectStatus(200)
-            .expect((ctx) => {
-              refreshToken = ctx.res.headers['set-cookie']?.[0]
-            })
             .stores('accessToken', 'accessToken')
         })
 
         it('should respond with `404` status code if the user does not exist', async () => {
           await spec()
             .post(url)
-            .withBody({ ...body, username: 'asdf' })
+            .withBody({ ...body, email: 'non@existent.com' })
             .expectStatus(404)
         })
 

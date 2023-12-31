@@ -30,7 +30,8 @@ describe('AuthService (unit)', () => {
     it('should return access and refresh tokens', async () => {
       const data: UserPayloadAccessToken = {
         sub: 'sub',
-        username: 'username',
+        email: 'email',
+        phoneNumber: 'phoneNumber',
         fullName: 'fullName',
       }
 

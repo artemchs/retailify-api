@@ -1,6 +1,5 @@
+import { UserPayloadAccessToken } from './user-payload-access-token.type'
+
 export type UserPayloadRefreshToken = {
-  sub: string
-  username: string
-  fullName: string
   refreshToken: string
-}
+} & UserPayloadAccessToken

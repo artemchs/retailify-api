@@ -29,7 +29,8 @@ describe('AuthService (int)', () => {
 
   describe('Sign up', () => {
     const data: SignUpDto = {
-      username: 'username',
+      email: 'email',
+      phoneNumber: 'phoneNumber',
       fullName: 'fullname',
       password: 'password',
     }
@@ -42,11 +43,12 @@ describe('AuthService (int)', () => {
       expect(usersCount).toBe(1)
     })
 
-    it('should throw an exception because the username is already taken', async () => {
+    it('should throw an exception because the email is already taken', async () => {
       await db.systemUser.create({
         data: {
-          username: 'username',
-          fullName: 'fullname',
+          email: data.email,
+          fullName: data.fullName,
+          phoneNumber: data.phoneNumber,
           hash: 'hash',
         },
       })
@@ -81,15 +83,16 @@ describe('AuthService (int)', () => {
 
   describe('Log in', () => {
     const data: LogInDto = {
-      username: 'username',
+      email: 'email',
       password: 'password',
     }
 
     beforeEach(async () => {
       await db.systemUser.create({
         data: {
-          username: data.username,
+          email: data.email,
           hash: await argon2.hash(data.password),
+          phoneNumber: 'phoneNumber',
           fullName: 'fullName',
         },
       })
@@ -106,7 +109,7 @@ describe('AuthService (int)', () => {
       let error: NotFoundException | null = null
 
       try {
-        await authService.logIn({ ...data, username: 'non-existent-user' })
+        await authService.logIn({ ...data, email: 'non-existent-user' })
       } catch (e) {
         error = e
       }
@@ -147,14 +150,16 @@ describe('AuthService (int)', () => {
         data: [
           {
             id: 'userId',
-            username: 'username1',
+            email: 'email1',
+            phoneNumber: 'phoneNumber1',
             fullName: 'fullName',
             hash: await argon2.hash('password'),
             rtHash: 'rtHash',
           },
           {
             id: 'otherUser',
-            username: 'username2',
+            email: 'email2',
+            phoneNumber: 'phoneNumber2',
             fullName: 'fullName',
             hash: await argon2.hash('password'),
             rtHash: 'rtHash',
@@ -203,7 +208,8 @@ describe('AuthService (int)', () => {
         data: {
           id: 'id',
           fullName: 'fullName',
-          username: 'username',
+          email: 'email',
+          phoneNumber: 'phoneNumber',
           hash: 'hash',
           rtHash,
         },
@@ -247,7 +253,8 @@ describe('AuthService (int)', () => {
       await db.systemUser.create({
         data: {
           id: 'userId',
-          username: 'user name',
+          email: 'test@email.com',
+          phoneNumber: 'phoneNumber',
           fullName: 'fullName',
           hash: 'hash',
         },
