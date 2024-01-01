@@ -62,12 +62,7 @@ export class AuthService {
     })
   }
 
-  async signUp({
-    email,
-    fullName,
-    password,
-    phoneNumber,
-  }: SignUpDto): Promise<Tokens> {
+  async signUp({ email, fullName, password }: SignUpDto): Promise<Tokens> {
     const existingUser = await this.db.systemUser.findUnique({
       where: {
         email,
@@ -86,14 +81,12 @@ export class AuthService {
       data: {
         fullName,
         email,
-        phoneNumber,
         hash,
       },
       select: {
         id: true,
         fullName: true,
         email: true,
-        phoneNumber: true,
       },
     })
 
@@ -101,7 +94,6 @@ export class AuthService {
       sub: newUser.id,
       email: newUser.email,
       fullName: newUser.fullName,
-      phoneNumber: newUser.phoneNumber,
     }
 
     const tokens = await this.signTokens(payload)
@@ -132,7 +124,6 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       fullName: user.fullName,
-      phoneNumber: user.phoneNumber,
     }
 
     const tokens = await this.signTokens(payload)
@@ -183,7 +174,6 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       fullName: user.fullName,
-      phoneNumber: user.phoneNumber,
     }
 
     const tokens = await this.signTokens(payload)

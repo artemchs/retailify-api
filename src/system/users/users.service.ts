@@ -15,7 +15,7 @@ export class UsersService {
   ) {}
 
   async updateMe(
-    { email, fullName, phoneNumber }: UpdateMeDto,
+    { email, fullName }: UpdateMeDto,
     id: string,
     profilePicture?: Buffer,
   ) {
@@ -64,7 +64,6 @@ export class UsersService {
       data: {
         email,
         fullName,
-        phoneNumber,
       },
     })
   }

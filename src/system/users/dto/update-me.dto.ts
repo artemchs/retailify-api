@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsPhoneNumber, IsString } from 'class-validator'
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator'
 
 export class UpdateMeDto {
   @IsString({
@@ -12,10 +12,4 @@ export class UpdateMeDto {
   @IsEmail({}, { message: 'Пожалуйста, введите корректный email адрес.' })
   @IsNotEmpty({ message: 'Email не должен быть пустым.' })
   email: string
-
-  @IsPhoneNumber('UA', {
-    message: 'Пожалуйста, введите корректный номер телефона для Украины.',
-  })
-  @IsNotEmpty({ message: 'Номер телефона не должен быть пустым.' })
-  phoneNumber: string
 }

@@ -29,7 +29,6 @@ describe('UsersService (int)', () => {
           id: 'test-user',
           email: 'test@email.com',
           fullName: 'Test User',
-          phoneNumber: 'Test Number',
           hash: 'hash',
         },
       })
@@ -38,7 +37,6 @@ describe('UsersService (int)', () => {
     const data: UpdateMeDto = {
       email: 'new@email.com',
       fullName: 'Full Name',
-      phoneNumber: 'Phone Number',
     }
     const userId = 'test-user'
 
@@ -54,7 +52,6 @@ describe('UsersService (int)', () => {
 
       expect(updatedUser?.email).toBe(data.email)
       expect(updatedUser?.fullName).toBe(data.fullName)
-      expect(updatedUser?.phoneNumber).toBe(data.phoneNumber)
       expect(updatedUser?.id).toBe(userId)
       expect(usersCount).toBe(1)
     })
@@ -70,7 +67,6 @@ describe('UsersService (int)', () => {
 
       expect(updatedUser?.email).toBe('test@email.com')
       expect(updatedUser?.fullName).toBe(data.fullName)
-      expect(updatedUser?.phoneNumber).toBe(data.phoneNumber)
       expect(updatedUser?.id).toBe(userId)
     })
 
@@ -119,7 +115,6 @@ describe('UsersService (int)', () => {
         data: {
           email: data.email,
           fullName: data.fullName,
-          phoneNumber: data.phoneNumber,
           hash: 'hash',
         },
       })

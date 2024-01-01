@@ -31,7 +31,6 @@ describe('AuthService (unit)', () => {
       const data: UserPayloadAccessToken = {
         sub: 'sub',
         email: 'email',
-        phoneNumber: 'phoneNumber',
         fullName: 'fullName',
       }
 

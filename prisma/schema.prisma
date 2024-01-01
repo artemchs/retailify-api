@@ -17,7 +17,6 @@ model SystemUser {
 
   fullName          String
   email             String  @unique
-  phoneNumber       String
   hash              String
   profilePictureKey String?
   rtHash            String?

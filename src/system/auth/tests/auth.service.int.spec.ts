@@ -30,7 +30,6 @@ describe('AuthService (int)', () => {
   describe('Sign up', () => {
     const data: SignUpDto = {
       email: 'email',
-      phoneNumber: 'phoneNumber',
       fullName: 'fullname',
       password: 'password',
     }
@@ -48,7 +47,6 @@ describe('AuthService (int)', () => {
         data: {
           email: data.email,
           fullName: data.fullName,
-          phoneNumber: data.phoneNumber,
           hash: 'hash',
         },
       })
@@ -92,7 +90,6 @@ describe('AuthService (int)', () => {
         data: {
           email: data.email,
           hash: await argon2.hash(data.password),
-          phoneNumber: 'phoneNumber',
           fullName: 'fullName',
         },
       })
@@ -151,7 +148,6 @@ describe('AuthService (int)', () => {
           {
             id: 'userId',
             email: 'email1',
-            phoneNumber: 'phoneNumber1',
             fullName: 'fullName',
             hash: await argon2.hash('password'),
             rtHash: 'rtHash',
@@ -159,7 +155,6 @@ describe('AuthService (int)', () => {
           {
             id: 'otherUser',
             email: 'email2',
-            phoneNumber: 'phoneNumber2',
             fullName: 'fullName',
             hash: await argon2.hash('password'),
             rtHash: 'rtHash',
@@ -209,7 +204,6 @@ describe('AuthService (int)', () => {
           id: 'id',
           fullName: 'fullName',
           email: 'email',
-          phoneNumber: 'phoneNumber',
           hash: 'hash',
           rtHash,
         },
@@ -254,7 +248,6 @@ describe('AuthService (int)', () => {
         data: {
           id: 'userId',
           email: 'test@email.com',
-          phoneNumber: 'phoneNumber',
           fullName: 'fullName',
           hash: 'hash',
         },

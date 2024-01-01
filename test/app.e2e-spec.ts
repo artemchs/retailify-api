@@ -45,7 +45,6 @@ describe('App', () => {
       describe('(POST) /system/auth/sign-up', () => {
         const body: SignUpDto = {
           email: 'test@email.com',
-          phoneNumber: '+380661165978',
           fullName: 'New User',
           password: 'strongPassword12345!',
         }
@@ -120,7 +119,6 @@ describe('App', () => {
         const body: UpdateMeDto = {
           email: 'new@email.com',
           fullName: 'New Full Name',
-          phoneNumber: '0661165978',
         }
 
         const url = '/system/users/me'
@@ -137,15 +135,12 @@ describe('App', () => {
           await spec()
             .put(url)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
-            .withBody({ ...body, phoneNumber: 'not a phone number' })
+            .withBody({ ...body, email: 'not-an-email' })
             .expectStatus(400)
         })
 
         it('should respond with `401` status code if the user does not provide an access token', async () => {
-          await spec()
-            .put(url)
-            .withBody({ ...body, phoneNumber: 'not a phone number' })
-            .expectStatus(401)
+          await spec().put(url).withBody(body).expectStatus(401)
         })
       })
     })
