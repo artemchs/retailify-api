@@ -83,17 +83,13 @@ export class AuthService {
         email,
         hash,
       },
-      select: {
-        id: true,
-        fullName: true,
-        email: true,
-      },
     })
 
     const payload: UserPayloadAccessToken = {
       sub: newUser.id,
       email: newUser.email,
       fullName: newUser.fullName,
+      profilePictureKey: newUser.profilePictureKey,
     }
 
     const tokens = await this.signTokens(payload)
@@ -124,6 +120,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       fullName: user.fullName,
+      profilePictureKey: user.profilePictureKey,
     }
 
     const tokens = await this.signTokens(payload)
@@ -174,6 +171,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       fullName: user.fullName,
+      profilePictureKey: user.profilePictureKey,
     }
 
     const tokens = await this.signTokens(payload)

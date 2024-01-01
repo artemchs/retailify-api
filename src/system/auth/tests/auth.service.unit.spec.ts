@@ -32,6 +32,7 @@ describe('AuthService (unit)', () => {
         sub: 'sub',
         email: 'email',
         fullName: 'fullName',
+        profilePictureKey: null,
       }
 
       const result = await authService.signTokens(data)
