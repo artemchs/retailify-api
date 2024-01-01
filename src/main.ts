@@ -2,10 +2,12 @@ import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { ValidationPipe } from '@nestjs/common'
 import * as cookieParser from 'cookie-parser'
+import helmet from 'helmet'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   const port = process.env.PORT ? parseInt(process.env.PORT) : 3000
+  app.use(helmet())
   app.useGlobalPipes(new ValidationPipe())
   app.use(cookieParser())
   app.enableCors({

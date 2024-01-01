@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common'
 import { AuthModule } from './auth/auth.module'
 import { APP_GUARD } from '@nestjs/core'
 import { AccessTokenGuard } from './common/guards'
-import { ProfileModule } from './profile/profile.module'
+import { UsersModule } from './users/users.module'
 
 @Module({
-  imports: [AuthModule, ProfileModule],
+  imports: [AuthModule, UsersModule],
   providers: [
     {
       provide: APP_GUARD,

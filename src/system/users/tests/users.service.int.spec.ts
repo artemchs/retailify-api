@@ -1,13 +1,13 @@
 import { DbService } from 'src/db/db.service'
-import { ProfileService } from '../profile.service'
+import { UsersService } from '../users.service'
 import { AppModule } from 'src/app.module'
 import { Test } from '@nestjs/testing'
 import { UpdateMeDto } from '../dto/update-me.dto'
 import { BadRequestException, NotFoundException } from '@nestjs/common'
 
-describe('ProfileService (int)', () => {
+describe('UsersService (int)', () => {
   let db: DbService
-  let profileService: ProfileService
+  let usersService: UsersService
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -15,7 +15,7 @@ describe('ProfileService (int)', () => {
     }).compile()
 
     db = moduleRef.get(DbService)
-    profileService = moduleRef.get(ProfileService)
+    usersService = moduleRef.get(UsersService)
 
     await db.reset()
   })
@@ -43,7 +43,7 @@ describe('ProfileService (int)', () => {
     const userId = 'test-user'
 
     it('should successfully update the user profile', async () => {
-      await profileService.updateMe(data, userId)
+      await usersService.updateMe(data, userId)
 
       const updatedUser = await db.systemUser.findUnique({
         where: {
@@ -60,10 +60,7 @@ describe('ProfileService (int)', () => {
     })
 
     it('should successfully update even with the same email', async () => {
-      await profileService.updateMe(
-        { ...data, email: 'test@email.com' },
-        userId,
-      )
+      await usersService.updateMe({ ...data, email: 'test@email.com' }, userId)
 
       const updatedUser = await db.systemUser.findUnique({
         where: {
@@ -81,7 +78,7 @@ describe('ProfileService (int)', () => {
       let error: NotFoundException | null = null
 
       try {
-        await profileService.updateMe(data, 'non-existent')
+        await usersService.updateMe(data, 'non-existent')
       } catch (e) {
         error = e
       }
@@ -103,7 +100,7 @@ describe('ProfileService (int)', () => {
       let error: BadRequestException | null = null
 
       try {
-        await profileService.updateMe(data, userId)
+        await usersService.updateMe(data, userId)
       } catch (e) {
         error = e
       }

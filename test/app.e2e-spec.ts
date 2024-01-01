@@ -4,7 +4,7 @@ import { AppModule } from '../src/app.module'
 import { DbService } from '../src/db/db.service'
 import { LogInDto, SignUpDto } from '../src/system/auth/dto'
 import { request, spec } from 'pactum'
-import { UpdateMeDto } from 'src/system/profile/dto/update-me.dto'
+import { UpdateMeDto } from 'src/system/users/dto/update-me.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -111,15 +111,15 @@ describe('App', () => {
       })
     })
 
-    describe('Profile', () => {
-      describe('(PUT) /system/profile/me', () => {
+    describe('Users', () => {
+      describe('(PUT) /system/users/me', () => {
         const body: UpdateMeDto = {
           email: 'new@email.com',
           fullName: 'New Full Name',
           phoneNumber: '0661165978',
         }
 
-        const url = '/system/profile/me'
+        const url = '/system/users/me'
 
         it('should successfully update the user profile', async () => {
           await spec()

@@ -7,7 +7,7 @@ import { UpdateMeDto } from './dto/update-me.dto'
 import { DbService } from '../../db/db.service'
 
 @Injectable()
-export class ProfileService {
+export class UsersService {
   constructor(private db: DbService) {}
 
   async updateMe({ email, fullName, phoneNumber }: UpdateMeDto, id: string) {
