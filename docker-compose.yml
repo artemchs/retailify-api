@@ -19,6 +19,12 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=123
       - POSTGRES_DB=retailify-erp-test-db
+  localstack:
+    image: localstack/localstack
+    ports:
+      - '4566:4566'
+    environment:
+      SERVICES: s3
 
 volumes:
   postgres-data:

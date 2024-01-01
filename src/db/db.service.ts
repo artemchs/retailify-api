@@ -11,7 +11,7 @@ export class DbService
     super({
       datasources: {
         db: {
-          url: configService.get<string>('DATABASE_URL'),
+          url: configService.getOrThrow<string>('DATABASE_URL'),
         },
       },
     })
@@ -28,11 +28,7 @@ export class DbService
   async reset() {
     const environment = this.configService.get<string>('NODE_ENV')
 
-    if (environment === 'production') {
-      console.log(
-        'WARNING! Tried to reset the database in the production environment. It is not allowed to do so.',
-      )
-    } else {
+    if (environment === 'test') {
       return this.$transaction([this.systemUser.deleteMany()])
     }
   }
