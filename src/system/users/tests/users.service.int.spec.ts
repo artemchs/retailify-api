@@ -74,6 +74,33 @@ describe('UsersService (int)', () => {
       expect(updatedUser?.id).toBe(userId)
     })
 
+    it('should successfully update the profile picture', async () => {
+      const file = Buffer.from('Hello World')
+      await usersService.updateMe(data, userId, file)
+
+      const updatedUser = await db.systemUser.findUnique({
+        where: {
+          id: userId,
+        },
+      })
+
+      expect(updatedUser?.profilePictureKey).toBe(
+        `profile_pictures/${updatedUser?.id}.jpg`,
+      )
+    })
+
+    it('should not update the profile picture if the new picture was not provided', async () => {
+      await usersService.updateMe(data, userId)
+
+      const updatedUser = await db.systemUser.findUnique({
+        where: {
+          id: userId,
+        },
+      })
+
+      expect(updatedUser?.profilePictureKey).toBeNull()
+    })
+
     it('should throw an exception because the user does not exist', async () => {
       let error: NotFoundException | null = null
 

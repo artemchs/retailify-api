@@ -4,11 +4,13 @@ import { AppModule } from '../src/app.module'
 import { DbService } from '../src/db/db.service'
 import { LogInDto, SignUpDto } from '../src/system/auth/dto'
 import { request, spec } from 'pactum'
-import { UpdateMeDto } from 'src/system/users/dto/update-me.dto'
+import { UpdateMeDto } from '../src/system/users/dto/update-me.dto'
+import { StorageService } from '../src/storage/storage.service'
 
 describe('App', () => {
   let app: INestApplication
   let db: DbService
+  let storage: StorageService
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -28,6 +30,8 @@ describe('App', () => {
 
     db = app.get<DbService>(DbService)
     await db.reset()
+    storage = app.get<StorageService>(StorageService)
+    await storage.reset()
 
     request.setBaseUrl('http://localhost:3000')
   })
