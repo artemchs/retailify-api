@@ -115,8 +115,8 @@ describe('AuthService (int)', () => {
       expect(error?.getStatus()).toBe(404)
     })
 
-    it('should throw an unauthorized exception because the password in incorrect', async () => {
-      let error: UnauthorizedException | null = null
+    it('should throw a bad request exception because the password in incorrect', async () => {
+      let error: BadRequestException | null = null
 
       try {
         await authService.logIn({ ...data, password: 'wrong-password' })
@@ -125,7 +125,7 @@ describe('AuthService (int)', () => {
       }
 
       expect(error).not.toBeNull()
-      expect(error?.getStatus()).toBe(401)
+      expect(error?.getStatus()).toBe(400)
     })
 
     it('should update the refresh token hash in the database', async () => {

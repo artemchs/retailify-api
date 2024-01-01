@@ -83,11 +83,11 @@ describe('App', () => {
             .expectStatus(404)
         })
 
-        it('should respond with `401` status code if the user provides a wrong password', async () => {
+        it('should respond with `400` status code if the user provides a wrong password', async () => {
           await spec()
             .post(url)
             .withBody({ ...body, password: 'asdf' })
-            .expectStatus(401)
+            .expectStatus(400)
         })
       })
 

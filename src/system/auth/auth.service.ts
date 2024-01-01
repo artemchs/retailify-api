@@ -117,7 +117,7 @@ export class AuthService {
     const pwMatches = await argon2.verify(user.hash, password)
 
     if (!pwMatches) {
-      throw new UnauthorizedException('Неправильный пароль.')
+      throw new BadRequestException('Неправильный пароль.')
     }
 
     const payload: UserPayloadAccessToken = {
