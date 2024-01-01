@@ -46,7 +46,7 @@ describe('App', () => {
         const body: SignUpDto = {
           email: 'test@email.com',
           fullName: 'New User',
-          password: 'strongPassword12345!',
+          password: 'veryStrongPassword12345!',
         }
 
         const url = '/system/auth/sign-up'
@@ -63,7 +63,7 @@ describe('App', () => {
       describe('(POST) /system/auth/log-in', () => {
         const body: LogInDto = {
           email: 'test@email.com',
-          password: 'strongPassword12345!',
+          password: 'veryStrongPassword12345!',
         }
 
         const url = '/system/auth/log-in'

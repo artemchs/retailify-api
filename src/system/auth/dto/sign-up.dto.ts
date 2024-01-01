@@ -21,14 +21,14 @@ export class SignUpDto {
   @IsStrongPassword(
     {
       minLength: 8,
-      minLowercase: 1,
-      minUppercase: 1,
-      minNumbers: 1,
+      minLowercase: 3,
+      minUppercase: 2,
+      minNumbers: 2,
       minSymbols: 1,
     },
     {
       message:
-        'Пароль должен содержать не менее 8 символов и включать буквы верхнего и нижнего регистра, цифры и специальные символы.',
+        'Пожалуйста, убедитесь, что ваш пароль состоит как минимум из 8 символов, включает 2 заглавные буквы, 3 строчные буквы, 2 цифры (0-9) и 1 специальный символ (!@#$&*).',
     },
   )
   @IsNotEmpty({
