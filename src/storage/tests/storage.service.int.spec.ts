@@ -32,6 +32,25 @@ describe('StorageService (int)', () => {
     })
   })
 
+  describe('Get file url', () => {
+    beforeEach(async () => {
+      await storage.send(
+        new PutObjectCommand({
+          Bucket: bucketName,
+          Key: 'test.txt',
+          Body: 'Hello World!',
+        }),
+      )
+    })
+
+    it('should successfully get the presigned url of the file', async () => {
+      const url = await storage.getFileUrl('test.txt')
+
+      expect(url).toBeDefined()
+      expect(url).not.toBeNull()
+    })
+  })
+
   describe('Reset', () => {
     beforeEach(async () => {
       await storage.send(

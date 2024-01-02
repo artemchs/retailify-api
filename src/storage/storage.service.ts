@@ -1,9 +1,11 @@
 import {
   DeleteObjectsCommand,
+  GetObjectCommand,
   ListObjectsCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 
@@ -40,6 +42,11 @@ export class StorageService extends S3Client {
         Body,
       }),
     )
+  }
+
+  getFileUrl(Key: string) {
+    const command = new GetObjectCommand({ Bucket: this.bucketName, Key })
+    return getSignedUrl(this, command)
   }
 
   async reset() {

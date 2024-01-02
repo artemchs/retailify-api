@@ -30,7 +30,17 @@ export class UsersService {
       throw new NotFoundException('Пользователь с таким id не найден.')
     }
 
-    return user
+    let profilePicture: string | null = null
+
+    if (user.profilePictureKey) {
+      profilePicture = await this.storage.getFileUrl(user.profilePictureKey)
+    }
+
+    return {
+      email: user.email,
+      fullName: user.fullName,
+      profilePicture,
+    }
   }
 
   async updateMe(
