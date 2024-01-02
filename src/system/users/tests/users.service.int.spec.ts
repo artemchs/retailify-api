@@ -165,4 +165,43 @@ describe('UsersService (int)', () => {
       expect(error?.getStatus()).toBe(400)
     })
   })
+
+  describe('Update password', () => {
+    beforeEach(async () => {
+      await db.systemUser.create({
+        data: {
+          id: 'test-user',
+          email: 'test@email.com',
+          fullName: 'Test User',
+          hash: 'hash',
+        },
+      })
+    })
+
+    it('should successfully update the password', async () => {
+      await usersService.updatePassword('New Password', 'test-user')
+
+      const updatedUser = await db.systemUser.findUnique({
+        where: {
+          id: 'test-user',
+        },
+      })
+
+      expect(updatedUser?.hash).not.toBe('hash')
+      expect(updatedUser?.rtHash).toBeNull()
+    })
+
+    it('should throw an exception because the user does not exist', async () => {
+      let error: NotFoundException | null = null
+
+      try {
+        await usersService.updatePassword('New Password', 'non-existent')
+      } catch (e) {
+        error = e
+      }
+
+      expect(error).not.toBeNull()
+      expect(error?.getStatus()).toBe(404)
+    })
+  })
 })

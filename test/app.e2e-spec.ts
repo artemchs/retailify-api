@@ -6,6 +6,7 @@ import { LogInDto, SignUpDto } from '../src/system/auth/dto'
 import { request, spec } from 'pactum'
 import { UpdateMeDto } from '../src/system/users/dto/update-me.dto'
 import { StorageService } from '../src/storage/storage.service'
+import { UpdatePasswordDto } from 'src/system/users/dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -152,6 +153,43 @@ describe('App', () => {
 
         it('should respond with `401` status code if the user does not provide an access token', async () => {
           await spec().put(url).withBody(body).expectStatus(401)
+        })
+      })
+
+      describe('(PUT) /system/users/me/password', () => {
+        const body: UpdatePasswordDto = {
+          password: 'NewStrongPassword12345!@#$%^',
+          passwordConfirm: 'NewStrongPassword12345!@#$%^',
+        }
+
+        const url = '/system/users/me/password'
+
+        it('should respond with a `400` status code if the user provides a weak password', async () => {
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody({ ...body, password: 'weak' })
+            .expectStatus(400)
+        })
+
+        it('should respond with a `400` status code if the provided passwords do not match', async () => {
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody({ ...body, passwordConfirm: 'Wrong Password' })
+            .expectStatus(400)
+        })
+
+        it('should successfully update the user password', async () => {
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(body)
+            .expectStatus(200)
+        })
+
+        it('should log the user out after a successfull password update', async () => {
+          await spec().post('/system/auth/refresh-token').expectStatus(401)
         })
       })
     })

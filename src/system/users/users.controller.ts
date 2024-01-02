@@ -6,13 +6,16 @@ import {
   MaxFileSizeValidator,
   ParseFilePipe,
   Put,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common'
-import { UpdateMeDto } from './dto/update-me.dto'
 import { GetCurrentUserAccessToken } from '../common/decorators'
 import { UsersService } from './users.service'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { UpdateMeDto, UpdatePasswordDto } from './dto'
+import { setRefreshTokenCookie } from '../common/utils'
+import { Response } from 'express'
 
 @Controller('system/users')
 export class UsersController {
@@ -43,5 +46,15 @@ export class UsersController {
     file?: Express.Multer.File,
   ) {
     return this.usersService.updateMe(body, userId, file?.buffer)
+  }
+
+  @Put('/me/password')
+  async updatePassword(
+    @Body() body: UpdatePasswordDto,
+    @GetCurrentUserAccessToken('sub') userId: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    await this.usersService.updatePassword(body.password, userId)
+    setRefreshTokenCookie(response, '')
   }
 }

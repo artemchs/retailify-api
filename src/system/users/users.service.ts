@@ -6,6 +6,7 @@ import {
 import { UpdateMeDto } from './dto/update-me.dto'
 import { DbService } from '../../db/db.service'
 import { StorageService } from '../../storage/storage.service'
+import { hashData } from '../common/utils'
 
 @Injectable()
 export class UsersService {
@@ -93,6 +94,30 @@ export class UsersService {
       data: {
         email,
         fullName,
+      },
+    })
+  }
+
+  async updatePassword(newPassword: string, userId: string) {
+    const user = await this.db.systemUser.findUnique({
+      where: {
+        id: userId,
+      },
+    })
+
+    if (!user) {
+      throw new NotFoundException('Пользователь с таким id не найден.')
+    }
+
+    const hash = await hashData(newPassword)
+
+    await this.db.systemUser.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        hash,
+        rtHash: null,
       },
     })
   }
