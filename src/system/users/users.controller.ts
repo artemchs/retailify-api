@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   FileTypeValidator,
+  Get,
   MaxFileSizeValidator,
   ParseFilePipe,
   Put,
@@ -16,6 +17,11 @@ import { FileInterceptor } from '@nestjs/platform-express'
 @Controller('system/users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
+
+  @Get('me')
+  getMe(@GetCurrentUserAccessToken('sub') userId: string) {
+    return this.usersService.getMe(userId)
+  }
 
   @UseInterceptors(FileInterceptor('profilePicture'))
   @Put('me')

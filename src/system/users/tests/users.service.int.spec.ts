@@ -22,6 +22,40 @@ describe('UsersService (int)', () => {
 
   afterEach(async () => await db.reset())
 
+  describe('Get me', () => {
+    const userId = 'test-user'
+
+    beforeEach(async () => {
+      await db.systemUser.create({
+        data: {
+          id: userId,
+          email: 'test@email.com',
+          fullName: 'Test User',
+          hash: 'hash',
+        },
+      })
+    })
+
+    it('should successfully return user data', async () => {
+      const result = await usersService.getMe(userId)
+
+      expect(result.email).toBeDefined()
+    })
+
+    it('should throw an exception if the user does not exist', async () => {
+      let error: NotFoundException | null = null
+
+      try {
+        await usersService.getMe('non-existent')
+      } catch (e) {
+        error = e
+      }
+
+      expect(error).not.toBeNull()
+      expect(error?.getStatus()).toBe(404)
+    })
+  })
+
   describe('Update me', () => {
     beforeEach(async () => {
       await db.systemUser.create({

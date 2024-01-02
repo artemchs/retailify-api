@@ -115,6 +115,17 @@ describe('App', () => {
     })
 
     describe('Users', () => {
+      describe('(GET) /system/users/me', () => {
+        const url = '/system/users/me'
+
+        it('should successfully get the user data', async () => {
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(200)
+        })
+      })
+
       describe('(PUT) /system/users/me', () => {
         const body: UpdateMeDto = {
           email: 'new@email.com',

@@ -14,6 +14,25 @@ export class UsersService {
     private storage: StorageService,
   ) {}
 
+  async getMe(userId: string) {
+    const user = await this.db.systemUser.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        email: true,
+        fullName: true,
+        profilePictureKey: true,
+      },
+    })
+
+    if (!user) {
+      throw new NotFoundException('Пользователь с таким id не найден.')
+    }
+
+    return user
+  }
+
   async updateMe(
     { email, fullName }: UpdateMeDto,
     id: string,
