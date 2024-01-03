@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -63,15 +64,28 @@ export class AuthService {
   }
 
   async signUp({ email, fullName, password }: SignUpDto): Promise<Tokens> {
-    const existingUser = await this.db.systemUser.findUnique({
-      where: {
-        email,
-      },
-    })
+    const [existingUser, isEmailAllowed] = await Promise.all([
+      this.db.systemUser.findUnique({
+        where: {
+          email,
+        },
+      }),
+      this.db.allowedSystemUserEmail.findUnique({
+        where: {
+          email,
+        },
+      }),
+    ])
 
     if (existingUser) {
       throw new BadRequestException(
-        'Этот email уже используеться другим пользователем.',
+        'Этот адресс електронной почты уже используеться другим пользователем.',
+      )
+    }
+
+    if (!isEmailAllowed) {
+      throw new ForbiddenException(
+        'Этот адрес электронной почты не был найден в списке разрешенных адрессов електронной почты.',
       )
     }
 

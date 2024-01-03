@@ -20,22 +20,28 @@ describe('UsersService (int)', () => {
     await db.reset()
   })
 
-  afterEach(async () => await db.reset())
-
-  describe('Get me', () => {
-    const userId = 'test-user'
-
-    beforeEach(async () => {
-      await db.systemUser.create({
+  const userId = 'test-user'
+  beforeEach(async () => {
+    await Promise.all([
+      db.systemUser.create({
         data: {
           id: userId,
           email: 'test@email.com',
           fullName: 'Test User',
           hash: 'hash',
         },
-      })
-    })
+      }),
+      db.allowedSystemUserEmail.create({
+        data: {
+          email: 'test@email.com',
+        },
+      }),
+    ])
+  })
 
+  afterEach(async () => await db.reset())
+
+  describe('Get me', () => {
     it('should successfully return user data', async () => {
       const result = await usersService.getMe(userId)
 
@@ -57,22 +63,10 @@ describe('UsersService (int)', () => {
   })
 
   describe('Update me', () => {
-    beforeEach(async () => {
-      await db.systemUser.create({
-        data: {
-          id: 'test-user',
-          email: 'test@email.com',
-          fullName: 'Test User',
-          hash: 'hash',
-        },
-      })
-    })
-
     const data: UpdateMeDto = {
       email: 'new@email.com',
       fullName: 'Full Name',
     }
-    const userId = 'test-user'
 
     it('should successfully update the user profile', async () => {
       await usersService.updateMe(data, userId)
@@ -167,23 +161,12 @@ describe('UsersService (int)', () => {
   })
 
   describe('Update password', () => {
-    beforeEach(async () => {
-      await db.systemUser.create({
-        data: {
-          id: 'test-user',
-          email: 'test@email.com',
-          fullName: 'Test User',
-          hash: 'hash',
-        },
-      })
-    })
-
     it('should successfully update the password', async () => {
-      await usersService.updatePassword('New Password', 'test-user')
+      await usersService.updatePassword('New Password', userId)
 
       const updatedUser = await db.systemUser.findUnique({
         where: {
-          id: 'test-user',
+          id: userId,
         },
       })
 

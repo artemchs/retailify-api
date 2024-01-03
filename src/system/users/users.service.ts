@@ -44,6 +44,39 @@ export class UsersService {
     }
   }
 
+  async uploadProfilePicture(userId: string, profilePicture?: Buffer) {
+    if (profilePicture) {
+      const profilePictureKey = `profile_pictures/${userId}.jpg`
+
+      await Promise.all([
+        this.db.systemUser.update({
+          where: {
+            id: userId,
+          },
+          data: {
+            profilePictureKey,
+          },
+        }),
+        this.storage.uploadFile(profilePictureKey, profilePicture),
+      ])
+    }
+  }
+
+  async updateAllowedEmails(oldEmail: string, newEmail: string) {
+    if (oldEmail !== newEmail) {
+      await Promise.all([
+        this.db.allowedSystemUserEmail.delete({
+          where: { email: oldEmail },
+        }),
+        this.db.allowedSystemUserEmail.create({
+          data: {
+            email: newEmail,
+          },
+        }),
+      ])
+    }
+  }
+
   async updateMe(
     { email, fullName }: UpdateMeDto,
     id: string,
@@ -67,35 +100,27 @@ export class UsersService {
 
     if (!existingUser) {
       throw new NotFoundException('Пользователь с таким id не найден.')
-    } else if (userWithTheSameEmail) {
+    }
+
+    if (userWithTheSameEmail) {
       throw new BadRequestException(
-        'Этот email адресс уже используеться другим пользователем.',
+        'Этот адрес електронной почты уже используеться другим пользователем.',
       )
     }
 
-    if (profilePicture) {
-      const profilePictureKey = `profile_pictures/${existingUser.id}.jpg`
-
-      await this.storage.uploadFile(profilePictureKey, profilePicture)
-      await this.db.systemUser.update({
+    await Promise.all([
+      this.uploadProfilePicture(existingUser.id, profilePicture),
+      this.db.systemUser.update({
         where: {
           id,
         },
         data: {
-          profilePictureKey,
+          email,
+          fullName,
         },
-      })
-    }
-
-    await this.db.systemUser.update({
-      where: {
-        id,
-      },
-      data: {
-        email,
-        fullName,
-      },
-    })
+      }),
+      this.updateAllowedEmails(existingUser.email, email),
+    ])
   }
 
   async updatePassword(newPassword: string, userId: string) {

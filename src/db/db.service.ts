@@ -29,7 +29,10 @@ export class DbService
     const environment = this.configService.get<string>('NODE_ENV')
 
     if (environment === 'test') {
-      return this.$transaction([this.systemUser.deleteMany()])
+      return this.$transaction([
+        this.systemUser.deleteMany(),
+        this.allowedSystemUserEmail.deleteMany(),
+      ])
     }
   }
 }

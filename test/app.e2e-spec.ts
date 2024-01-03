@@ -35,6 +35,14 @@ describe('App', () => {
     await storage.reset()
 
     request.setBaseUrl('http://localhost:3000')
+
+    await db.allowedSystemUserEmail.createMany({
+      data: [
+        {
+          email: 'test@email.com',
+        },
+      ],
+    })
   })
 
   afterAll(async () => {
@@ -56,8 +64,15 @@ describe('App', () => {
           await spec().post(url).withBody(body).expectStatus(201)
         })
 
-        it('should respond with `400` status code if the username is already in use', async () => {
+        it('should respond with `400` status code if the email is already in use', async () => {
           await spec().post(url).withBody(body).expectStatus(400)
+        })
+
+        it('should respond with a `403` status code if the provided email is not allowed', async () => {
+          await spec()
+            .post(url)
+            .withBody({ ...body, email: 'random@email.com' })
+            .expectStatus(403)
         })
       })
 

@@ -25,6 +25,23 @@ describe('AuthService (int)', () => {
     await db.reset()
   })
 
+  beforeEach(
+    async () =>
+      await db.allowedSystemUserEmail.createMany({
+        data: [
+          {
+            email: 'email',
+          },
+          {
+            email: 'email1',
+          },
+          {
+            email: 'email2',
+          },
+        ],
+      }),
+  )
+
   afterEach(async () => await db.reset())
 
   describe('Sign up', () => {
