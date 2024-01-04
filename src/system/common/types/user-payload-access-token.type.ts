@@ -1,6 +1,6 @@
+import { SystemUserRole } from '@prisma/client'
+
 export type UserPayloadAccessToken = {
   sub: string
-  email: string
-  fullName: string
-  profilePictureKey: string | null
+  role: SystemUserRole
 }

@@ -16,12 +16,18 @@ model SystemUser {
   updatedAt DateTime @updatedAt
 
   fullName          String
-  email             String  @unique
+  email             String         @unique
   hash              String
   profilePictureKey String?
   rtHash            String?
+  role              SystemUserRole @default(EMPLOYEE)
 }
 
 model AllowedSystemUserEmail {
   email String @id
+}
+
+enum SystemUserRole {
+  ADMIN
+  EMPLOYEE
 }

@@ -7,6 +7,8 @@ import { request, spec } from 'pactum'
 import { UpdateMeDto } from '../src/system/users/dto/update-me.dto'
 import { StorageService } from '../src/storage/storage.service'
 import { UpdatePasswordDto } from 'src/system/users/dto'
+import { CreateDto } from '../src/system/employees/dto'
+import { hashData } from '../src/system/common/utils'
 
 describe('App', () => {
   let app: INestApplication
@@ -41,7 +43,20 @@ describe('App', () => {
         {
           email: 'test@email.com',
         },
+        {
+          email: 'test@admin.com',
+        },
       ],
+    })
+
+    await db.systemUser.create({
+      data: {
+        id: 'admin-user',
+        email: 'test@admin.com',
+        fullName: 'Admin User',
+        hash: await hashData('password'),
+        role: 'ADMIN',
+      },
     })
   })
 
@@ -205,6 +220,58 @@ describe('App', () => {
 
         it('should log the user out after a successfull password update', async () => {
           await spec().post('/system/auth/refresh-token').expectStatus(401)
+        })
+      })
+    })
+
+    describe('Roles', () => {
+      it('should return a `403` status code if the user tries to access admin route', async () => {
+        await spec()
+          .post('/system/employees/')
+          .withHeaders('Authorization', 'Bearer $S{accessToken}')
+          .expectStatus(403)
+      })
+
+      it('should successfully log in to admin account', async () => {
+        await spec()
+          .post('/system/auth/log-in')
+          .withBody({ email: 'test@admin.com', password: 'password' })
+          .expectStatus(200)
+          .stores('adminAccessToken', 'accessToken')
+      })
+
+      it('should be able to access admin routes as an admin', async () => {
+        await spec()
+          .post('/system/employees/')
+          .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+          .expectStatus(400)
+      })
+    })
+
+    describe('Employees', () => {
+      describe('(POST) /system/employees/', () => {
+        const body: CreateDto = {
+          password: 'NewStrongPassword12345!@#$%^',
+          email: 'test@employee.com',
+          fullName: 'Test Employee',
+        }
+
+        const url = '/system/employees/'
+
+        it('should return a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .post(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(body)
+            .expectStatus(403)
+        })
+
+        it('should successfully create a new employee', async () => {
+          await spec()
+            .post(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(body)
+            .expectStatus(201)
         })
       })
     })

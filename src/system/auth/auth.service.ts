@@ -25,7 +25,7 @@ export class AuthService {
   async signTokens(payload: UserPayloadAccessToken): Promise<Tokens> {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        expiresIn: 60 * 15,
+        expiresIn: 60 * 10,
         secret: this.config.get('JWT_AT_SECRET'),
       }),
       this.jwtService.signAsync(payload, {
@@ -101,9 +101,7 @@ export class AuthService {
 
     const payload: UserPayloadAccessToken = {
       sub: newUser.id,
-      email: newUser.email,
-      fullName: newUser.fullName,
-      profilePictureKey: newUser.profilePictureKey,
+      role: newUser.role,
     }
 
     const tokens = await this.signTokens(payload)
@@ -132,9 +130,7 @@ export class AuthService {
 
     const payload: UserPayloadAccessToken = {
       sub: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      profilePictureKey: user.profilePictureKey,
+      role: user.role,
     }
 
     const tokens = await this.signTokens(payload)
@@ -183,9 +179,7 @@ export class AuthService {
 
     const payload: UserPayloadAccessToken = {
       sub: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      profilePictureKey: user.profilePictureKey,
+      role: user.role,
     }
 
     const tokens = await this.signTokens(payload)
