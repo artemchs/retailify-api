@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsString,
   IsStrongPassword,
@@ -20,6 +21,13 @@ export class CreateDto {
   )
   @IsNotEmpty({ message: 'Адрес електронной почты не должен быть пустым.' })
   email: string
+
+  @IsEnum(['CASHIER', 'ECOMMERCE_MANAGER'], {
+    message:
+      'Пожалуйста, выберите допустимую роль: Кассир или Ecommerce менеджер.',
+  })
+  @IsNotEmpty({ message: 'Роль не должна быть пустой.' })
+  role: 'CASHIER' | 'ECOMMERCE_MANAGER'
 
   @IsStrongPassword(
     {

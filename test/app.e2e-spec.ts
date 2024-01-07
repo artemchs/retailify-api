@@ -254,6 +254,7 @@ describe('App', () => {
           password: 'NewStrongPassword12345!@#$%^',
           email: 'test@employee.com',
           fullName: 'Test Employee',
+          role: 'CASHIER',
         }
 
         const url = '/system/employees/'

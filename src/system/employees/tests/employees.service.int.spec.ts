@@ -27,6 +27,7 @@ describe('EmployeesService (int)', () => {
       email: 'test@employee.com',
       fullName: 'Test Employee',
       password: 'Test Password',
+      role: 'CASHIER',
     }
 
     it('should successfully create a new employee', async () => {
