@@ -20,7 +20,7 @@ model SystemUser {
   hash              String
   profilePictureKey String?
   rtHash            String?
-  role              SystemUserRole @default(EMPLOYEE)
+  role              SystemUserRole @default(CASHIER)
 }
 
 model AllowedSystemUserEmail {
@@ -29,5 +29,6 @@ model AllowedSystemUserEmail {
 
 enum SystemUserRole {
   ADMIN
-  EMPLOYEE
+  CASHIER
+  ECOMMERCE_MANAGER
 }

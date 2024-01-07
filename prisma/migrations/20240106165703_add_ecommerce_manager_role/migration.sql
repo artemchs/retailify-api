@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "SystemUserRole" ADD VALUE 'ECOMMERCE_MANAGER';

@@ -274,6 +274,24 @@ describe('App', () => {
             .expectStatus(201)
         })
       })
+
+      describe('(GET) /system/employees', () => {
+        const url = '/system/employees/'
+
+        it('should return a `200` status code', async () => {
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('shoudl return a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
     })
   })
 })
