@@ -7,7 +7,7 @@ import { request, spec } from 'pactum'
 import { UpdateMeDto } from '../src/system/users/dto/update-me.dto'
 import { StorageService } from '../src/storage/storage.service'
 import { UpdatePasswordDto } from 'src/system/users/dto'
-import { CreateDto } from '../src/system/employees/dto'
+import { CreateDto, UpdateDto } from '../src/system/employees/dto'
 import { hashData } from '../src/system/common/utils'
 
 describe('App', () => {
@@ -249,6 +249,8 @@ describe('App', () => {
     })
 
     describe('Employees', () => {
+      let employeeId: string | undefined
+
       describe('(POST) /system/employees/', () => {
         const body: CreateDto = {
           password: 'NewStrongPassword12345!@#$%^',
@@ -274,6 +276,19 @@ describe('App', () => {
             .withBody(body)
             .expectStatus(201)
         })
+
+        it('should get the id of a new employee', async () => {
+          const employee = await db.systemUser.findUnique({
+            where: {
+              email: 'test@employee.com',
+            },
+          })
+
+          employeeId = employee?.id
+
+          expect(employee?.id).not.toBeNull()
+          expect(employee?.id).toBeDefined()
+        })
       })
 
       describe('(GET) /system/employees', () => {
@@ -289,6 +304,52 @@ describe('App', () => {
         it('shoudl return a `403` status code if the user is not an admin', async () => {
           await spec()
             .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/employees/:id', () => {
+        const data: UpdateDto = {
+          email: 'test@employee.com',
+          fullName: 'Test Employee',
+          role: 'ECOMMERCE_MANAGER',
+        }
+
+        it('should successfully update an employee', async () => {
+          const url = `/system/employees/${employeeId}`
+
+          await spec()
+            .put(url)
+            .withBody(data)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should return a `404` status code if the employee does not exist', async () => {
+          await spec()
+            .put('/system/employees/non-existent')
+            .withBody(data)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should return a `400` status code if the email is already taken by other user', async () => {
+          const url = `/system/employees/${employeeId}`
+
+          await spec()
+            .put(url)
+            .withBody({ ...data, email: 'test@admin.com' })
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(400)
+        })
+
+        it('should return a `403` status code if the user is not an admin', async () => {
+          const url = `/system/employees/${employeeId}`
+
+          await spec()
+            .put(url)
+            .withBody(data)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
             .expectStatus(403)
         })

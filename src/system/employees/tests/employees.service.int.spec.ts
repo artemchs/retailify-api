@@ -160,4 +160,108 @@ describe('EmployeesService (int)', () => {
       })
     })
   })
+
+  describe('update', () => {
+    beforeEach(async () => {
+      await Promise.all([
+        db.systemUser.create({
+          data: {
+            id: 'test-user',
+            email: 'test@email.com',
+            fullName: 'Test User',
+            hash: 'hash',
+          },
+        }),
+        db.allowedSystemUserEmail.create({
+          data: {
+            email: 'test@email.com',
+          },
+        }),
+      ])
+    })
+
+    it('should successfully update employee profile', async () => {
+      await employeesService.update(
+        {
+          email: 'new@email.com',
+          fullName: 'New Fullname',
+          role: 'ECOMMERCE_MANAGER',
+        },
+        'test-user',
+      )
+
+      const updatedUser = await db.systemUser.findUnique({
+        where: {
+          id: 'test-user',
+        },
+      })
+
+      expect(updatedUser?.email).toBe('new@email.com')
+    })
+
+    it('should update the allowed email after successfull update', async () => {
+      await employeesService.update(
+        {
+          email: 'new@email.com',
+          fullName: 'New Fullname',
+          role: 'ECOMMERCE_MANAGER',
+        },
+        'test-user',
+      )
+
+      const allowedEmails = await db.allowedSystemUserEmail.findMany()
+
+      expect(allowedEmails[0].email).toBe('new@email.com')
+      expect(allowedEmails.length).toBe(1)
+    })
+
+    it('should throw an exception if the user does not exist', async () => {
+      let error: BadRequestException | null = null
+
+      try {
+        await employeesService.update(
+          {
+            email: 'new@email.com',
+            fullName: 'New Fullname',
+            role: 'ECOMMERCE_MANAGER',
+          },
+          'non-existent',
+        )
+      } catch (e) {
+        error = e
+      }
+
+      expect(error).not.toBeNull()
+      expect(error?.getStatus()).toBe(404)
+    })
+
+    it('should throw an exception if the new email is already taken', async () => {
+      await db.systemUser.create({
+        data: {
+          id: 'other-test-user',
+          email: 'new@email.com',
+          fullName: 'Test User',
+          hash: 'hash',
+        },
+      })
+
+      let error: BadRequestException | null = null
+
+      try {
+        await employeesService.update(
+          {
+            email: 'new@email.com',
+            fullName: 'New Fullname',
+            role: 'ECOMMERCE_MANAGER',
+          },
+          'test-user',
+        )
+      } catch (e) {
+        error = e
+      }
+
+      expect(error).not.toBeNull()
+      expect(error?.getStatus()).toBe(400)
+    })
+  })
 })

@@ -1,9 +1,8 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { EmployeesService } from './employees.service'
-import { CreateDto } from './dto'
+import { CreateDto, FindAllDto, UpdateDto } from './dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
-import { FindAllDto } from './dto/findAll.dto'
 
 @Roles(Role.Admin)
 @Controller('system/employees')
@@ -18,5 +17,10 @@ export class EmployeesController {
   @Post()
   create(@Body() body: CreateDto) {
     return this.employeesService.create(body)
+  }
+
+  @Put(':id')
+  update(@Body() body: UpdateDto, @Param('id') userId: string) {
+    return this.employeesService.update(body, userId)
   }
 }

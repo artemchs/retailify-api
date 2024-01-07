@@ -1,8 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
-import { CreateDto } from './dto'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
+import { CreateDto, FindAllDto, UpdateDto } from './dto'
 import { DbService } from '../../db/db.service'
 import { hashData } from '../common/utils'
-import { FindAllDto } from './dto/findAll.dto'
 import { Prisma } from '@prisma/client'
 
 @Injectable()
@@ -106,6 +109,63 @@ export class EmployeesService {
           email,
         },
       }),
+    ])
+  }
+
+  async updateAllowedEmails(oldEmail: string, newEmail: string) {
+    if (oldEmail !== newEmail) {
+      await Promise.all([
+        this.db.allowedSystemUserEmail.delete({
+          where: { email: oldEmail },
+        }),
+        this.db.allowedSystemUserEmail.create({
+          data: {
+            email: newEmail,
+          },
+        }),
+      ])
+    }
+  }
+
+  async update({ email, fullName, role }: UpdateDto, id: string) {
+    const [user, userWithNewEmail] = await Promise.all([
+      this.db.systemUser.findUnique({
+        where: {
+          id,
+        },
+      }),
+      this.db.systemUser.findUnique({
+        where: {
+          email,
+          NOT: {
+            id,
+          },
+        },
+      }),
+    ])
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден.')
+    }
+
+    if (userWithNewEmail) {
+      throw new BadRequestException(
+        'Этот адресс електронной почты уже используеться другим пользователем.',
+      )
+    }
+
+    await Promise.all([
+      this.db.systemUser.update({
+        where: {
+          id,
+        },
+        data: {
+          email,
+          fullName,
+          role,
+        },
+      }),
+      this.updateAllowedEmails(user.email, email),
     ])
   }
 }
