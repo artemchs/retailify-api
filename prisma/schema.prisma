@@ -21,6 +21,8 @@ model SystemUser {
   profilePictureKey String?
   rtHash            String?
   role              SystemUserRole @default(CASHIER)
+
+  isDeleted Boolean @default(false)
 }
 
 model AllowedSystemUserEmail {

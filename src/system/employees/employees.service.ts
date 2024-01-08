@@ -189,4 +189,32 @@ export class EmployeesService {
       this.updateAllowedEmails(user.email, email),
     ])
   }
+
+  async remove(id: string) {
+    const user = await this.db.systemUser.findUnique({
+      where: {
+        id,
+      },
+    })
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден.')
+    }
+
+    await Promise.all([
+      this.db.systemUser.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          isDeleted: true,
+        },
+      }),
+      this.db.allowedSystemUserEmail.delete({
+        where: {
+          email: user.email,
+        },
+      }),
+    ])
+  }
 }

@@ -381,6 +381,33 @@ describe('App', () => {
             .expectStatus(403)
         })
       })
+
+      describe('(DELETE) /system/employees/:id', () => {
+        it('should successfully remove an employee', async () => {
+          const url = `/system/employees/${employeeId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the employee does not exist', async () => {
+          await spec()
+            .delete('/system/employees/non-existent')
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `/system/employees/${employeeId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
     })
   })
 })

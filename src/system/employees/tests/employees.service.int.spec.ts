@@ -296,4 +296,57 @@ describe('EmployeesService (int)', () => {
       expect(error?.getStatus()).toBe(400)
     })
   })
+
+  describe('remove', () => {
+    beforeEach(async () => {
+      await Promise.all([
+        db.systemUser.create({
+          data: {
+            id: 'test-user',
+            email: 'test@email.com',
+            fullName: 'Test User',
+            hash: 'hash',
+          },
+        }),
+        db.allowedSystemUserEmail.create({
+          data: {
+            email: 'test@email.com',
+          },
+        }),
+      ])
+    })
+
+    it('should successfully remove an employee', async () => {
+      await employeesService.remove('test-user')
+
+      const removedEmployee = await db.systemUser.findUnique({
+        where: {
+          id: 'test-user',
+        },
+      })
+      const allowedSystemUserEmail = await db.allowedSystemUserEmail.findUnique(
+        {
+          where: {
+            email: 'test@email.com',
+          },
+        },
+      )
+
+      expect(removedEmployee?.isDeleted).toBeTruthy()
+      expect(allowedSystemUserEmail).toBeNull()
+    })
+
+    it('should throw an exception if the employee does not exist', async () => {
+      let error: NotFoundException | null = null
+
+      try {
+        await employeesService.remove('non-existent')
+      } catch (e) {
+        error = e
+      }
+
+      expect(error).not.toBeNull()
+      expect(error?.getStatus()).toBe(404)
+    })
+  })
 })
