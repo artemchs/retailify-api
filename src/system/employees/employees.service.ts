@@ -12,6 +12,27 @@ import { Prisma } from '@prisma/client'
 export class EmployeesService {
   constructor(private db: DbService) {}
 
+  async findOne(id: string) {
+    const user = await this.db.systemUser.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        profilePictureKey: true,
+        role: true,
+      },
+    })
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден.')
+    }
+
+    return user
+  }
+
   async findAll({ page, rowsPerPage, query, roles, orderBy }: FindAllDto) {
     const limit = Number(rowsPerPage ?? 10)
     const currentPage = Number(page ?? 1)

@@ -14,6 +14,11 @@ export class EmployeesController {
     return this.employeesService.findAll(query)
   }
 
+  @Get(':id')
+  findOne(@Param('id') userId: string) {
+    return this.employeesService.findOne(userId)
+  }
+
   @Post()
   create(@Body() body: CreateDto) {
     return this.employeesService.create(body)

@@ -3,7 +3,7 @@ import { AppModule } from '../../../app.module'
 import { DbService } from '../../../db/db.service'
 import { EmployeesService } from '../employees.service'
 import { CreateDto } from '../dto'
-import { BadRequestException } from '@nestjs/common'
+import { BadRequestException, NotFoundException } from '@nestjs/common'
 
 describe('EmployeesService (int)', () => {
   let db: DbService
@@ -161,6 +161,38 @@ describe('EmployeesService (int)', () => {
     })
   })
 
+  describe('find one', () => {
+    beforeEach(async () => {
+      await db.systemUser.create({
+        data: {
+          id: 'test-user',
+          email: 'test@email.com',
+          fullName: 'Test User',
+          hash: 'hash',
+        },
+      })
+    })
+
+    it('should successfully get user data', async () => {
+      const response = await employeesService.findOne('test-user')
+
+      expect(response.id).toBe('test-user')
+    })
+
+    it('should throw an exception if the user does not exist', async () => {
+      let error: NotFoundException | null = null
+
+      try {
+        await employeesService.findOne('non-existent')
+      } catch (e) {
+        error = e
+      }
+
+      expect(error).not.toBeNull()
+      expect(error?.getStatus()).toBe(404)
+    })
+  })
+
   describe('update', () => {
     beforeEach(async () => {
       await Promise.all([
@@ -216,7 +248,7 @@ describe('EmployeesService (int)', () => {
     })
 
     it('should throw an exception if the user does not exist', async () => {
-      let error: BadRequestException | null = null
+      let error: NotFoundException | null = null
 
       try {
         await employeesService.update(

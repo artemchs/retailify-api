@@ -309,6 +309,33 @@ describe('App', () => {
         })
       })
 
+      describe('(GET) /system/employees/:id', () => {
+        it('should successfully get user data', async () => {
+          const url = `/system/employees/${employeeId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the requested user does not exist', async () => {
+          await spec()
+            .get('/system/employees/non-existent')
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `/system/employees/${employeeId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken  }')
+            .expectStatus(403)
+        })
+      })
+
       describe('(PUT) /system/employees/:id', () => {
         const data: UpdateDto = {
           email: 'test@employee.com',
