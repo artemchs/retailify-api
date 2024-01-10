@@ -9,6 +9,8 @@ import { StorageService } from '../src/storage/storage.service'
 import { UpdatePasswordDto } from 'src/system/users/dto'
 import { CreateDto, UpdateDto } from '../src/system/employees/dto'
 import { hashData } from '../src/system/common/utils'
+import { CreateSupplierDto } from 'src/system/suppliers/dto/create-supplier.dto'
+import { UpdateSupplierDto } from 'src/system/suppliers/dto/update-supplier.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -65,6 +67,8 @@ describe('App', () => {
   })
 
   describe('System', () => {
+    let supplierId: string | undefined
+
     describe('Auth', () => {
       describe('(POST) /system/auth/sign-up', () => {
         const body: SignUpDto = {
@@ -401,6 +405,134 @@ describe('App', () => {
 
         it('should respond with a `403` status code if the user is not an admin', async () => {
           const url = `/system/employees/${employeeId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+    })
+
+    describe('Suppliers', () => {
+      describe('(POST) /system/suppliers', () => {
+        const url = '/system/suppliers'
+        const data: CreateSupplierDto = {
+          name: 'New Supplier',
+          address: 'address',
+          contactPerson: 'person',
+          email: 'test@email.com',
+          phone: '+380 66 116 5978',
+        }
+
+        it('should create a new supplier', async () => {
+          await spec()
+            .post(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(201)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .post(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+
+        afterAll(async () => {
+          const createdSupplier = await db.supplier.findFirst()
+          supplierId = createdSupplier?.id
+        })
+      })
+
+      describe('(GET) /system/suppliers', () => {
+        const url = '/system/suppliers'
+
+        it('should list suppliers', async () => {
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(200)
+        })
+      })
+
+      describe('(GET) /system/suppliers/:id', () => {
+        it('should get the requested supplier', async () => {
+          const url = `/system/suppliers/${supplierId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the supplier does not exist', async () => {
+          await spec()
+            .get('/system/suppliers/non-existent')
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(404)
+        })
+      })
+
+      describe('(PUT) /system/suppliers/:id', () => {
+        const data: UpdateSupplierDto = {
+          name: 'Updated Supplier',
+          address: 'address',
+          contactPerson: 'person',
+          email: 'test@email.com',
+          phone: '+380 66 116 5978',
+        }
+
+        it('should update a supplier', async () => {
+          const url = `/system/suppliers/${supplierId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the supplier does not exist', async () => {
+          await spec()
+            .put('/system/suppliers/non-existent')
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `/system/suppliers/${supplierId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe('(DELETE) /system/suppliers/:id', () => {
+        it('should update a supplier', async () => {
+          const url = `/system/suppliers/${supplierId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the supplier does not exist', async () => {
+          await spec()
+            .delete('/system/suppliers/non-existent')
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `/system/suppliers/${supplierId}`
 
           await spec()
             .delete(url)

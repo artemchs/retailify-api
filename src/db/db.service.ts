@@ -32,6 +32,7 @@ export class DbService
       return this.$transaction([
         this.systemUser.deleteMany(),
         this.allowedSystemUserEmail.deleteMany(),
+        this.supplier.deleteMany(),
       ])
     }
   }

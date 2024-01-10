@@ -7,6 +7,7 @@ import { CreateDto, FindAllDto, UpdateDto } from './dto'
 import { DbService } from '../../db/db.service'
 import { hashData } from '../common/utils'
 import { Prisma } from '@prisma/client'
+import { calculateTotalPages } from '../common/utils/calculate-total-pages'
 
 @Injectable()
 export class EmployeesService {
@@ -91,7 +92,7 @@ export class EmployeesService {
       }),
     ])
 
-    const totalPages = Math.ceil(totalItems / limit)
+    const totalPages = calculateTotalPages(totalItems, limit)
 
     return {
       items,
