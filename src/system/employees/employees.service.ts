@@ -202,12 +202,9 @@ export class EmployeesService {
     }
 
     await Promise.all([
-      this.db.systemUser.update({
+      this.db.systemUser.delete({
         where: {
           id: user.id,
-        },
-        data: {
-          isDeleted: true,
         },
       }),
       this.db.allowedSystemUserEmail.delete({

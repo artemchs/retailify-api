@@ -332,7 +332,7 @@ describe('EmployeesService (int)', () => {
         },
       )
 
-      expect(removedEmployee?.isDeleted).toBeTruthy()
+      expect(removedEmployee).toBeNull()
       expect(allowedSystemUserEmail).toBeNull()
     })
 
