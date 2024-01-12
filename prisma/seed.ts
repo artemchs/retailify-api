@@ -13,6 +13,7 @@ async function resetDb() {
   await Promise.all([
     prisma.allowedSystemUserEmail.deleteMany(),
     prisma.systemUser.deleteMany(),
+    prisma.supplier.deleteMany(),
   ])
 }
 
@@ -39,7 +40,7 @@ async function seedSystemUsers() {
     console.error('Could not create an admin user: ', e)
   }
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 4; i++) {
     try {
       const fullName = faker.person.fullName()
       const email = faker.internet.email()
@@ -87,10 +88,30 @@ async function seedSystemUsers() {
   }
 }
 
+async function seedSuppliers() {
+  for (let i = 0; i < 5; i++) {
+    try {
+      await prisma.supplier.create({
+        data: {
+          name: faker.company.name(),
+          contactPerson: faker.person.fullName(),
+          email: faker.internet.email(),
+          phone: faker.phone.number(),
+          address: faker.location.streetAddress(),
+        },
+      })
+      console.log('Successfully created a new supplier.')
+    } catch (e) {
+      console.log('Could not create a new supplier: ', e)
+    }
+  }
+}
+
 async function main() {
   if (env.NODE_ENV === 'development') {
     await resetDb()
     await seedSystemUsers()
+    await seedSuppliers()
   }
 }
 

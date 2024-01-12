@@ -38,6 +38,7 @@ export class SuppliersService {
     const skip = (currentPage - 1) * take
 
     const where: Prisma.SupplierWhereInput = {
+      isDeleted: false,
       OR: query
         ? [
             {
