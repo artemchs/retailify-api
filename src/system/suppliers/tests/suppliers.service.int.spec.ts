@@ -270,4 +270,41 @@ describe('SuppliersService', () => {
       )
     })
   })
+
+  describe('recover', () => {
+    beforeEach(async () => {
+      await db.supplier.create({
+        data: {
+          id: 'Supplier 1',
+          name: 'Supplier 1',
+          address: 'Supplier Address 1',
+          contactPerson: 'Supplier Contact Person 1',
+          email: 'Supplier Email 1',
+          phone: 'Supplier Phone 1',
+        },
+      })
+    })
+
+    const id = 'Supplier 1'
+
+    it('should recover the requested supplier', async () => {
+      await service.recover(id)
+
+      const suppliersCount = await db.supplier.count()
+      const supplier = await db.supplier.findUnique({
+        where: {
+          id,
+        },
+      })
+
+      expect(suppliersCount).toBe(1)
+      expect(supplier?.isDeleted).toBeFalsy()
+    })
+
+    it('should fail if the supplier does not exist', async () => {
+      await expect(service.recover('non-existent')).rejects.toThrow(
+        NotFoundException,
+      )
+    })
+  })
 })

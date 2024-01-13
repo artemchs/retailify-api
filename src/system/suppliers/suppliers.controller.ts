@@ -49,4 +49,10 @@ export class SuppliersController {
   remove(@Param('id') id: string) {
     return this.suppliersService.remove(id)
   }
+
+  @Roles(Role.Admin)
+  @Put('/recover/:id')
+  recover(@Param('id') id: string) {
+    return this.suppliersService.recover(id)
+  }
 }

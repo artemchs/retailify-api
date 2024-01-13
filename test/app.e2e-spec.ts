@@ -515,7 +515,7 @@ describe('App', () => {
       })
 
       describe('(DELETE) /system/suppliers/:id', () => {
-        it('should update a supplier', async () => {
+        it('should delete a supplier', async () => {
           const url = `/system/suppliers/${supplierId}`
 
           await spec()
@@ -536,6 +536,33 @@ describe('App', () => {
 
           await spec()
             .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/suppliers/recover/:id', () => {
+        it('should recover a supplier', async () => {
+          const url = `/system/suppliers/recover/${supplierId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the supplier does not exist', async () => {
+          await spec()
+            .put('/system/suppliers/recover/non-existent')
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `/system/suppliers/recover/${supplierId}`
+
+          await spec()
+            .put(url)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
             .expectStatus(403)
         })

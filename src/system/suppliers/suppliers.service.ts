@@ -150,4 +150,17 @@ export class SuppliersService {
       },
     })
   }
+
+  async recover(id: string) {
+    await this.getSupplier(id)
+
+    await this.db.supplier.update({
+      where: {
+        id,
+      },
+      data: {
+        isDeleted: false,
+      },
+    })
+  }
 }
