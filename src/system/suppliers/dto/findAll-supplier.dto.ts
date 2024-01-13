@@ -9,4 +9,5 @@ export class FindAllSupplierDto {
     phone?: 'asc' | 'desc'
     address?: 'asc' | 'desc'
   }
+  isDeleted?: boolean
 }

@@ -78,6 +78,14 @@ describe('SuppliersService', () => {
             email: 'Supplier Email 4',
             phone: 'Supplier Phone 4',
           },
+          {
+            name: 'Deleted Supplier 5',
+            address: 'Deleted Supplier Address 5',
+            contactPerson: 'Deleted Supplier Contact Person 5',
+            email: 'Deleted Supplier Email 5',
+            phone: 'Deleted Supplier Phone 5',
+            isDeleted: true,
+          },
         ],
       })
     })
@@ -139,6 +147,15 @@ describe('SuppliersService', () => {
       const { info } = await service.findAll({
         ...data,
         query: 'Supplier Phone 1',
+      })
+
+      expect(info.totalItems).toBe(1)
+    })
+
+    it('should get deleted items', async () => {
+      const { info } = await service.findAll({
+        ...data,
+        isDeleted: true,
       })
 
       expect(info.totalItems).toBe(1)

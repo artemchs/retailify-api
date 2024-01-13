@@ -32,13 +32,19 @@ export class SuppliersService {
     })
   }
 
-  async findAll({ page, rowsPerPage, orderBy, query }: FindAllSupplierDto) {
+  async findAll({
+    page,
+    rowsPerPage,
+    orderBy,
+    query,
+    isDeleted,
+  }: FindAllSupplierDto) {
     const take = Number(rowsPerPage ?? 10)
     const currentPage = Number(page ?? 1)
     const skip = (currentPage - 1) * take
 
     const where: Prisma.SupplierWhereInput = {
-      isDeleted: false,
+      isDeleted: isDeleted ? isDeleted : false,
       OR: query
         ? [
             {
