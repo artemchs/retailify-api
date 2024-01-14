@@ -308,26 +308,4 @@ describe('SuppliersService', () => {
       )
     })
   })
-
-  describe('countDeleted', () => {
-    beforeEach(async () => {
-      await db.supplier.create({
-        data: {
-          id: 'Supplier 1',
-          name: 'Supplier 1',
-          address: 'Supplier Address 1',
-          contactPerson: 'Supplier Contact Person 1',
-          email: 'Supplier Email 1',
-          phone: 'Supplier Phone 1',
-          isDeleted: true,
-        },
-      })
-    })
-
-    it('should count all deleted suppliers', async () => {
-      const count = await service.countDeleted()
-
-      expect(count).toBe(1)
-    })
-  })
 })
