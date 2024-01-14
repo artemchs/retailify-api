@@ -37,14 +37,14 @@ export class SuppliersService {
     rowsPerPage,
     orderBy,
     query,
-    isDeleted,
+    isArchived,
   }: FindAllSupplierDto) {
     const take = Number(rowsPerPage ?? 10)
     const currentPage = Number(page ?? 1)
     const skip = (currentPage - 1) * take
 
     const where: Prisma.SupplierWhereInput = {
-      isDeleted: isDeleted ? isDeleted : false,
+      isArchived: isArchived ? Boolean(Number(isArchived)) : false,
       OR: query
         ? [
             {
@@ -138,7 +138,7 @@ export class SuppliersService {
     })
   }
 
-  async remove(id: string) {
+  async archive(id: string) {
     await this.getSupplier(id)
 
     await this.db.supplier.update({
@@ -146,12 +146,12 @@ export class SuppliersService {
         id,
       },
       data: {
-        isDeleted: true,
+        isArchived: true,
       },
     })
   }
 
-  async recover(id: string) {
+  async restore(id: string) {
     await this.getSupplier(id)
 
     await this.db.supplier.update({
@@ -159,18 +159,8 @@ export class SuppliersService {
         id,
       },
       data: {
-        isDeleted: false,
+        isArchived: false,
       },
     })
-  }
-
-  async countDeleted() {
-    const count = await this.db.supplier.count({
-      where: {
-        isDeleted: true,
-      },
-    })
-
-    return count
   }
 }

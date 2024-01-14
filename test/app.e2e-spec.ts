@@ -515,7 +515,7 @@ describe('App', () => {
       })
 
       describe('(DELETE) /system/suppliers/:id', () => {
-        it('should delete a supplier', async () => {
+        it('should archive a supplier', async () => {
           const url = `/system/suppliers/${supplierId}`
 
           await spec()
@@ -541,9 +541,9 @@ describe('App', () => {
         })
       })
 
-      describe('(PUT) /system/suppliers/recover/:id', () => {
-        it('should recover a supplier', async () => {
-          const url = `/system/suppliers/recover/${supplierId}`
+      describe('(PUT) /system/suppliers/restore/:id', () => {
+        it('should restore a supplier', async () => {
+          const url = `/system/suppliers/restore/${supplierId}`
 
           await spec()
             .put(url)
@@ -553,13 +553,13 @@ describe('App', () => {
 
         it('should respond with a `404` status code if the supplier does not exist', async () => {
           await spec()
-            .put('/system/suppliers/recover/non-existent')
+            .put('/system/suppliers/restore/non-existent')
             .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
             .expectStatus(404)
         })
 
         it('should respond with a `403` status code if the user is not an admin', async () => {
-          const url = `/system/suppliers/recover/${supplierId}`
+          const url = `/system/suppliers/restore/${supplierId}`
 
           await spec()
             .put(url)

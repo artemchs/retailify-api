@@ -46,13 +46,13 @@ export class SuppliersController {
 
   @Roles(Role.Admin)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.suppliersService.remove(id)
+  archive(@Param('id') id: string) {
+    return this.suppliersService.archive(id)
   }
 
   @Roles(Role.Admin)
-  @Put('recover/:id')
-  recover(@Param('id') id: string) {
-    return this.suppliersService.recover(id)
+  @Put('restore/:id')
+  restore(@Param('id') id: string) {
+    return this.suppliersService.restore(id)
   }
 }

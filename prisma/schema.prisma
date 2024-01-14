@@ -44,5 +44,5 @@ model Supplier {
   phone         String
   address       String
 
-  isDeleted Boolean @default(false)
+  isArchived Boolean @default(false)
 }

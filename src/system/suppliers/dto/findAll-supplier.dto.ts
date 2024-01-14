@@ -9,5 +9,5 @@ export class FindAllSupplierDto {
     phone?: 'asc' | 'desc'
     address?: 'asc' | 'desc'
   }
-  isDeleted?: boolean
+  isArchived?: number // 0 or 1
 }

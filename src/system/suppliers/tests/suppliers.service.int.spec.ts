@@ -84,7 +84,7 @@ describe('SuppliersService', () => {
             contactPerson: 'Deleted Supplier Contact Person 5',
             email: 'Deleted Supplier Email 5',
             phone: 'Deleted Supplier Phone 5',
-            isDeleted: true,
+            isArchived: true,
           },
         ],
       })
@@ -152,10 +152,10 @@ describe('SuppliersService', () => {
       expect(info.totalItems).toBe(1)
     })
 
-    it('should get deleted items', async () => {
+    it('should get archived items', async () => {
       const { info } = await service.findAll({
         ...data,
-        isDeleted: true,
+        isArchived: 1,
       })
 
       expect(info.totalItems).toBe(1)
@@ -234,7 +234,7 @@ describe('SuppliersService', () => {
     })
   })
 
-  describe('remove', () => {
+  describe('archive', () => {
     beforeEach(async () => {
       await db.supplier.create({
         data: {
@@ -250,8 +250,8 @@ describe('SuppliersService', () => {
 
     const id = 'Supplier 1'
 
-    it('should remove the requested supplier', async () => {
-      await service.remove(id)
+    it('should archive the requested supplier', async () => {
+      await service.archive(id)
 
       const suppliersCount = await db.supplier.count()
       const supplier = await db.supplier.findUnique({
@@ -261,17 +261,17 @@ describe('SuppliersService', () => {
       })
 
       expect(suppliersCount).toBe(1)
-      expect(supplier?.isDeleted).toBeTruthy()
+      expect(supplier?.isArchived).toBeTruthy()
     })
 
     it('should fail if the supplier does not exist', async () => {
-      await expect(service.remove('non-existent')).rejects.toThrow(
+      await expect(service.archive('non-existent')).rejects.toThrow(
         NotFoundException,
       )
     })
   })
 
-  describe('recover', () => {
+  describe('restore', () => {
     beforeEach(async () => {
       await db.supplier.create({
         data: {
@@ -281,15 +281,15 @@ describe('SuppliersService', () => {
           contactPerson: 'Supplier Contact Person 1',
           email: 'Supplier Email 1',
           phone: 'Supplier Phone 1',
-          isDeleted: true,
+          isArchived: true,
         },
       })
     })
 
     const id = 'Supplier 1'
 
-    it('should recover the requested supplier', async () => {
-      await service.recover(id)
+    it('should restore the requested supplier', async () => {
+      await service.restore(id)
 
       const suppliersCount = await db.supplier.count()
       const supplier = await db.supplier.findUnique({
@@ -299,11 +299,11 @@ describe('SuppliersService', () => {
       })
 
       expect(suppliersCount).toBe(1)
-      expect(supplier?.isDeleted).toBeFalsy()
+      expect(supplier?.isArchived).toBeFalsy()
     })
 
     it('should fail if the supplier does not exist', async () => {
-      await expect(service.recover('non-existent')).rejects.toThrow(
+      await expect(service.restore('non-existent')).rejects.toThrow(
         NotFoundException,
       )
     })
