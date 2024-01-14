@@ -163,4 +163,14 @@ export class SuppliersService {
       },
     })
   }
+
+  async countDeleted() {
+    const count = await this.db.supplier.count({
+      where: {
+        isDeleted: true,
+      },
+    })
+
+    return count
+  }
 }

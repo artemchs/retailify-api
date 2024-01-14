@@ -541,6 +541,17 @@ describe('App', () => {
         })
       })
 
+      describe('(GET) /system/suppliers/count-deleted', () => {
+        const url = '/system/suppliers/count-deleted'
+
+        it('should count all deleted suppliers', async () => {
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(200)
+        })
+      })
+
       describe('(PUT) /system/suppliers/recover/:id', () => {
         it('should recover a supplier', async () => {
           const url = `/system/suppliers/recover/${supplierId}`

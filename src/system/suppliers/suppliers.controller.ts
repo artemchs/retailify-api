@@ -19,6 +19,12 @@ import { Role } from '../common/enums'
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 
+  @Get('count-deleted')
+  countDeleted() {
+    console.log('GET req to /count-deleted')
+    return this.suppliersService.countDeleted()
+  }
+
   @Roles(Role.Admin)
   @Post()
   create(@Body() createSupplierDto: CreateSupplierDto) {
@@ -51,7 +57,7 @@ export class SuppliersController {
   }
 
   @Roles(Role.Admin)
-  @Put('/recover/:id')
+  @Put('recover/:id')
   recover(@Param('id') id: string) {
     return this.suppliersService.recover(id)
   }
