@@ -33,6 +33,7 @@ export class DbService
         this.systemUser.deleteMany(),
         this.allowedSystemUserEmail.deleteMany(),
         this.supplier.deleteMany(),
+        this.warehouse.deleteMany(),
       ])
     }
   }

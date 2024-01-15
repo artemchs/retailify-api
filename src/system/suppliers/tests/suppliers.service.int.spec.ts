@@ -97,7 +97,7 @@ describe('SuppliersService', () => {
       query: undefined,
     }
 
-    it('should list all suppliers', async () => {
+    it('should list all suppliers that are not archived', async () => {
       const { items } = await service.findAll(data)
 
       expect(items.length).toBe(4)

@@ -5,6 +5,7 @@ import { DbService } from '../../db/db.service'
 import { FindAllSupplierDto } from './dto/findAll-supplier.dto'
 import { Prisma } from '@prisma/client'
 import { calculateTotalPages } from '../common/utils/calculate-total-pages'
+import getPaginationData from '../common/utils/getPaginationData'
 
 @Injectable()
 export class SuppliersService {
@@ -39,9 +40,7 @@ export class SuppliersService {
     query,
     isArchived,
   }: FindAllSupplierDto) {
-    const take = Number(rowsPerPage ?? 10)
-    const currentPage = Number(page ?? 1)
-    const skip = (currentPage - 1) * take
+    const { skip, take } = getPaginationData({ page, rowsPerPage })
 
     const where: Prisma.SupplierWhereInput = {
       isArchived: isArchived ? Boolean(Number(isArchived)) : false,

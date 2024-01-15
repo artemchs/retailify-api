@@ -5,9 +5,16 @@ import { AccessTokenGuard, RolesGuard } from './common/guards'
 import { UsersModule } from './users/users.module'
 import { EmployeesModule } from './employees/employees.module'
 import { SuppliersModule } from './suppliers/suppliers.module'
+import { WarehousesModule } from './warehouses/warehouses.module'
 
 @Module({
-  imports: [AuthModule, UsersModule, EmployeesModule, SuppliersModule],
+  imports: [
+    AuthModule,
+    UsersModule,
+    EmployeesModule,
+    SuppliersModule,
+    WarehousesModule,
+  ],
   providers: [
     {
       provide: APP_GUARD,

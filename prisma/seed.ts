@@ -107,11 +107,28 @@ async function seedSuppliers() {
   }
 }
 
+async function seedWarehouses() {
+  for (let i = 0; i < 3; i++) {
+    try {
+      await prisma.warehouse.create({
+        data: {
+          name: faker.company.name(),
+          address: faker.location.streetAddress(),
+        },
+      })
+      console.log('Successfully created a new warehouse.')
+    } catch (e) {
+      console.log('Could not create a new warehouse: ', e)
+    }
+  }
+}
+
 async function main() {
   if (env.NODE_ENV === 'development') {
     await resetDb()
     await seedSystemUsers()
     await seedSuppliers()
+    await seedWarehouses()
   }
 }
 

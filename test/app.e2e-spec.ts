@@ -11,6 +11,8 @@ import { CreateDto, UpdateDto } from '../src/system/employees/dto'
 import { hashData } from '../src/system/common/utils'
 import { CreateSupplierDto } from 'src/system/suppliers/dto/create-supplier.dto'
 import { UpdateSupplierDto } from 'src/system/suppliers/dto/update-supplier.dto'
+import { CreateWarehouseDto } from 'src/system/warehouses/dto/create-warehouse.dto'
+import { UpdateWarehouseDto } from 'src/system/warehouses/dto/update-warehouse.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -68,6 +70,7 @@ describe('App', () => {
 
   describe('System', () => {
     let supplierId: string | undefined
+    let warehouseId: string | undefined
 
     describe('Auth', () => {
       describe('(POST) /system/auth/sign-up', () => {
@@ -416,6 +419,11 @@ describe('App', () => {
 
     describe('Suppliers', () => {
       describe('(POST) /system/suppliers', () => {
+        afterAll(async () => {
+          const createdSupplier = await db.supplier.findFirst()
+          supplierId = createdSupplier?.id
+        })
+
         const url = '/system/suppliers'
         const data: CreateSupplierDto = {
           name: 'New Supplier',
@@ -440,11 +448,6 @@ describe('App', () => {
             .withBody(data)
             .expectStatus(403)
         })
-
-        afterAll(async () => {
-          const createdSupplier = await db.supplier.findFirst()
-          supplierId = createdSupplier?.id
-        })
       })
 
       describe('(GET) /system/suppliers', () => {
@@ -459,7 +462,7 @@ describe('App', () => {
       })
 
       describe('(GET) /system/suppliers/:id', () => {
-        it('should get the requested supplier', async () => {
+        it('should find the requested supplier', async () => {
           const url = `/system/suppliers/${supplierId}`
 
           await spec()
@@ -485,7 +488,7 @@ describe('App', () => {
           phone: '+380 66 116 5978',
         }
 
-        it('should update a supplier', async () => {
+        it('should update the requested supplier', async () => {
           const url = `/system/suppliers/${supplierId}`
 
           await spec()
@@ -560,6 +563,163 @@ describe('App', () => {
 
         it('should respond with a `403` status code if the user is not an admin', async () => {
           const url = `/system/suppliers/restore/${supplierId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+    })
+
+    describe('Warehouses', () => {
+      describe('(POST) /system/warehouses', () => {
+        afterAll(async () => {
+          const createdWarehouse = await db.warehouse.findFirst()
+          warehouseId = createdWarehouse?.id
+        })
+
+        const url = '/system/warehouses'
+        const data: CreateWarehouseDto = {
+          name: 'Warehouse 1',
+          address: 'Warehouse Address 1',
+        }
+
+        it('should create a new warehouse', async () => {
+          await spec()
+            .post(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(201)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .post(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe('(GET) /system/warehoses', () => {
+        const url = '/system/warehouses'
+
+        it('should list warehouses', async () => {
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(GET) /system/suppliers/:id', () => {
+        it('should find the requested warehouse', async () => {
+          const url = `/system/warehouses/${warehouseId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the warehouse does not exist', async () => {
+          await spec()
+            .get('/system/warehouses/non-existent')
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          const url = `/system/warehouses/${warehouseId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/warehouses/:id', () => {
+        const data: UpdateWarehouseDto = {
+          name: 'Updated Warehouse 1',
+          address: 'Warehouse Address 1',
+        }
+
+        it('should update the requested warehouse', async () => {
+          const url = `/system/warehouses/${warehouseId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          const url = `/system/warehouses/${warehouseId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe('(DELETE) /system/warehouses/:id', () => {
+        it('shoudl archive the requested warehouse', async () => {
+          const url = `/system/warehouses/${warehouseId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the warehouse does not exist', async () => {
+          await spec()
+            .delete('/system/warehouses/non-existent')
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `/system/warehouses/${supplierId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/warehouses/restore/:id', () => {
+        it('should restore the requested warehouse', async () => {
+          const url = `/system/warehouses/restore/${warehouseId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the warehouse does not exist', async () => {
+          await spec()
+            .put('/system/warehouses/restore/non-existent')
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `/system/warehouses/restore/${warehouseId}`
 
           await spec()
             .put(url)
