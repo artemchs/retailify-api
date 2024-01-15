@@ -5,9 +5,13 @@ import {
 } from '@nestjs/common'
 import { CreateDto, FindAllDto, UpdateDto } from './dto'
 import { DbService } from '../../db/db.service'
-import { hashData } from '../common/utils'
 import { Prisma } from '@prisma/client'
-import { calculateTotalPages } from '../common/utils/calculate-total-pages'
+import {
+  buildContainsArray,
+  buildOrderByArray,
+  calculateTotalPages,
+} from '../common/utils/db-helpers'
+import { hashData } from '../common/utils/hash-data'
 
 @Injectable()
 export class EmployeesService {
@@ -46,20 +50,10 @@ export class EmployeesService {
         not: 'ADMIN',
         in: roles ? roles : undefined,
       },
-      OR: query
-        ? [
-            {
-              fullName: {
-                contains: query,
-              },
-            },
-            {
-              email: {
-                contains: query,
-              },
-            },
-          ]
-        : undefined,
+      OR: buildContainsArray({
+        fields: ['fullName', 'email'],
+        query,
+      }),
     }
 
     const [items, totalItems] = await Promise.all([
@@ -67,18 +61,7 @@ export class EmployeesService {
         where,
         take,
         skip,
-        orderBy: orderBy
-          ? [
-              {
-                fullName: orderBy.fullName ? orderBy.fullName : undefined,
-              },
-              {
-                email: orderBy.email ? orderBy.email : undefined,
-              },
-            ]
-          : {
-              createdAt: 'desc',
-            },
+        orderBy: buildOrderByArray({ orderBy }),
         select: {
           id: true,
           fullName: true,

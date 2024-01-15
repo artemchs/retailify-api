@@ -17,7 +17,7 @@ import {
 } from '../common/decorators'
 import { UserPayloadRefreshToken } from '../common/types'
 import { Response } from 'express'
-import { setRefreshTokenCookie } from '../common/utils'
+import { setRefreshTokenCookie } from '../common/utils/set-refresh-token'
 
 @Controller('system/auth')
 export class AuthController {

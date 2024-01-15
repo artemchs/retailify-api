@@ -30,9 +30,7 @@ describe('AuthService (unit)', () => {
     it('should return access and refresh tokens', async () => {
       const data: UserPayloadAccessToken = {
         sub: 'sub',
-        email: 'email',
-        fullName: 'fullName',
-        profilePictureKey: null,
+        role: 'ADMIN',
       }
 
       const result = await authService.signTokens(data)

@@ -2,10 +2,16 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { CreateWarehouseDto } from './dto/create-warehouse.dto'
 import { DbService } from '../../db/db.service'
 import { FindAllWarehouseDto } from './dto/findAll-warehouse.dto'
-import getPaginationData from '../common/utils/getPaginationData'
+
 import { Prisma } from '@prisma/client'
-import { calculateTotalPages } from '../common/utils/calculate-total-pages'
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto'
+import {
+  buildContainsArray,
+  buildOrderByArray,
+  calculateTotalPages,
+  checkIsArchived,
+  getPaginationData,
+} from '../common/utils/db-helpers'
 
 @Injectable()
 export class WarehousesService {
@@ -31,25 +37,21 @@ export class WarehousesService {
     })
   }
 
-  async findAll(query: FindAllWarehouseDto) {
-    const { skip, take } = getPaginationData(query)
+  async findAll({
+    page,
+    rowsPerPage,
+    isArchived,
+    orderBy,
+    query,
+  }: FindAllWarehouseDto) {
+    const { skip, take } = getPaginationData({ page, rowsPerPage })
 
     const where: Prisma.WarehouseWhereInput = {
-      isArchived: query.isArchived ? Boolean(Number(query.isArchived)) : false,
-      OR: query.query
-        ? [
-            {
-              name: {
-                contains: query.query,
-              },
-            },
-            {
-              address: {
-                contains: query.query,
-              },
-            },
-          ]
-        : undefined,
+      isArchived: checkIsArchived(isArchived),
+      OR: buildContainsArray({
+        fields: ['name', 'address'],
+        query,
+      }),
     }
 
     const [items, totalItems] = await Promise.all([
@@ -57,18 +59,7 @@ export class WarehousesService {
         where,
         take,
         skip,
-        orderBy: query.orderBy
-          ? [
-              {
-                name: query.orderBy.name ? query.orderBy.name : undefined,
-              },
-              {
-                address: query.orderBy.address
-                  ? query.orderBy.address
-                  : undefined,
-              },
-            ]
-          : { createdAt: 'desc' },
+        orderBy: buildOrderByArray({ orderBy }),
       }),
       this.db.warehouse.count({
         where,

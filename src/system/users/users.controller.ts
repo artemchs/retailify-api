@@ -14,8 +14,8 @@ import { GetCurrentUserAccessToken } from '../common/decorators'
 import { UsersService } from './users.service'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { UpdateMeDto, UpdatePasswordDto } from './dto'
-import { setRefreshTokenCookie } from '../common/utils'
 import { Response } from 'express'
+import { setRefreshTokenCookie } from '../common/utils/set-refresh-token'
 
 @Controller('system/users')
 export class UsersController {

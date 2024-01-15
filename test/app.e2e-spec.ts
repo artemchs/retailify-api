@@ -8,11 +8,11 @@ import { UpdateMeDto } from '../src/system/users/dto/update-me.dto'
 import { StorageService } from '../src/storage/storage.service'
 import { UpdatePasswordDto } from 'src/system/users/dto'
 import { CreateDto, UpdateDto } from '../src/system/employees/dto'
-import { hashData } from '../src/system/common/utils'
 import { CreateSupplierDto } from 'src/system/suppliers/dto/create-supplier.dto'
 import { UpdateSupplierDto } from 'src/system/suppliers/dto/update-supplier.dto'
 import { CreateWarehouseDto } from 'src/system/warehouses/dto/create-warehouse.dto'
 import { UpdateWarehouseDto } from 'src/system/warehouses/dto/update-warehouse.dto'
+import { hashData } from '../src/system/common/utils/hash-data'
 
 describe('App', () => {
   let app: INestApplication

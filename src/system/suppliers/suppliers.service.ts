@@ -4,8 +4,13 @@ import { UpdateSupplierDto } from './dto/update-supplier.dto'
 import { DbService } from '../../db/db.service'
 import { FindAllSupplierDto } from './dto/findAll-supplier.dto'
 import { Prisma } from '@prisma/client'
-import { calculateTotalPages } from '../common/utils/calculate-total-pages'
-import getPaginationData from '../common/utils/getPaginationData'
+import {
+  buildContainsArray,
+  buildOrderByArray,
+  calculateTotalPages,
+  checkIsArchived,
+  getPaginationData,
+} from '../common/utils/db-helpers'
 
 @Injectable()
 export class SuppliersService {
@@ -27,9 +32,7 @@ export class SuppliersService {
 
   async create(createSupplierDto: CreateSupplierDto) {
     await this.db.supplier.create({
-      data: {
-        ...createSupplierDto,
-      },
+      data: createSupplierDto,
     })
   }
 
@@ -43,36 +46,11 @@ export class SuppliersService {
     const { skip, take } = getPaginationData({ page, rowsPerPage })
 
     const where: Prisma.SupplierWhereInput = {
-      isArchived: isArchived ? Boolean(Number(isArchived)) : false,
-      OR: query
-        ? [
-            {
-              name: {
-                contains: query,
-              },
-            },
-            {
-              contactPerson: {
-                contains: query,
-              },
-            },
-            {
-              email: {
-                contains: query,
-              },
-            },
-            {
-              phone: {
-                contains: query,
-              },
-            },
-            {
-              address: {
-                contains: query,
-              },
-            },
-          ]
-        : undefined,
+      isArchived: checkIsArchived(isArchived),
+      OR: buildContainsArray({
+        fields: ['name', 'contactPerson', 'email', 'phone', 'address'],
+        query,
+      }),
     }
 
     const [items, totalItems] = await Promise.all([
@@ -80,39 +58,17 @@ export class SuppliersService {
         where,
         take,
         skip,
-        orderBy: orderBy
-          ? [
-              {
-                name: orderBy.name ? orderBy.name : undefined,
-              },
-              {
-                contactPerson: orderBy.contactPerson ? orderBy.name : undefined,
-              },
-              {
-                phone: orderBy.phone ? orderBy.name : undefined,
-              },
-              {
-                address: orderBy.address ? orderBy.name : undefined,
-              },
-              {
-                email: orderBy.email ? orderBy.email : undefined,
-              },
-            ]
-          : {
-              createdAt: 'desc',
-            },
+        orderBy: buildOrderByArray({ orderBy }),
       }),
       this.db.supplier.count({
         where,
       }),
     ])
 
-    const totalPages = calculateTotalPages(totalItems, take)
-
     return {
       items,
       info: {
-        totalPages,
+        totalPages: calculateTotalPages(totalItems, take),
         totalItems,
       },
     }

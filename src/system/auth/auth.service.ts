@@ -12,7 +12,7 @@ import { Tokens } from './types'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { UserPayloadAccessToken } from '../common/types'
-import { hashData } from '../common/utils'
+import { hashData } from '../common/utils/hash-data'
 
 @Injectable()
 export class AuthService {

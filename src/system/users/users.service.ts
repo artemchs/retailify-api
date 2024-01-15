@@ -6,7 +6,7 @@ import {
 import { UpdateMeDto } from './dto/update-me.dto'
 import { DbService } from '../../db/db.service'
 import { StorageService } from '../../storage/storage.service'
-import { hashData } from '../common/utils'
+import { hashData } from '../common/utils/hash-data'
 
 @Injectable()
 export class UsersService {
