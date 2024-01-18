@@ -34,6 +34,7 @@ export class DbService
         this.allowedSystemUserEmail.deleteMany(),
         this.supplier.deleteMany(),
         this.warehouse.deleteMany(),
+        this.goodsReceipt.deleteMany(),
       ])
     }
   }

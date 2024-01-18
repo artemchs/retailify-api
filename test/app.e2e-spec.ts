@@ -13,6 +13,8 @@ import { UpdateSupplierDto } from 'src/system/suppliers/dto/update-supplier.dto'
 import { CreateWarehouseDto } from 'src/system/warehouses/dto/create-warehouse.dto'
 import { UpdateWarehouseDto } from 'src/system/warehouses/dto/update-warehouse.dto'
 import { hashData } from '../src/system/common/utils/hash-data'
+import { CreateGoodsReceiptDto } from 'src/system/goods-receipts/dto/create-goods-receipt.dto'
+import { UpdateGoodsReceiptDto } from 'src/system/goods-receipts/dto/update-goods-receipt.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -71,6 +73,7 @@ describe('App', () => {
   describe('System', () => {
     let supplierId: string | undefined
     let warehouseId: string | undefined
+    let goodsReceiptId: string | undefined
 
     describe('Auth', () => {
       describe('(POST) /system/auth/sign-up', () => {
@@ -675,7 +678,7 @@ describe('App', () => {
       })
 
       describe('(DELETE) /system/warehouses/:id', () => {
-        it('shoudl archive the requested warehouse', async () => {
+        it('should archive the requested warehouse', async () => {
           const url = `/system/warehouses/${warehouseId}`
 
           await spec()
@@ -720,6 +723,172 @@ describe('App', () => {
 
         it('should respond with a `403` status code if the user is not an admin', async () => {
           const url = `/system/warehouses/restore/${warehouseId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+    })
+
+    describe('Goods Receipts', () => {
+      describe('(POST) /system/goods-receipts', () => {
+        afterAll(async () => {
+          const createdGoodsReceipt = await db.goodsReceipt.findFirst()
+          goodsReceiptId = createdGoodsReceipt?.id
+        })
+
+        const url = '/system/goods-receipts'
+
+        it('should create a new goods receipt', async () => {
+          const data: CreateGoodsReceiptDto = {
+            goodsReceiptDate: new Date(),
+            paymentOption: 'PRIVATE_FUNDS',
+            paymentTerm: 'PAYMENT_ON_REALIZATION',
+            supplierId: supplierId as string,
+          }
+
+          await spec()
+            .post(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(201)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          const data: CreateGoodsReceiptDto = {
+            goodsReceiptDate: new Date(),
+            paymentOption: 'PRIVATE_FUNDS',
+            paymentTerm: 'PAYMENT_ON_REALIZATION',
+            supplierId: supplierId as string,
+          }
+
+          await spec()
+            .post(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe('(GET) /system/goods-receipts', () => {
+        const url = '/system/goods-receipts'
+
+        it('should list goods receipts', async () => {
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(GET) /system/goods-receipts/:id', () => {
+        it('should find the requested goods receipt', async () => {
+          const url = `/system/goods-receipts/${goodsReceiptId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the goods receipt does not exist', async () => {
+          await spec()
+            .get('/system/goods-receipts/non-existent')
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          const url = `/system/goods-receipts/${goodsReceiptId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/goods-receipts/:id', () => {
+        const data: UpdateGoodsReceiptDto = {
+          paymentOption: 'CURRENT_ACCOUNT',
+        }
+
+        it('should update the requested goods receipt', async () => {
+          const url = `/system/goods-receipts/${goodsReceiptId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          const url = `/system/goods-receipts/${goodsReceiptId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe('(DELETE) /system/goods-receipts/:id', () => {
+        it('should archive the requested goods receipt', async () => {
+          const url = `/system/goods-receipts/${goodsReceiptId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the goods-receipt does not exist', async () => {
+          await spec()
+            .delete('/system/goods-receipts/non-existent')
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `/system/goods-receipts/${goodsReceiptId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/goods-receipts/restore/:id', () => {
+        it('should restore the requested goods-receipt', async () => {
+          const url = `/system/goods-receipts/restore/${goodsReceiptId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the goods receipt does not exist', async () => {
+          await spec()
+            .put('/system/goods-receipts/restore/non-existent')
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `/system/goods-receipts/restore/${goodsReceiptId}`
 
           await spec()
             .put(url)

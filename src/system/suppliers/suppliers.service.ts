@@ -87,9 +87,7 @@ export class SuppliersService {
       where: {
         id,
       },
-      data: {
-        ...updateSupplierDto,
-      },
+      data: updateSupplierDto,
     })
   }
 

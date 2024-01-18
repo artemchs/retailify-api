@@ -43,6 +43,7 @@ model Supplier {
   email         String
   phone         String
   address       String
+  goodsReceipts GoodsReceipt[]
 
   isArchived Boolean @default(false)
 }
@@ -52,8 +53,130 @@ model Warehouse {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name    String
-  address String
+  name            String
+  address         String
+  productVariants VariantToWarehouse[]
 
   isArchived Boolean @default(false)
+}
+
+model VariantToWarehouse {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variant     Variant?   @relation(fields: [variantId], references: [id])
+  variantId   String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+  warehouseId String?
+
+  quantity Int
+
+  @@index([variantId, warehouseId])
+}
+
+model GoodsReceipt {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  supplierId String?
+
+  name             String
+  supplierInvoice  SupplierInvoice?
+  productVariants  VariantToGoodsReceipt[]
+  goodsReceiptDate DateTime
+
+  isArchived Boolean @default(false)
+}
+
+model VariantToGoodsReceipt {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variant        Variant?      @relation(fields: [variantId], references: [id])
+  variantId      String?
+  goodsReceipt   GoodsReceipt? @relation(fields: [goodsReceiptId], references: [id])
+  goodsReceiptId String?
+
+  quantity      Int
+  supplierPrice Decimal @db.Decimal(8, 2)
+
+  @@index([variantId, goodsReceiptId])
+}
+
+model SupplierInvoice {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  goodsReceipt   GoodsReceipt? @relation(fields: [goodsReceiptId], references: [id])
+  goodsReceiptId String?       @unique
+
+  paymentTerm     SupplierInvoicePaymentTerm
+  paymentOption   SupplierInvoicePaymentOption
+  accountsPayable Decimal                      @db.Decimal(12, 2)
+
+  @@index([goodsReceiptId])
+}
+
+enum SupplierInvoicePaymentTerm {
+  CASH_ON_DELIVERY
+  PAYMENT_IN_ADVANCE
+  PAYMENT_ON_REALIZATION
+}
+
+enum SupplierInvoicePaymentOption {
+  PRIVATE_FUNDS
+  CURRENT_ACCOUNT
+  CASH_REGISTER
+}
+
+model Product {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title       String
+  description String?  @db.Text
+  media       String[] // Stores AWS S3 keys
+  colors      Color[]
+
+  price Decimal  @db.Decimal(8, 2)
+  sale  Decimal? @db.Decimal(8, 2)
+
+  packagingLength Decimal @db.Decimal(8, 2)
+  packagingWidth  Decimal @db.Decimal(8, 2)
+  packagingHeight Decimal @db.Decimal(8, 2)
+  packagingWeight Decimal @db.Decimal(8, 2)
+
+  variants Variant[]
+}
+
+model Variant {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  size              String
+  product           Product?                @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId         String?
+  goodsReceipts     VariantToGoodsReceipt[]
+  sku               String?
+  barcode           String?
+  stockOnWarehouses VariantToWarehouse[]
+
+  @@index([productId])
+}
+
+model Color {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+
+  products Product[]
 }

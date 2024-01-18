@@ -181,7 +181,7 @@ describe('SuppliersService', () => {
     it('should find the requested supplier', async () => {
       const res = await service.findOne(id)
 
-      expect(res.id).toBe('Supplier 1')
+      expect(res.id).toBe(id)
     })
 
     it('should throw an exception if the supplier does not exist', async () => {
