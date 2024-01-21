@@ -17,6 +17,8 @@ import { CreateGoodsReceiptDto } from 'src/system/goods-receipts/dto/create-good
 import { UpdateGoodsReceiptDto } from 'src/system/goods-receipts/dto/update-goods-receipt.dto'
 import { CreateProductDto } from 'src/system/products/dto/create-product.dto'
 import { UpdateProductDto } from 'src/system/products/dto/update-product.dto'
+import { CreateColorDto } from 'src/system/colors/dto/create-color.dto'
+import { UpdateColorDto } from 'src/system/colors/dto/update-color.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -77,6 +79,8 @@ describe('App', () => {
     let warehouseId: string | undefined
     let goodsReceiptId: string | undefined
     let productId: string | undefined
+    let color1Id: string | undefined
+    let color2Id: string | undefined
 
     describe('Auth', () => {
       describe('(POST) /system/auth/sign-up', () => {
@@ -314,7 +318,7 @@ describe('App', () => {
             .expectStatus(200)
         })
 
-        it('shoudl return a `403` status code if the user is not an admin', async () => {
+        it('should return a `403` status code if the user is not an admin', async () => {
           await spec()
             .get(url)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
@@ -901,24 +905,176 @@ describe('App', () => {
       })
     })
 
-    describe('Products', () => {
-      beforeAll(async () => {
-        await db.color.createMany({
-          data: [
-            {
-              id: 'color_1',
-              color: 'color_1',
-              name: 'color_1',
+    describe('Colors', () => {
+      const baseUrl = '/system/colors'
+
+      describe('(POST) /system/colors', () => {
+        afterAll(async () => {
+          const createdColors = await db.color.findMany({
+            orderBy: {
+              id: 'asc',
             },
-            {
-              id: 'color_2',
-              color: 'color_2',
-              name: 'color_2',
-            },
-          ],
+          })
+
+          color1Id = createdColors[0].id
+          color2Id = createdColors[1].id
+        })
+
+        const dataColor1: CreateColorDto = {
+          color: 'Test Color 1',
+          name: 'Test Color 1',
+        }
+        const dataColor2: CreateColorDto = {
+          color: 'Test Color 2',
+          name: 'Test Color 2',
+        }
+
+        it('should create a new color', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(dataColor1)
+            .expectStatus(201)
+        })
+
+        it('should create an another color', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(dataColor2)
+            .expectStatus(201)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(dataColor1)
+            .expectStatus(403)
         })
       })
 
+      describe('(GET) /system/colors', () => {
+        it('should list colors', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(GET) /system/colors/:id', () => {
+        it('should find the first color', async () => {
+          const url = baseUrl + '/' + color1Id
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should find the second color', async () => {
+          const url = baseUrl + '/' + color2Id
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the color does not exist', async () => {
+          const url = baseUrl + '/' + 'non-existent'
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = baseUrl + '/' + color1Id
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/colors/:id', () => {
+        const data: UpdateColorDto = {
+          color: 'Updated Test Color 1',
+        }
+
+        it('should update the requested color', async () => {
+          const url = baseUrl + '/' + color1Id
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = baseUrl + '/' + color1Id
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe('(DELETE) /system/colors/:id', () => {
+        beforeAll(async () => {
+          await db.color.create({
+            data: {
+              id: 'Test Color 3',
+              color: 'Test Color 3',
+              name: 'Test Color 3',
+            },
+          })
+        })
+
+        it('should respond with a `404` status code if the color does not exist', async () => {
+          const url = baseUrl + '/' + 'non-exitstent'
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = baseUrl + '/' + 'Test Color 3'
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+
+        it('should remove the requested color', async () => {
+          const url = baseUrl + '/' + 'Test Color 3'
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+      })
+    })
+
+    describe('Products', () => {
       const baseUrl = '/system/products'
 
       describe('(POST) /system/products', () => {
@@ -930,16 +1086,7 @@ describe('App', () => {
         const data: CreateProductDto = {
           title: 'Test Product 1',
           description: 'Test Product 1',
-          colors: [
-            {
-              colorId: 'color_1',
-              index: 0,
-            },
-            {
-              colorId: 'color_2',
-              index: 1,
-            },
-          ],
+          colors: [],
           media: [
             {
               id: 'media_1',
@@ -961,7 +1108,19 @@ describe('App', () => {
           await spec()
             .post(baseUrl)
             .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .withBody(data)
+            .withBody({
+              ...data,
+              colors: [
+                {
+                  colorId: color1Id!,
+                  index: 0,
+                },
+                {
+                  colorId: color2Id!,
+                  index: 1,
+                },
+              ],
+            })
             .expectStatus(201)
         })
 
@@ -969,7 +1128,19 @@ describe('App', () => {
           await spec()
             .post(baseUrl)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
-            .withBody(data)
+            .withBody({
+              ...data,
+              colors: [
+                {
+                  colorId: color1Id!,
+                  index: 0,
+                },
+                {
+                  colorId: color2Id!,
+                  index: 1,
+                },
+              ],
+            })
             .expectStatus(403)
         })
       })
