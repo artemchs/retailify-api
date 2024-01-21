@@ -270,6 +270,12 @@ describe('ProductsService', () => {
               ],
             },
           },
+          characteristics: {
+            create: {
+              id: 'Test Value 1',
+              value: 'Test Value 1',
+            },
+          },
         },
       })
     })
@@ -312,6 +318,49 @@ describe('ProductsService', () => {
       expect(product?.description).toBe('Test Product 1')
       expect(product?.colors.length).toBe(2)
       expect(product?.media.length).toBe(2)
+    })
+
+    it('should select an another color', async () => {
+      await db.color.create({
+        data: {
+          id: 'color_3',
+          color: 'color_3',
+          name: 'color_3',
+        },
+      })
+
+      await service.update(id, {
+        ...data,
+        colors: [
+          {
+            colorId: 'color_1',
+            index: 0,
+          },
+          {
+            colorId: 'color_2',
+            index: 1,
+          },
+          {
+            colorId: 'color_3',
+            index: 2,
+          },
+        ],
+      })
+
+      const product = await db.product.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          colors: true,
+        },
+      })
+      const productsToColorsCount = await db.productToColor.count()
+      const colorsCount = await db.color.count()
+
+      expect(product?.colors.length).toBe(3)
+      expect(productsToColorsCount).toBe(3)
+      expect(colorsCount).toBe(3)
     })
 
     it('should handle the case when one color is no longer used', async () => {
@@ -377,6 +426,39 @@ describe('ProductsService', () => {
       expect(colorsCount).toBe(2)
     })
 
+    it('should add a media file', async () => {
+      await service.update(id, {
+        ...data,
+        media: [
+          {
+            id: 'media_1',
+            index: 0,
+          },
+          {
+            id: 'media_2',
+            index: 1,
+          },
+          {
+            id: 'media_3',
+            index: 2,
+          },
+        ],
+      })
+
+      const product = await db.product.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          media: true,
+        },
+      })
+      const productMediaCount = await db.productMedia.count()
+
+      expect(product?.media.length).toBe(3)
+      expect(productMediaCount).toBe(3)
+    })
+
     it('should handle the case when one media file is no longer used', async () => {
       await storage.uploadFile('media_2', Buffer.from('Hello World'))
 
@@ -439,6 +521,57 @@ describe('ProductsService', () => {
 
       expect(product?.media[0].id).toBe('media_2')
       expect(productMediaCount).toBe(2)
+    })
+
+    it('should handle the case when the user de-selects a characteristic value', async () => {
+      await service.update(id, { ...data, characteristics: [] })
+
+      const product = await db.product.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          characteristics: true,
+        },
+      })
+      const characteristicValuesCount = await db.characteristicValue.count()
+
+      expect(product?.characteristics.length).toBe(0)
+      expect(characteristicValuesCount).toBe(1)
+    })
+
+    it('should be able to select new characteristic values', async () => {
+      await db.characteristicValue.create({
+        data: {
+          id: 'Test Value 2',
+          value: 'Test Value 2',
+        },
+      })
+
+      await service.update(id, {
+        ...data,
+        characteristics: [
+          {
+            id: 'Test Value 1',
+          },
+          {
+            id: 'Test Value 2',
+          },
+        ],
+      })
+
+      const product = await db.product.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          characteristics: true,
+        },
+      })
+      const characteristicValuesCount = await db.characteristicValue.count()
+
+      expect(product?.characteristics.length).toBe(2)
+      expect(characteristicValuesCount).toBe(2)
     })
 
     it('should fail if the product does not exist', async () => {

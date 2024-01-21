@@ -1,5 +1,11 @@
 import { Type } from 'class-transformer'
-import { IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator'
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator'
 
 export class ProductColorDto {
   @IsString()
@@ -21,6 +27,12 @@ export class ProductMediaDto {
   index: number
 }
 
+export class ProductCharacteristicValuesDto {
+  @IsNotEmpty()
+  @IsString()
+  id: string
+}
+
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
@@ -38,25 +50,32 @@ export class CreateProductDto {
   @Type(() => ProductMediaDto)
   media: ProductMediaDto[]
 
-  @IsNumber()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ProductCharacteristicValuesDto)
+  characteristics?: ProductCharacteristicValuesDto[]
+
   @IsNotEmpty()
+  @IsNumber()
   price: number
 
+  @IsOptional()
+  @IsNumber()
   sale?: number
 
-  @IsNumber()
   @IsNotEmpty()
+  @IsNumber()
   packagingLength: number
 
-  @IsNumber()
   @IsNotEmpty()
+  @IsNumber()
   packagingWidth: number
 
-  @IsNumber()
   @IsNotEmpty()
+  @IsNumber()
   packagingHeight: number
 
-  @IsNumber()
   @IsNotEmpty()
+  @IsNumber()
   packagingWeight: number
 }
