@@ -15,6 +15,8 @@ import { UpdateWarehouseDto } from 'src/system/warehouses/dto/update-warehouse.d
 import { hashData } from '../src/system/common/utils/hash-data'
 import { CreateGoodsReceiptDto } from 'src/system/goods-receipts/dto/create-goods-receipt.dto'
 import { UpdateGoodsReceiptDto } from 'src/system/goods-receipts/dto/update-goods-receipt.dto'
+import { CreateProductDto } from 'src/system/products/dto/create-product.dto'
+import { UpdateProductDto } from 'src/system/products/dto/update-product.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -74,6 +76,7 @@ describe('App', () => {
     let supplierId: string | undefined
     let warehouseId: string | undefined
     let goodsReceiptId: string | undefined
+    let productId: string | undefined
 
     describe('Auth', () => {
       describe('(POST) /system/auth/sign-up', () => {
@@ -889,6 +892,209 @@ describe('App', () => {
 
         it('should respond with a `403` status code if the user is not an admin', async () => {
           const url = `/system/goods-receipts/restore/${goodsReceiptId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+    })
+
+    describe('Products', () => {
+      beforeAll(async () => {
+        await db.color.createMany({
+          data: [
+            {
+              id: 'color_1',
+              color: 'color_1',
+              name: 'color_1',
+            },
+            {
+              id: 'color_2',
+              color: 'color_2',
+              name: 'color_2',
+            },
+          ],
+        })
+      })
+
+      const baseUrl = '/system/products'
+
+      describe('(POST) /system/products', () => {
+        afterAll(async () => {
+          const createdProduct = await db.product.findFirst()
+          productId = createdProduct?.id
+        })
+
+        const data: CreateProductDto = {
+          title: 'Test Product 1',
+          description: 'Test Product 1',
+          colors: [
+            {
+              colorId: 'color_1',
+              index: 0,
+            },
+            {
+              colorId: 'color_2',
+              index: 1,
+            },
+          ],
+          media: [
+            {
+              id: 'media_1',
+              index: 0,
+            },
+            {
+              id: 'media_2',
+              index: 0,
+            },
+          ],
+          price: 59.99,
+          packagingHeight: 10,
+          packagingLength: 10,
+          packagingWeight: 10,
+          packagingWidth: 10,
+        }
+
+        it('should create a new product', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(201)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe('(GET) /system/products', () => {
+        it('should list products', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(GET) /system/products/:id', () => {
+        it('should find the requested product', async () => {
+          const url = baseUrl + '/' + productId
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the product does not exist', async () => {
+          const url = baseUrl + '/' + 'non-existent'
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = baseUrl + '/' + productId
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/products/:id', () => {
+        const data: UpdateProductDto = {
+          description: 'Updated Test Product 1',
+        }
+
+        it('should update the requested product', async () => {
+          const url = baseUrl + '/' + productId
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = baseUrl + '/' + productId
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe('(DELETE) /system/products/:id', () => {
+        it('should archive the requested product', async () => {
+          const url = baseUrl + '/' + productId
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the product does not exist', async () => {
+          const url = baseUrl + '/' + 'non-exitstent'
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = baseUrl + '/' + productId
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/products/restore/:id', () => {
+        it('should archive the requested product', async () => {
+          const url = baseUrl + '/restore/' + productId
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the product does not exist', async () => {
+          const url = baseUrl + '/restore/' + 'non-exitstent'
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = baseUrl + '/restore/' + productId
 
           await spec()
             .put(url)

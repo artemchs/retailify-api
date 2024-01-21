@@ -140,9 +140,9 @@ model Product {
   updatedAt DateTime @updatedAt
 
   title       String
-  description String?  @db.Text
-  media       String[] // Stores AWS S3 keys
-  colors      Color[]
+  description String?          @db.Text
+  media       ProductMedia[]
+  colors      ProductToColor[]
 
   price Decimal  @db.Decimal(8, 2)
   sale  Decimal? @db.Decimal(8, 2)
@@ -152,7 +152,29 @@ model Product {
   packagingHeight Decimal @db.Decimal(8, 2)
   packagingWeight Decimal @db.Decimal(8, 2)
 
+  totalStock Int @default(0)
+
   variants Variant[]
+
+  isArchived Boolean @default(false)
+}
+
+model ProductMedia {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  index Int
+
+  product   Product? @relation(fields: [productId], references: [id])
+  productId String?
+
+  @@index([productId, index(sort: Asc)])
+}
+
+enum ProductMediaType {
+  IMAGE
+  VIDEO
 }
 
 model Variant {
@@ -176,7 +198,19 @@ model Color {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name String
+  name  String
+  color String
 
-  products Product[]
+  productsToColors ProductToColor[]
+}
+
+model ProductToColor {
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  color     Color   @relation(fields: [colorId], references: [id])
+  colorId   String
+
+  index Int
+
+  @@id([productId, colorId])
 }

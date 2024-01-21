@@ -7,6 +7,7 @@ import { EmployeesModule } from './employees/employees.module'
 import { SuppliersModule } from './suppliers/suppliers.module'
 import { WarehousesModule } from './warehouses/warehouses.module'
 import { GoodsReceiptsModule } from './goods-receipts/goods-receipts.module'
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { GoodsReceiptsModule } from './goods-receipts/goods-receipts.module'
     SuppliersModule,
     WarehousesModule,
     GoodsReceiptsModule,
+    ProductsModule,
   ],
   providers: [
     {

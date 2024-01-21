@@ -1,4 +1,5 @@
 import {
+  DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
   ListObjectsCommand,
@@ -42,6 +43,28 @@ export class StorageService extends S3Client {
         Body,
       }),
     )
+  }
+
+  async deleteFile(Key: string) {
+    await this.send(
+      new DeleteObjectCommand({
+        Bucket: this.bucketName,
+        Key,
+      }),
+    )
+  }
+
+  async deleteFiles(Keys: string[]) {
+    if (Keys.length >= 1) {
+      await this.send(
+        new DeleteObjectsCommand({
+          Bucket: this.bucketName,
+          Delete: {
+            Objects: Keys.map((Key) => ({ Key })),
+          },
+        }),
+      )
+    }
   }
 
   getFileUrl(Key: string) {
