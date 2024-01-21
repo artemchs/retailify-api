@@ -139,10 +139,11 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  title       String
-  description String?          @db.Text
-  media       ProductMedia[]
-  colors      ProductToColor[]
+  title           String
+  description     String?               @db.Text
+  media           ProductMedia[]
+  colors          ProductToColor[]
+  characteristics CharacteristicValue[]
 
   price Decimal  @db.Decimal(8, 2)
   sale  Decimal? @db.Decimal(8, 2)
@@ -157,6 +158,8 @@ model Product {
   variants Variant[]
 
   isArchived Boolean @default(false)
+
+  @@index([title, price, isArchived])
 }
 
 model ProductMedia {
@@ -190,7 +193,7 @@ model Variant {
   barcode           String?
   stockOnWarehouses VariantToWarehouse[]
 
-  @@index([productId])
+  @@index([productId, barcode, sku])
 }
 
 model Color {
@@ -205,12 +208,37 @@ model Color {
 }
 
 model ProductToColor {
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
-  color     Color   @relation(fields: [colorId], references: [id])
+  color     Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
   colorId   String
 
   index Int
 
   @@id([productId, colorId])
+  @@index([productId, colorId])
+}
+
+model Characteristic {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name   String
+  values CharacteristicValue[]
+
+  @@index([name])
+}
+
+model CharacteristicValue {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  value            String
+  characteristic   Characteristic? @relation(fields: [characteristicId], references: [id], onDelete: Cascade)
+  characteristicId String?
+  products         Product[]
+
+  @@index([characteristicId])
 }

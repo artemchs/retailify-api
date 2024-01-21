@@ -9,6 +9,7 @@ import { WarehousesModule } from './warehouses/warehouses.module'
 import { GoodsReceiptsModule } from './goods-receipts/goods-receipts.module'
 import { ProductsModule } from './products/products.module'
 import { ColorsModule } from './colors/colors.module'
+import { CharacteristicsModule } from './characteristics/characteristics.module'
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ColorsModule } from './colors/colors.module'
     GoodsReceiptsModule,
     ProductsModule,
     ColorsModule,
+    CharacteristicsModule,
   ],
   providers: [
     {

@@ -19,6 +19,8 @@ import { CreateProductDto } from 'src/system/products/dto/create-product.dto'
 import { UpdateProductDto } from 'src/system/products/dto/update-product.dto'
 import { CreateColorDto } from 'src/system/colors/dto/create-color.dto'
 import { UpdateColorDto } from 'src/system/colors/dto/update-color.dto'
+import { CreateCharacteristicDto } from 'src/system/characteristics/dto/create-characteristic.dto'
+import { UpdateCharacteristicDto } from 'src/system/characteristics/dto/update-characteristic.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -81,6 +83,7 @@ describe('App', () => {
     let productId: string | undefined
     let color1Id: string | undefined
     let color2Id: string | undefined
+    let characteristicId: string | undefined
 
     describe('Auth', () => {
       describe('(POST) /system/auth/sign-up', () => {
@@ -1065,6 +1068,148 @@ describe('App', () => {
 
         it('should remove the requested color', async () => {
           const url = baseUrl + '/' + 'Test Color 3'
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+      })
+    })
+
+    describe('Characteristics', () => {
+      const baseUrl = '/system/characteristics'
+
+      describe('(POST) /system/characteristics', () => {
+        afterAll(async () => {
+          const createdCharacteristic = await db.characteristic.findFirst()
+          characteristicId = createdCharacteristic?.id
+        })
+
+        const data: CreateCharacteristicDto = {
+          name: 'Test Characteristic 1',
+        }
+
+        it('should create a new characteristic', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(201)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe('(GET) /system/characteristics', () => {
+        it('should list characteristics', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(GET) /system/characteristics/:id', () => {
+        it('should find the requested characteristic', async () => {
+          const url = baseUrl + '/' + characteristicId
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the characteristic does not exist', async () => {
+          const url = baseUrl + '/' + 'non-existent'
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = baseUrl + '/' + characteristicId
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/characteristics/:id', () => {
+        const data: UpdateCharacteristicDto = {
+          name: 'Updated Test Characteristic 1',
+        }
+
+        it('should update the requested characteristic', async () => {
+          const url = baseUrl + '/' + characteristicId
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = baseUrl + '/' + characteristicId
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe('(DELETE) /system/characteristics/:id', () => {
+        beforeAll(async () => {
+          await db.characteristic.create({
+            data: {
+              id: 'Test Characteristic 2',
+              name: 'Test Characteristic 2',
+            },
+          })
+        })
+
+        const id = 'Test Characteristic 2'
+
+        it('should respond with a `404` status code if the characteristic does not exist', async () => {
+          const url = baseUrl + '/' + 'non-exitstent'
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = baseUrl + '/' + id
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+
+        it('should remove the requested characteristic', async () => {
+          const url = baseUrl + '/' + id
 
           await spec()
             .delete(url)

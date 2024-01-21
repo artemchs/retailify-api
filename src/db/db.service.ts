@@ -43,6 +43,8 @@ export class DbService
         this.productMedia.deleteMany(),
         this.variant.deleteMany(),
         this.color.deleteMany(),
+        this.characteristic.deleteMany(),
+        this.characteristicValue.deleteMany(),
       ])
     }
   }
