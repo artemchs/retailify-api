@@ -22,21 +22,21 @@ export class CharacteristicsController {
     return this.characteristicsService.findAll()
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(':characteristicId')
+  findOne(@Param('characteristicId') id: string) {
     return this.characteristicsService.findOne(id)
   }
 
-  @Put(':id')
+  @Put(':characteristicId')
   update(
-    @Param('id') id: string,
+    @Param('characteristicId') id: string,
     @Body() updateCharacteristicDto: UpdateCharacteristicDto,
   ) {
     return this.characteristicsService.update(id, updateCharacteristicDto)
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete(':characteristicId')
+  remove(@Param('characteristicId') id: string) {
     return this.characteristicsService.remove(id)
   }
 }
