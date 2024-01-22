@@ -144,6 +144,8 @@ model Product {
   media           ProductMedia[]
   colors          ProductToColor[]
   characteristics CharacteristicValue[]
+  collection      Collection?           @relation(fields: [collectionId], references: [id])
+  collectionId    String?
 
   price Decimal  @db.Decimal(8, 2)
   sale  Decimal? @db.Decimal(8, 2)
@@ -224,8 +226,9 @@ model Characteristic {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name   String
-  values CharacteristicValue[]
+  name        String
+  values      CharacteristicValue[]
+  collections Collection[]
 
   @@index([name])
 }
@@ -241,4 +244,20 @@ model CharacteristicValue {
   products         Product[]
 
   @@index([characteristicId])
+}
+
+model Collection {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name            String
+  characteristics Characteristic[]
+  parent          Collection?      @relation("parent", fields: [parentId], references: [id])
+  parentId        String?
+  children        Collection[]     @relation("parent")
+  products        Product[]
+  numOfProducts   Int              @default(0)
+
+  isArchived Boolean @default(false)
 }

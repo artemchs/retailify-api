@@ -17,6 +17,7 @@ import {
   getPaginationData,
 } from '../common/utils/db-helpers'
 import { Prisma } from '@prisma/client'
+import { compareArrays } from '../common/utils/compare-arrays'
 
 @Injectable()
 export class ProductsService {
@@ -56,49 +57,6 @@ export class ProductsService {
     }
 
     return product
-  }
-
-  private compareArrays<T>(
-    oldArray: T[],
-    newArray: T[],
-    idField: keyof T,
-    optionalField?: keyof T,
-  ): {
-    updated: T[]
-    deleted: T[]
-    newItems: T[]
-  } {
-    const updated: T[] = []
-    let deleted: T[] = []
-    const newItems: T[] = []
-
-    const oldArrayMap = new Map(oldArray.map((obj) => [obj[idField], obj]))
-
-    for (const newObj of newArray) {
-      const oldObj = oldArrayMap.get(newObj[idField])
-
-      if (!oldObj) {
-        // New Item
-        newItems.push(newObj)
-      } else if (
-        oldObj[idField] !== newObj[idField] ||
-        (optionalField && oldObj[optionalField] !== newObj[optionalField])
-      ) {
-        // Updated Item
-        updated.push(newObj)
-      }
-
-      oldArrayMap.delete(newObj[idField])
-    }
-
-    // Remaining items in oldArrayMap are deleted
-    deleted = [...oldArrayMap.values()]
-
-    return {
-      updated,
-      deleted,
-      newItems,
-    }
   }
 
   async create(createProductDto: CreateProductDto) {
@@ -171,7 +129,7 @@ export class ProductsService {
     newMedia?: ProductMediaDto[],
   ) {
     if (newMedia) {
-      const { deleted, updated, newItems } = this.compareArrays(
+      const { deleted, updated, newItems } = compareArrays(
         oldMedia,
         newMedia,
         'id',
@@ -215,7 +173,7 @@ export class ProductsService {
     newColors?: ProductColorDto[],
   ) {
     if (newColors) {
-      const { deleted, updated, newItems } = this.compareArrays(
+      const { deleted, updated, newItems } = compareArrays(
         oldColors,
         newColors,
         'colorId',
@@ -253,7 +211,7 @@ export class ProductsService {
     newIds?: ProductCharacteristicValuesDto[],
   ) {
     if (newIds) {
-      const { deleted, newItems } = this.compareArrays(oldIds, newIds, 'id')
+      const { deleted, newItems } = compareArrays(oldIds, newIds, 'id')
 
       return this.db.product.update({
         where: {

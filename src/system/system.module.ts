@@ -10,6 +10,7 @@ import { GoodsReceiptsModule } from './goods-receipts/goods-receipts.module'
 import { ProductsModule } from './products/products.module'
 import { ColorsModule } from './colors/colors.module'
 import { CharacteristicsModule } from './characteristics/characteristics.module'
+import { CollectionsModule } from './collections/collections.module'
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CharacteristicsModule } from './characteristics/characteristics.module'
     ProductsModule,
     ColorsModule,
     CharacteristicsModule,
+    CollectionsModule,
   ],
   providers: [
     {
