@@ -7,5 +7,4 @@ export class FindAllGoodsReceiptDto {
     updatedAt?: 'asc' | 'desc'
     goodsReceiptDate?: 'asc' | 'desc'
   }
-  isArchived?: number // 0 or 1
 }

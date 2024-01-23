@@ -29,16 +29,25 @@ describe('GoodsReceiptsService', () => {
   })
 
   beforeEach(async () => {
-    await db.supplier.create({
-      data: {
-        id: 'test-supplier',
-        name: 'Test Supplier 1',
-        address: 'Test Supplier Address',
-        contactPerson: 'Test Supplier Contact Person',
-        email: 'Test Supplier Email',
-        phone: 'Test Supplier Phone',
-      },
-    })
+    await Promise.all([
+      db.supplier.create({
+        data: {
+          id: 'test-supplier',
+          name: 'Test Supplier 1',
+          address: 'Test Supplier Address',
+          contactPerson: 'Test Supplier Contact Person',
+          email: 'Test Supplier Email',
+          phone: 'Test Supplier Phone',
+        },
+      }),
+      db.warehouse.create({
+        data: {
+          id: 'Test Warehouse 1',
+          name: 'Test Warehouse 1',
+          address: 'Test Warehouse 1',
+        },
+      }),
+    ])
   })
 
   describe('create', () => {
@@ -47,6 +56,7 @@ describe('GoodsReceiptsService', () => {
       paymentOption: 'PRIVATE_FUNDS',
       paymentTerm: 'PAYMENT_IN_ADVANCE',
       supplierId: 'test-supplier',
+      warehouseId: 'Test Warehouse 1',
     }
 
     it('should successfully create a new goods receipt', async () => {
@@ -72,7 +82,6 @@ describe('GoodsReceiptsService', () => {
             name: 'Goods Receipt 1',
             goodsReceiptDate: new Date(2021),
             supplierId: 'test-supplier',
-            isArchived: true,
           },
           {
             name: 'Goods Receipt 2',
@@ -82,11 +91,6 @@ describe('GoodsReceiptsService', () => {
           {
             name: 'Goods Receipt 3',
             goodsReceiptDate: new Date(2023),
-            supplierId: 'test-supplier',
-          },
-          {
-            name: 'Goods Receipt 4',
-            goodsReceiptDate: new Date(2024),
             supplierId: 'test-supplier',
           },
         ],
@@ -100,7 +104,7 @@ describe('GoodsReceiptsService', () => {
       query: undefined,
     }
 
-    it('should list all suppliers that are not archived', async () => {
+    it('should list all goods receipts', async () => {
       const { items } = await service.findAll(data)
 
       expect(items.length).toBe(3)
@@ -116,16 +120,7 @@ describe('GoodsReceiptsService', () => {
     it('should filter items by name query', async () => {
       const { info } = await service.findAll({
         ...data,
-        query: 'Goods Receipt 4',
-      })
-
-      expect(info.totalItems).toBe(1)
-    })
-
-    it('should get archived items', async () => {
-      const { info } = await service.findAll({
-        ...data,
-        isArchived: 1,
+        query: 'Goods Receipt 1',
       })
 
       expect(info.totalItems).toBe(1)
@@ -201,74 +196,6 @@ describe('GoodsReceiptsService', () => {
 
     it('should fail if the goods receipt does not exist', async () => {
       await expect(service.update('non-existent', data)).rejects.toThrow(
-        NotFoundException,
-      )
-    })
-  })
-
-  describe('archive', () => {
-    beforeEach(async () => {
-      await db.goodsReceipt.create({
-        data: {
-          id: 'Goods Receipt 1',
-          name: 'Goods Receipt 1',
-          goodsReceiptDate: new Date(),
-        },
-      })
-    })
-
-    const id = 'Goods Receipt 1'
-
-    it('should successfully archive the requested goods receipt', async () => {
-      await service.archive(id)
-
-      const goodsReceiptsCount = await db.goodsReceipt.count()
-      const goodsReceipt = await db.goodsReceipt.findUnique({
-        where: {
-          id,
-        },
-      })
-
-      expect(goodsReceiptsCount).toBe(1)
-      expect(goodsReceipt?.isArchived).toBeTruthy()
-    })
-
-    it('should fail if the goods receipt does not exist', async () => {
-      await expect(service.archive('non-existent')).rejects.toThrow(
-        NotFoundException,
-      )
-    })
-  })
-
-  describe('restore', () => {
-    beforeEach(async () => {
-      await db.goodsReceipt.create({
-        data: {
-          id: 'Goods Receipt 1',
-          name: 'Goods Receipt 1',
-          goodsReceiptDate: new Date(),
-        },
-      })
-    })
-
-    const id = 'Goods Receipt 1'
-
-    it('should successfully restore the requested goods receipt', async () => {
-      await service.restore(id)
-
-      const goodsReceiptsCount = await db.goodsReceipt.count()
-      const goodsReceipt = await db.goodsReceipt.findUnique({
-        where: {
-          id,
-        },
-      })
-
-      expect(goodsReceiptsCount).toBe(1)
-      expect(goodsReceipt?.isArchived).toBeFalsy()
-    })
-
-    it('should fail if the goods receipt does not exist', async () => {
-      await expect(service.restore('non-existent')).rejects.toThrow(
         NotFoundException,
       )
     })

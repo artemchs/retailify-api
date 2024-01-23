@@ -56,6 +56,7 @@ model Warehouse {
   name            String
   address         String
   productVariants VariantToWarehouse[]
+  goodsReceipts   GoodsReceipt[]
 
   isArchived Boolean @default(false)
 }
@@ -70,7 +71,7 @@ model VariantToWarehouse {
   warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
   warehouseId String?
 
-  quantity Int
+  warehouseQuantity Int
 
   @@index([variantId, warehouseId])
 }
@@ -80,15 +81,15 @@ model GoodsReceipt {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  supplier   Supplier? @relation(fields: [supplierId], references: [id])
-  supplierId String?
+  supplier    Supplier?  @relation(fields: [supplierId], references: [id])
+  supplierId  String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+  warehouseId String?
 
   name             String
   supplierInvoice  SupplierInvoice?
   productVariants  VariantToGoodsReceipt[]
   goodsReceiptDate DateTime
-
-  isArchived Boolean @default(false)
 }
 
 model VariantToGoodsReceipt {
@@ -101,8 +102,8 @@ model VariantToGoodsReceipt {
   goodsReceipt   GoodsReceipt? @relation(fields: [goodsReceiptId], references: [id])
   goodsReceiptId String?
 
-  quantity      Int
-  supplierPrice Decimal @db.Decimal(8, 2)
+  receivedQuantity Int
+  supplierPrice    Decimal @db.Decimal(8, 2)
 
   @@index([variantId, goodsReceiptId])
 }
@@ -147,21 +148,18 @@ model Product {
   collection      Collection?           @relation(fields: [collectionId], references: [id])
   collectionId    String?
 
-  price Decimal  @db.Decimal(8, 2)
-  sale  Decimal? @db.Decimal(8, 2)
+  variants               Variant[]
+  totalReceivedQuantity  Int       @default(0)
+  totalWarehouseQuantity Int       @default(0)
 
   packagingLength Decimal @db.Decimal(8, 2)
   packagingWidth  Decimal @db.Decimal(8, 2)
   packagingHeight Decimal @db.Decimal(8, 2)
   packagingWeight Decimal @db.Decimal(8, 2)
 
-  totalStock Int @default(0)
-
-  variants Variant[]
-
   isArchived Boolean @default(false)
 
-  @@index([title, price, isArchived])
+  @@index([title, isArchived])
 }
 
 model ProductMedia {
@@ -187,13 +185,21 @@ model Variant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  size              String
-  product           Product?                @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId         String?
-  goodsReceipts     VariantToGoodsReceipt[]
-  sku               String?
-  barcode           String?
-  stockOnWarehouses VariantToWarehouse[]
+  product               Product?                @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId             String?
+  goodsReceiptEntries   VariantToGoodsReceipt[]
+  warehouseStockEntries VariantToWarehouse[]
+
+  totalReceivedQuantity  Int
+  totalWarehouseQuantity Int
+
+  size    String
+  sku     String   @unique
+  barcode String   @unique @default(uuid())
+  price   Decimal  @db.Decimal(8, 2)
+  sale    Decimal? @db.Decimal(8, 2)
+
+  isArchived Boolean @default(false)
 
   @@index([productId, barcode, sku])
 }

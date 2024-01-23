@@ -57,14 +57,6 @@ export class CreateProductDto {
 
   @IsNotEmpty()
   @IsNumber()
-  price: number
-
-  @IsOptional()
-  @IsNumber()
-  sale?: number
-
-  @IsNotEmpty()
-  @IsNumber()
   packagingLength: number
 
   @IsNotEmpty()

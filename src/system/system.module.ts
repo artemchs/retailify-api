@@ -11,6 +11,7 @@ import { ProductsModule } from './products/products.module'
 import { ColorsModule } from './colors/colors.module'
 import { CharacteristicsModule } from './characteristics/characteristics.module'
 import { CollectionsModule } from './collections/collections.module'
+import { VariantsModule } from './products/variants/variants.module'
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CollectionsModule } from './collections/collections.module'
     ColorsModule,
     CharacteristicsModule,
     CollectionsModule,
+    VariantsModule,
   ],
   providers: [
     {

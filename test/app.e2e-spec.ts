@@ -25,6 +25,8 @@ import { CreateValueDto } from 'src/system/characteristics/values/dto/create-val
 import { UpdateValueDto } from 'src/system/characteristics/values/dto/update-value.dto'
 import { CreateCollectionDto } from 'src/system/collections/dto/create-collection.dto'
 import { UpdateCollectionDto } from 'src/system/collections/dto/update-collection.dto'
+import { CreateVariantDto } from 'src/system/products/variants/dto/create-variant.dto'
+import { UpdateVariantDto } from 'src/system/products/variants/dto/update-variant.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -88,6 +90,7 @@ describe('App', () => {
     let color1Id: string | undefined
     let color2Id: string | undefined
     let characteristicId: string | undefined
+    let variantId: string | undefined
     let characteristicValueId: string | undefined
     let collectionId: string | undefined
 
@@ -762,7 +765,8 @@ describe('App', () => {
             goodsReceiptDate: new Date(),
             paymentOption: 'PRIVATE_FUNDS',
             paymentTerm: 'PAYMENT_ON_REALIZATION',
-            supplierId: supplierId as string,
+            supplierId: supplierId!,
+            warehouseId: warehouseId!,
           }
 
           await spec()
@@ -777,7 +781,8 @@ describe('App', () => {
             goodsReceiptDate: new Date(),
             paymentOption: 'PRIVATE_FUNDS',
             paymentTerm: 'PAYMENT_ON_REALIZATION',
-            supplierId: supplierId as string,
+            supplierId: supplierId!,
+            warehouseId: warehouseId!,
           }
 
           await spec()
@@ -855,60 +860,6 @@ describe('App', () => {
             .put(url)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
             .withBody(data)
-            .expectStatus(403)
-        })
-      })
-
-      describe('(DELETE) /system/goods-receipts/:id', () => {
-        it('should archive the requested goods receipt', async () => {
-          const url = `/system/goods-receipts/${goodsReceiptId}`
-
-          await spec()
-            .delete(url)
-            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .expectStatus(200)
-        })
-
-        it('should respond with a `404` status code if the goods-receipt does not exist', async () => {
-          await spec()
-            .delete('/system/goods-receipts/non-existent')
-            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .expectStatus(404)
-        })
-
-        it('should respond with a `403` status code if the user is not an admin', async () => {
-          const url = `/system/goods-receipts/${goodsReceiptId}`
-
-          await spec()
-            .delete(url)
-            .withHeaders('Authorization', 'Bearer $S{accessToken}')
-            .expectStatus(403)
-        })
-      })
-
-      describe('(PUT) /system/goods-receipts/restore/:id', () => {
-        it('should restore the requested goods-receipt', async () => {
-          const url = `/system/goods-receipts/restore/${goodsReceiptId}`
-
-          await spec()
-            .put(url)
-            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .expectStatus(200)
-        })
-
-        it('should respond with a `404` status code if the goods receipt does not exist', async () => {
-          await spec()
-            .put('/system/goods-receipts/restore/non-existent')
-            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .expectStatus(404)
-        })
-
-        it('should respond with a `403` status code if the user is not an admin', async () => {
-          const url = `/system/goods-receipts/restore/${goodsReceiptId}`
-
-          await spec()
-            .put(url)
-            .withHeaders('Authorization', 'Bearer $S{accessToken}')
             .expectStatus(403)
         })
       })
@@ -1385,7 +1336,6 @@ describe('App', () => {
               index: 0,
             },
           ],
-          price: 59.99,
           packagingHeight: 10,
           packagingLength: 10,
           packagingWeight: 10,
@@ -1449,7 +1399,7 @@ describe('App', () => {
         })
       })
 
-      describe('(GET) /system/products/:id', () => {
+      describe('(GET) /system/products/:productId', () => {
         it('should find the requested product', async () => {
           const url = baseUrl + '/' + productId
 
@@ -1478,7 +1428,7 @@ describe('App', () => {
         })
       })
 
-      describe('(PUT) /system/products/:id', () => {
+      describe('(PUT) /system/products/:productId', () => {
         const data: UpdateProductDto = {
           description: 'Updated Test Product 1',
         }
@@ -1504,7 +1454,7 @@ describe('App', () => {
         })
       })
 
-      describe('(DELETE) /system/products/:id', () => {
+      describe('(DELETE) /system/products/:productId', () => {
         it('should archive the requested product', async () => {
           const url = baseUrl + '/' + productId
 
@@ -1533,7 +1483,7 @@ describe('App', () => {
         })
       })
 
-      describe('(PUT) /system/products/restore/:id', () => {
+      describe('(PUT) /system/products/restore/:productId', () => {
         it('should restore the requested product', async () => {
           const url = baseUrl + '/restore/' + productId
 
@@ -1559,6 +1509,160 @@ describe('App', () => {
             .put(url)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
             .expectStatus(403)
+        })
+      })
+
+      describe('Variants', () => {
+        describe('(POST) /system/products/:productId/variants', () => {
+          afterAll(async () => {
+            const createdVariant = await db.variant.findFirst()
+            variantId = createdVariant?.id
+          })
+
+          const data: CreateVariantDto = {
+            price: 59.99,
+            size: 'XL',
+            sku: '12345',
+          }
+
+          it('should create a new product', async () => {
+            const url = `${baseUrl}/${productId}/variants`
+
+            await spec()
+              .post(url)
+              .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+              .withBody(data)
+              .expectStatus(201)
+          })
+
+          it('should respond with a `403` status code if the user is not an admin', async () => {
+            const url = `${baseUrl}/${productId}/variants`
+
+            await spec()
+              .post(url)
+              .withHeaders('Authorization', 'Bearer $S{accessToken}')
+              .withBody(data)
+              .expectStatus(403)
+          })
+        })
+
+        describe('(GET) /system/products/:productId/variants', () => {
+          it('should list variants', async () => {
+            const url = `${baseUrl}/${productId}/variants`
+
+            await spec()
+              .get(url)
+              .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+              .expectStatus(200)
+          })
+
+          it('should respond with a `403` status code for a non-admin user', async () => {
+            const url = `${baseUrl}/${productId}/variants`
+
+            await spec()
+              .get(url)
+              .withHeaders('Authorization', 'Bearer $S{accessToken}')
+              .expectStatus(403)
+          })
+        })
+
+        describe('(GET) /system/products/:productId/variants/:variantId', () => {
+          it('should find the requested variant', async () => {
+            const url = `${baseUrl}/${productId}/variants/${variantId}`
+
+            await spec()
+              .get(url)
+              .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+              .expectStatus(200)
+          })
+
+          it('should respond with a `404` status code if the variant does not exist', async () => {
+            const url = `${baseUrl}/${productId}/variants/non-existent`
+
+            await spec()
+              .get(url)
+              .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+              .expectStatus(404)
+          })
+
+          it('should respond with a `403` status code if the user is not an admin', async () => {
+            const url = `${baseUrl}/${productId}/variants/${variantId}`
+
+            await spec()
+              .get(url)
+              .withHeaders('Authorization', 'Bearer $S{accessToken}')
+              .expectStatus(403)
+          })
+        })
+
+        describe('(PUT) /system/products/:productId/variants/:variantId', () => {
+          it('should update the requested variant', async () => {
+            const url = `${baseUrl}/${productId}/variants/${variantId}`
+
+            const data: UpdateVariantDto = {
+              size: 'SM',
+            }
+
+            await spec()
+              .put(url)
+              .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+              .withBody(data)
+              .expectStatus(200)
+          })
+
+          it('should respond with a `403` status code if the user is not an admin', async () => {
+            const url = `${baseUrl}/${productId}/variants/${variantId}`
+
+            const data: UpdateVariantDto = {
+              size: 'SM',
+            }
+
+            await spec()
+              .put(url)
+              .withHeaders('Authorization', 'Bearer $S{accessToken}')
+              .withBody(data)
+              .expectStatus(403)
+          })
+        })
+
+        describe('(DELETE) /system/products/:productId/variants/:variantId', () => {
+          it('should archive the requested variant', async () => {
+            const url = `${baseUrl}/${productId}/variants/${variantId}`
+
+            await spec()
+              .delete(url)
+              .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+              .expectStatus(200)
+          })
+
+          it('should respond with a `403` status code if the user is not an admin', async () => {
+            const url = `${baseUrl}/${productId}/variants/${variantId}`
+
+            await spec()
+              .delete(url)
+              .withHeaders('Authorization', 'Bearer $S{accessToken}')
+              .expectStatus(403)
+          })
+        })
+
+        describe('(PUT) /system/products/:productId/variants/restore/:variantId', () => {
+          it('should restore the requested variants', async () => {
+            const url = `${baseUrl}/${productId}/variants/restore/${variantId}`
+
+            await spec()
+              .put(url)
+              .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+              .expectStatus(200)
+          })
+
+          it('should respond with a `403` status code if the user is not an admin', async () => {
+            const url = `${baseUrl}/${productId}/variants/restore/${variantId}`
+
+            await spec()
+              .put(url)
+              .withHeaders('Authorization', 'Bearer $S{accessToken}')
+              .expectStatus(403)
+          })
         })
       })
     })

@@ -7,7 +7,6 @@ import {
   buildContainsArray,
   buildOrderByArray,
   calculateTotalPages,
-  checkIsArchived,
   getPaginationData,
 } from '../common/utils/db-helpers'
 import { Prisma } from '@prisma/client'
@@ -23,6 +22,11 @@ export class GoodsReceiptsService {
       },
       include: {
         supplierInvoice: true,
+        productVariants: {
+          include: {
+            variant: true,
+          },
+        },
       },
     })
 
@@ -33,24 +37,44 @@ export class GoodsReceiptsService {
     return goodsReceipt
   }
 
-  private async checkIfSupplierExists(id: string) {
-    const supplier = await this.db.supplier.findUnique({
-      where: {
-        id,
-      },
-    })
+  private async checkIfSupplierExists(id?: string) {
+    if (id) {
+      const supplier = await this.db.supplier.findUnique({
+        where: {
+          id,
+        },
+      })
 
-    if (!supplier) {
-      throw new NotFoundException('Поставщик не найден.')
+      if (!supplier) {
+        throw new NotFoundException('Поставщик не найден.')
+      }
+
+      return supplier
     }
+  }
 
-    return supplier
+  private async checkIfWarehouseExists(id?: string) {
+    if (id) {
+      const warehouse = await this.db.warehouse.findUnique({
+        where: {
+          id,
+        },
+      })
+
+      if (!warehouse) {
+        throw new NotFoundException('Склад не найден.')
+      }
+
+      return warehouse
+    }
   }
 
   async create(createGoodsReceiptDto: CreateGoodsReceiptDto) {
-    await this.checkIfSupplierExists(createGoodsReceiptDto.supplierId)
-
-    const goodsReceiptsCount = await this.db.goodsReceipt.count()
+    const [goodsReceiptsCount] = await Promise.all([
+      this.db.goodsReceipt.count(),
+      this.checkIfSupplierExists(createGoodsReceiptDto.supplierId),
+      this.checkIfWarehouseExists(createGoodsReceiptDto.warehouseId),
+    ])
 
     await this.db.goodsReceipt.create({
       data: {
@@ -68,17 +92,10 @@ export class GoodsReceiptsService {
     })
   }
 
-  async findAll({
-    page,
-    rowsPerPage,
-    isArchived,
-    orderBy,
-    query,
-  }: FindAllGoodsReceiptDto) {
+  async findAll({ page, rowsPerPage, orderBy, query }: FindAllGoodsReceiptDto) {
     const { skip, take } = getPaginationData({ page, rowsPerPage })
 
     const where: Prisma.GoodsReceiptWhereInput = {
-      isArchived: checkIsArchived(isArchived),
       OR: buildContainsArray({ fields: ['name'], query }),
     }
 
@@ -110,11 +127,11 @@ export class GoodsReceiptsService {
   }
 
   async update(id: string, updateGoodsReceiptDto: UpdateGoodsReceiptDto) {
-    await this.getGoodsReceipt(id)
-
-    if (updateGoodsReceiptDto.supplierId) {
-      await this.checkIfSupplierExists(updateGoodsReceiptDto.supplierId)
-    }
+    await Promise.all([
+      this.getGoodsReceipt(id),
+      this.checkIfSupplierExists(updateGoodsReceiptDto.supplierId),
+      this.checkIfWarehouseExists(updateGoodsReceiptDto.warehouseId),
+    ])
 
     await this.db.goodsReceipt.update({
       where: {
@@ -129,32 +146,6 @@ export class GoodsReceiptsService {
             paymentTerm: updateGoodsReceiptDto.paymentTerm,
           },
         },
-      },
-    })
-  }
-
-  async archive(id: string) {
-    await this.getGoodsReceipt(id)
-
-    await this.db.goodsReceipt.update({
-      where: {
-        id,
-      },
-      data: {
-        isArchived: true,
-      },
-    })
-  }
-
-  async restore(id: string) {
-    await this.getGoodsReceipt(id)
-
-    await this.db.goodsReceipt.update({
-      where: {
-        id,
-      },
-      data: {
-        isArchived: false,
       },
     })
   }

@@ -77,7 +77,6 @@ describe('ProductsService', () => {
           index: 0,
         },
       ],
-      price: 59.99,
       packagingHeight: 10,
       packagingLength: 10,
       packagingWeight: 10,
@@ -117,7 +116,6 @@ describe('ProductsService', () => {
             id: 'Test Product 1',
             title: 'Test Product 1',
             description: 'Test Product 1',
-            price: 10.99,
             packagingHeight: 10,
             packagingLength: 10,
             packagingWeight: 10,
@@ -127,7 +125,6 @@ describe('ProductsService', () => {
             id: 'Test Product 2',
             title: 'Test Product 2',
             description: 'Test Product 2',
-            price: 20.99,
             packagingHeight: 20,
             packagingLength: 20,
             packagingWeight: 20,
@@ -137,7 +134,6 @@ describe('ProductsService', () => {
             id: 'Test Product 3',
             title: 'Test Product 3',
             description: 'Test Product 3',
-            price: 30.99,
             packagingHeight: 30,
             packagingLength: 30,
             packagingWeight: 30,
@@ -147,7 +143,6 @@ describe('ProductsService', () => {
             id: 'Test Product 4',
             title: 'Test Product 4',
             description: 'Test Product 4',
-            price: 40.99,
             packagingHeight: 40,
             packagingLength: 40,
             packagingWeight: 40,
@@ -186,17 +181,6 @@ describe('ProductsService', () => {
 
       expect(info.totalItems).toBe(1)
     })
-
-    it('should correctly order by price in ascending order', async () => {
-      const { items } = await service.findAll({
-        ...data,
-        orderBy: {
-          price: 'asc',
-        },
-      })
-
-      expect(items[0].id).toBe('Test Product 1')
-    })
   })
 
   describe('findOne', () => {
@@ -206,7 +190,6 @@ describe('ProductsService', () => {
           id: 'Test Product 1',
           title: 'Test Product 1',
           description: 'Test Product 1',
-          price: 10.99,
           packagingHeight: 10,
           packagingLength: 10,
           packagingWeight: 10,
@@ -237,7 +220,6 @@ describe('ProductsService', () => {
           id: 'Test Product 1',
           title: 'Test Product 1',
           description: 'Test Product 1',
-          price: 10.99,
           packagingHeight: 10,
           packagingLength: 10,
           packagingWeight: 10,
@@ -588,7 +570,6 @@ describe('ProductsService', () => {
           id: 'Test Product 1',
           title: 'Test Product 1',
           description: 'Test Product 1',
-          price: 10.99,
           packagingHeight: 10,
           packagingLength: 10,
           packagingWeight: 10,
@@ -627,7 +608,6 @@ describe('ProductsService', () => {
           id: 'Test Product 1',
           title: 'Test Product 1',
           description: 'Test Product 1',
-          price: 10.99,
           packagingHeight: 10,
           packagingLength: 10,
           packagingWeight: 10,
@@ -653,7 +633,7 @@ describe('ProductsService', () => {
     })
 
     it('should fail if the requested product does not exist', async () => {
-      await expect(service.archive('non-existent')).rejects.toThrow(
+      await expect(service.restore('non-existent')).rejects.toThrow(
         NotFoundException,
       )
     })

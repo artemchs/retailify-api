@@ -157,7 +157,6 @@ describe('CharacteristicsService', () => {
           id: 'Test Product 1',
           title: 'Test Product 1',
           description: 'Test Product 1',
-          price: 10.99,
           packagingHeight: 10,
           packagingLength: 10,
           packagingWeight: 10,

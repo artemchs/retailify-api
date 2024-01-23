@@ -10,6 +10,10 @@ export class CreateGoodsReceiptDto {
   supplierId: string
 
   @IsNotEmpty()
+  @IsString()
+  warehouseId: string
+
+  @IsNotEmpty()
   @IsDateString()
   goodsReceiptDate: Date
 
