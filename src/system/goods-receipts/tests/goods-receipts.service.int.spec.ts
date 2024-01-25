@@ -29,6 +29,20 @@ describe('GoodsReceiptsService', () => {
   })
 
   beforeEach(async () => {
+    await db.product.create({
+      data: {
+        id: 'Test Product 1',
+        title: 'Test Product 1',
+        description: 'Test Product 1',
+        packagingHeight: 10,
+        packagingLength: 10,
+        packagingWeight: 10,
+        packagingWidth: 10,
+        totalReceivedQuantity: 10,
+        totalWarehouseQuantity: 10,
+      },
+    })
+
     await Promise.all([
       db.supplier.create({
         data: {
@@ -47,7 +61,43 @@ describe('GoodsReceiptsService', () => {
           address: 'Test Warehouse 1',
         },
       }),
+      db.variant.createMany({
+        data: [
+          {
+            id: 'Test Variant 1',
+            price: 100,
+            size: 'SM',
+            sku: '1',
+            totalReceivedQuantity: 0,
+            totalWarehouseQuantity: 0,
+            productId: 'Test Product 1',
+          },
+          {
+            id: 'Test Variant 2',
+            price: 200,
+            size: 'XL',
+            sku: '2',
+            totalReceivedQuantity: 10,
+            totalWarehouseQuantity: 10,
+            productId: 'Test Product 1',
+          },
+        ],
+      }),
     ])
+
+    db.goodsReceipt.create({
+      data: {
+        goodsReceiptDate: new Date(),
+        name: 'Test Goods Receipt',
+        productVariants: {
+          create: {
+            receivedQuantity: 10,
+            supplierPrice: 10,
+            variantId: 'Test Variant 2  ',
+          },
+        },
+      },
+    })
   })
 
   describe('create', () => {
@@ -57,6 +107,7 @@ describe('GoodsReceiptsService', () => {
       paymentTerm: 'PAYMENT_IN_ADVANCE',
       supplierId: 'test-supplier',
       warehouseId: 'Test Warehouse 1',
+      variants: [],
     }
 
     it('should successfully create a new goods receipt', async () => {
@@ -65,6 +116,159 @@ describe('GoodsReceiptsService', () => {
       const goodsReceiptsCount = await db.goodsReceipt.count()
 
       expect(goodsReceiptsCount).toBe(1)
+    })
+
+    it('should create new VariationToWarehouse entities', async () => {
+      await service.create({
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 1',
+            receivedQuantity: 10,
+            supplierPrice: 10,
+          },
+        ],
+      })
+
+      const vtwsCount = await db.variantToWarehouse.count()
+      const vtw = await db.variantToWarehouse.findFirst({
+        where: {
+          variantId: 'Test Variant 1',
+        },
+      })
+
+      expect(vtwsCount).toBe(1)
+      expect(vtw?.warehouseQuantity).toBe(10)
+    })
+
+    it('should update VariantToWarehouse entities if they exist', async () => {
+      await db.variantToWarehouse.create({
+        data: {
+          warehouseId: 'Test Warehouse 1',
+          variantId: 'Test Variant 1',
+          warehouseQuantity: 10,
+        },
+      })
+
+      await service.create({
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 1',
+            receivedQuantity: 10,
+            supplierPrice: 10,
+          },
+        ],
+      })
+
+      const vtwsCount = await db.variantToWarehouse.count()
+      const vtw = await db.variantToWarehouse.findFirst({
+        where: {
+          variantId: 'Test Variant 1',
+        },
+      })
+
+      expect(vtwsCount).toBe(1)
+      expect(vtw?.warehouseQuantity).toBe(20)
+    })
+
+    it('should correctly update quantities', async () => {
+      await service.create({
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 1',
+            receivedQuantity: 10,
+            supplierPrice: 10,
+          },
+          {
+            variantId: 'Test Variant 2',
+            receivedQuantity: 10,
+            supplierPrice: 10,
+          },
+        ],
+      })
+
+      const variant1 = await db.variant.findUnique({
+        where: {
+          id: 'Test Variant 1',
+        },
+        include: {
+          goodsReceiptEntries: true,
+          warehouseStockEntries: true,
+        },
+      })
+      const variant2 = await db.variant.findUnique({
+        where: {
+          id: 'Test Variant 2',
+        },
+        include: {
+          goodsReceiptEntries: true,
+          warehouseStockEntries: true,
+        },
+      })
+      const product = await db.product.findUnique({
+        where: {
+          id: 'Test Product 1',
+        },
+      })
+
+      expect(variant1?.totalReceivedQuantity).toBe(10)
+      expect(variant1?.totalWarehouseQuantity).toBe(10)
+      expect(variant1?.goodsReceiptEntries[0].receivedQuantity).toBe(10)
+      expect(variant1?.warehouseStockEntries[0].warehouseQuantity).toBe(10)
+      expect(variant2?.totalReceivedQuantity).toBe(20)
+      expect(variant2?.totalWarehouseQuantity).toBe(20)
+      expect(variant2?.goodsReceiptEntries[0].receivedQuantity).toBe(10)
+      expect(variant2?.warehouseStockEntries[0].warehouseQuantity).toBe(10)
+      expect(product?.totalReceivedQuantity).toBe(30)
+      expect(product?.totalWarehouseQuantity).toBe(30)
+    })
+
+    it('should create new VariantToGoodsReceipt entities', async () => {
+      await service.create({
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 1',
+            receivedQuantity: 10,
+            supplierPrice: 10,
+          },
+        ],
+      })
+
+      const variantsToGoodsReceiptCount = await db.variantToGoodsReceipt.count()
+      const variantToGoodsReceipt = await db.variantToGoodsReceipt.findFirst()
+
+      expect(variantsToGoodsReceiptCount).toBe(1)
+      expect(variantToGoodsReceipt?.receivedQuantity).toBe(10)
+      expect(Number(variantToGoodsReceipt?.supplierPrice)).toBe(10)
+    })
+
+    it('should correctly create the supplier invoice', async () => {
+      await service.create({
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 1',
+            receivedQuantity: 10,
+            supplierPrice: 50, // total - $500
+          },
+          {
+            variantId: 'Test Variant 2',
+            receivedQuantity: 5,
+            supplierPrice: 10, // total - $50
+          },
+        ],
+      })
+
+      const supplierInvoicesCount = await db.supplierInvoice.count()
+      const supplierInvoice = await db.supplierInvoice.findFirst()
+
+      expect(supplierInvoicesCount).toBe(1)
+      expect(Number(supplierInvoice?.accountsPayable)).toBe(550)
+      expect(supplierInvoice?.paymentOption).toBe('PRIVATE_FUNDS')
+      expect(supplierInvoice?.paymentTerm).toBe('PAYMENT_IN_ADVANCE')
     })
 
     it('should throw an exception if the supplier does not exist', async () => {
@@ -155,20 +359,54 @@ describe('GoodsReceiptsService', () => {
 
   describe('update', () => {
     beforeEach(async () => {
-      await db.goodsReceipt.create({
-        data: {
-          id: 'Goods Receipt 1',
-          name: 'Goods Receipt 1',
-          goodsReceiptDate: new Date(),
-          supplierInvoice: {
-            create: {
-              accountsPayable: 0,
-              paymentOption: 'CASH_REGISTER',
-              paymentTerm: 'CASH_ON_DELIVERY',
+      await Promise.all([
+        db.goodsReceipt.create({
+          data: {
+            id: 'Goods Receipt 1',
+            name: 'Goods Receipt 1',
+            goodsReceiptDate: new Date(),
+            supplierInvoice: {
+              create: {
+                accountsPayable: 100,
+                paymentOption: 'CASH_REGISTER',
+                paymentTerm: 'CASH_ON_DELIVERY',
+              },
+            },
+            productVariants: {
+              create: {
+                receivedQuantity: 10,
+                supplierPrice: 10,
+                variantId: 'Test Variant 1',
+              },
             },
           },
-        },
-      })
+        }),
+        db.variantToWarehouse.createMany({
+          data: {
+            warehouseQuantity: 10,
+            variantId: 'Test Variant 1',
+            warehouseId: 'Test Warehouse 1',
+          },
+        }),
+        db.variant.update({
+          where: {
+            id: 'Test Variant 1',
+          },
+          data: {
+            totalReceivedQuantity: 10,
+            totalWarehouseQuantity: 10,
+          },
+        }),
+        db.product.update({
+          where: {
+            id: 'Test Product 1',
+          },
+          data: {
+            totalReceivedQuantity: 20,
+            totalWarehouseQuantity: 20,
+          },
+        }),
+      ])
     })
 
     const id = 'Goods Receipt 1'
@@ -177,6 +415,8 @@ describe('GoodsReceiptsService', () => {
       goodsReceiptDate: new Date(2024),
       paymentOption: 'CASH_REGISTER',
       paymentTerm: 'CASH_ON_DELIVERY',
+      warehouseId: 'Test Warehouse 1',
+      supplierId: 'test-supplier',
     }
 
     it('should successfully update the requested goods receipt', async () => {
@@ -194,8 +434,346 @@ describe('GoodsReceiptsService', () => {
       expect(goodsReceipt?.supplierInvoice?.paymentOption).toBe('CASH_REGISTER')
     })
 
+    it('should create new VariantToGoodsReceipt and VariantToWarehouse entities', async () => {
+      await service.update(id, {
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 1',
+            receivedQuantity: 10,
+            supplierPrice: 10,
+          },
+          {
+            variantId: 'Test Variant 2',
+            receivedQuantity: 5,
+            supplierPrice: 5,
+          },
+        ],
+      })
+
+      const variantsToWarehouseCount = await db.variantToWarehouse.count()
+      const variantsToGoodsReceiptCount = await db.variantToGoodsReceipt.count()
+      const variantToWarehouse2 = await db.variantToWarehouse.findFirst({
+        where: {
+          variantId: 'Test Variant 2',
+        },
+      })
+      const variantToGoodsReceipt2 = await db.variantToGoodsReceipt.findFirst({
+        where: {
+          variantId: 'Test Variant 2',
+        },
+      })
+
+      expect(variantsToWarehouseCount).toBe(2)
+      expect(variantsToGoodsReceiptCount).toBe(2)
+      expect(variantToWarehouse2?.warehouseQuantity).toBe(5)
+      expect(variantToGoodsReceipt2?.receivedQuantity).toBe(5)
+      expect(Number(variantToGoodsReceipt2?.supplierPrice)).toBe(5)
+    })
+
+    it('should correctly update the supplier invoice', async () => {
+      await service.update(id, {
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 1',
+            receivedQuantity: 10,
+            supplierPrice: 10,
+          },
+          {
+            variantId: 'Test Variant 2',
+            receivedQuantity: 10,
+            supplierPrice: 5,
+          },
+        ],
+      })
+
+      const supplierInvoicesCount = await db.supplierInvoice.count()
+      const supplierInvoice = await db.supplierInvoice.findFirst()
+
+      expect(supplierInvoicesCount).toBe(1)
+      expect(Number(supplierInvoice?.accountsPayable)).toBe(150)
+    })
+
+    it('should correctly update quantities', async () => {
+      await service.update(id, {
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 1',
+            receivedQuantity: 20,
+            supplierPrice: 10,
+          },
+          {
+            variantId: 'Test Variant 2',
+            receivedQuantity: 10,
+            supplierPrice: 5,
+          },
+        ],
+      })
+
+      const variant1 = await db.variant.findUnique({
+        where: {
+          id: 'Test Variant 1',
+        },
+        include: {
+          goodsReceiptEntries: true,
+          warehouseStockEntries: true,
+        },
+      })
+      const variant2 = await db.variant.findUnique({
+        where: {
+          id: 'Test Variant 2',
+        },
+        include: {
+          goodsReceiptEntries: true,
+          warehouseStockEntries: true,
+        },
+      })
+      const product = await db.product.findUnique({
+        where: {
+          id: 'Test Product 1',
+        },
+      })
+
+      expect(variant1?.totalReceivedQuantity).toBe(20)
+      expect(variant1?.totalWarehouseQuantity).toBe(20)
+      expect(variant2?.totalReceivedQuantity).toBe(10)
+      expect(variant2?.totalWarehouseQuantity).toBe(10)
+      expect(product?.totalReceivedQuantity).toBe(30)
+      expect(product?.totalWarehouseQuantity).toBe(30)
+    })
+
+    it('should remove a variation from the list', async () => {
+      await service.update(id, {
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 2',
+            receivedQuantity: 10,
+            supplierPrice: 5,
+          },
+        ],
+      })
+
+      const variant1 = await db.variant.findUnique({
+        where: {
+          id: 'Test Variant 1',
+        },
+      })
+      const product = await db.product.findUnique({
+        where: {
+          id: 'Test Product 1',
+        },
+      })
+      const supplierInvoice = await db.supplierInvoice.findFirst()
+
+      expect(variant1?.totalReceivedQuantity).toBe(0)
+      expect(variant1?.totalWarehouseQuantity).toBe(0)
+      expect(product?.totalReceivedQuantity).toBe(10)
+      expect(product?.totalWarehouseQuantity).toBe(10)
+      expect(Number(supplierInvoice?.accountsPayable)).toBe(50)
+    })
+
     it('should fail if the goods receipt does not exist', async () => {
       await expect(service.update('non-existent', data)).rejects.toThrow(
+        NotFoundException,
+      )
+    })
+  })
+
+  describe('archive', () => {
+    beforeEach(async () => {
+      await Promise.all([
+        db.goodsReceipt.create({
+          data: {
+            id: 'Goods Receipt 1',
+            name: 'Goods Receipt 1',
+            goodsReceiptDate: new Date(),
+            supplierInvoice: {
+              create: {
+                accountsPayable: 100,
+                paymentOption: 'CASH_REGISTER',
+                paymentTerm: 'CASH_ON_DELIVERY',
+              },
+            },
+            productVariants: {
+              create: {
+                receivedQuantity: 10,
+                supplierPrice: 10,
+                variantId: 'Test Variant 1',
+              },
+            },
+          },
+        }),
+        db.variantToWarehouse.create({
+          data: {
+            id: 'Test Vtw 1',
+            warehouseQuantity: 10,
+            variantId: 'Test Variant 1',
+            warehouseId: 'Test Warehouse 1',
+          },
+        }),
+        db.variant.update({
+          where: {
+            id: 'Test Variant 1',
+          },
+          data: {
+            totalReceivedQuantity: 10,
+            totalWarehouseQuantity: 10,
+          },
+        }),
+        db.product.update({
+          where: {
+            id: 'Test Product 1',
+          },
+          data: {
+            totalReceivedQuantity: 20,
+            totalWarehouseQuantity: 20,
+          },
+        }),
+      ])
+    })
+
+    it('should archive the goods receipt', async () => {
+      await service.archive('Goods Receipt 1')
+
+      const goodsReceipt = await db.goodsReceipt.findUnique({
+        where: {
+          id: 'Goods Receipt 1',
+        },
+      })
+
+      expect(goodsReceipt?.isArchived).toBeTruthy()
+    })
+
+    it('should correctly decrement quantities from variants', async () => {
+      await service.archive('Goods Receipt 1')
+
+      const vtw = await db.variantToWarehouse.findUnique({
+        where: {
+          id: 'Test Vtw 1',
+        },
+      })
+      const variant = await db.variant.findUnique({
+        where: {
+          id: 'Test Variant 1',
+        },
+      })
+      const product = await db.product.findUnique({
+        where: {
+          id: 'Test Product 1',
+        },
+      })
+
+      expect(vtw?.warehouseQuantity).toBe(0)
+      expect(variant?.totalReceivedQuantity).toBe(0)
+      expect(variant?.totalWarehouseQuantity).toBe(0)
+      expect(product?.totalReceivedQuantity).toBe(10)
+      expect(product?.totalWarehouseQuantity).toBe(10)
+    })
+
+    it('should fail if the goods receipt does not exist', async () => {
+      await expect(service.archive('non-existent')).rejects.toThrow(
+        NotFoundException,
+      )
+    })
+  })
+
+  describe('restore', () => {
+    beforeEach(async () => {
+      await Promise.all([
+        db.goodsReceipt.create({
+          data: {
+            id: 'Goods Receipt 1',
+            name: 'Goods Receipt 1',
+            goodsReceiptDate: new Date(),
+            supplierInvoice: {
+              create: {
+                accountsPayable: 100,
+                paymentOption: 'CASH_REGISTER',
+                paymentTerm: 'CASH_ON_DELIVERY',
+              },
+            },
+            productVariants: {
+              create: {
+                receivedQuantity: 10,
+                supplierPrice: 10,
+                variantId: 'Test Variant 1',
+              },
+            },
+            isArchived: true,
+          },
+        }),
+        db.variantToWarehouse.create({
+          data: {
+            id: 'Test Vtw 1',
+            warehouseQuantity: 0,
+            variantId: 'Test Variant 1',
+            warehouseId: 'Test Warehouse 1',
+          },
+        }),
+        db.variant.update({
+          where: {
+            id: 'Test Variant 1',
+          },
+          data: {
+            totalReceivedQuantity: 0,
+            totalWarehouseQuantity: 0,
+          },
+        }),
+        db.product.update({
+          where: {
+            id: 'Test Product 1',
+          },
+          data: {
+            totalReceivedQuantity: 10,
+            totalWarehouseQuantity: 10,
+          },
+        }),
+      ])
+    })
+
+    it('should restore the goods receipt', async () => {
+      await service.restore('Goods Receipt 1')
+
+      const goodsReceipt = await db.goodsReceipt.findUnique({
+        where: {
+          id: 'Goods Receipt 1',
+        },
+      })
+
+      expect(goodsReceipt?.isArchived).toBeFalsy()
+    })
+
+    it('should correctly update variant quantities', async () => {
+      await service.restore('Goods Receipt 1')
+
+      const vtw = await db.variantToWarehouse.findUnique({
+        where: {
+          id: 'Test Vtw 1',
+        },
+      })
+      const variant = await db.variant.findUnique({
+        where: {
+          id: 'Test Variant 1',
+        },
+      })
+      const product = await db.product.findUnique({
+        where: {
+          id: 'Test Product 1',
+        },
+      })
+
+      expect(vtw?.warehouseQuantity).toBe(10)
+      expect(variant?.totalReceivedQuantity).toBe(10)
+      expect(variant?.totalWarehouseQuantity).toBe(10)
+      expect(product?.totalReceivedQuantity).toBe(20)
+      expect(product?.totalWarehouseQuantity).toBe(20)
+    })
+
+    it('should fail if the goods receipt does not exist', async () => {
+      await expect(service.restore('non-existent')).rejects.toThrow(
         NotFoundException,
       )
     })

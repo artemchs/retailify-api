@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, Query, Put } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Put,
+  Delete,
+} from '@nestjs/common'
 import { GoodsReceiptsService } from './goods-receipts.service'
 import { CreateGoodsReceiptDto } from './dto/create-goods-receipt.dto'
 import { UpdateGoodsReceiptDto } from './dto/update-goods-receipt.dto'
@@ -32,5 +41,15 @@ export class GoodsReceiptsController {
     @Body() updateGoodsReceiptDto: UpdateGoodsReceiptDto,
   ) {
     return this.goodsReceiptsService.update(id, updateGoodsReceiptDto)
+  }
+
+  @Delete(':id')
+  archive(@Param('id') id: string) {
+    return this.goodsReceiptsService.archive(id)
+  }
+
+  @Put('restore/:id')
+  restore(@Param('id') id: string) {
+    return this.goodsReceiptsService.restore(id)
   }
 }

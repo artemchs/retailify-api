@@ -1,5 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { CreateGoodsReceiptDto } from './dto/create-goods-receipt.dto'
+import {
+  CreateGoodsReceiptDto,
+  GoodsReceiptVariant,
+} from './dto/create-goods-receipt.dto'
 import { UpdateGoodsReceiptDto } from './dto/update-goods-receipt.dto'
 import { DbService } from '../../db/db.service'
 import { FindAllGoodsReceiptDto } from './dto/findAll-goods-receipt.dto'
@@ -10,6 +13,7 @@ import {
   getPaginationData,
 } from '../common/utils/db-helpers'
 import { Prisma } from '@prisma/client'
+import { compareArrays } from '../common/utils/compare-arrays'
 
 @Injectable()
 export class GoodsReceiptsService {
@@ -69,6 +73,170 @@ export class GoodsReceiptsService {
     }
   }
 
+  private async incrementQuantity(
+    variants: GoodsReceiptVariant[],
+    warehouseId: string,
+  ) {
+    if (variants.length >= 1) {
+      const variantUpdatePromises = variants.map(
+        ({ variantId, receivedQuantity }) =>
+          this.db.variant.update({
+            where: {
+              id: variantId,
+            },
+            data: {
+              totalReceivedQuantity: {
+                increment: receivedQuantity,
+              },
+              totalWarehouseQuantity: {
+                increment: receivedQuantity,
+              },
+              product: {
+                update: {
+                  totalReceivedQuantity: {
+                    increment: receivedQuantity,
+                  },
+                  totalWarehouseQuantity: {
+                    increment: receivedQuantity,
+                  },
+                },
+              },
+            },
+          }),
+      )
+
+      const vtwUpdatePromises = variants.map(
+        ({ variantId, receivedQuantity }) =>
+          this.db.variantToWarehouse.updateMany({
+            where: {
+              variantId,
+              warehouseId,
+            },
+            data: {
+              warehouseQuantity: {
+                increment: receivedQuantity,
+              },
+            },
+          }),
+      )
+
+      await Promise.all([...variantUpdatePromises, ...vtwUpdatePromises])
+    }
+  }
+
+  private async updateQuantities(
+    goodsReceiptId: string,
+    warehouseId: string,
+    variants: GoodsReceiptVariant[],
+  ) {
+    const goodsReceiptVariants = await this.db.variantToGoodsReceipt.findMany({
+      where: {
+        goodsReceiptId,
+        variantId: {
+          in: variants.map(({ variantId }) => variantId),
+        },
+      },
+    })
+
+    const receivedQuantityDiff = goodsReceiptVariants.map(
+      ({ variantId, receivedQuantity }) => ({
+        variantId,
+        difference:
+          (variants.find(({ variantId: vId }) => vId === variantId)
+            ?.receivedQuantity ?? 0) - receivedQuantity,
+        receivedQuantity,
+      }),
+    )
+
+    const vtwUpdatePromises = receivedQuantityDiff.map(
+      ({ variantId, difference }) =>
+        variantId
+          ? this.db.variantToWarehouse.updateMany({
+              where: {
+                variantId,
+                warehouseId,
+              },
+              data: {
+                warehouseQuantity: {
+                  increment: difference,
+                },
+              },
+            })
+          : undefined,
+    )
+
+    const variantUpdatePromises = receivedQuantityDiff.map(
+      ({ variantId, difference }) =>
+        variantId
+          ? this.db.variant.update({
+              where: {
+                id: variantId,
+              },
+              data: {
+                totalReceivedQuantity: {
+                  increment: difference,
+                },
+                totalWarehouseQuantity: {
+                  increment: difference,
+                },
+                product: {
+                  update: {
+                    totalReceivedQuantity: {
+                      increment: difference,
+                    },
+                    totalWarehouseQuantity: {
+                      increment: difference,
+                    },
+                  },
+                },
+              },
+            })
+          : undefined,
+    )
+
+    await Promise.all([...variantUpdatePromises, ...vtwUpdatePromises])
+  }
+
+  private async getVtwsToCreate(
+    warehouseId: string,
+    variants: GoodsReceiptVariant[],
+  ) {
+    const existingVtwIds = (
+      await this.db.variantToWarehouse.findMany({
+        where: {
+          variantId: {
+            in: variants.map(({ variantId }) => variantId),
+          },
+          warehouseId,
+        },
+        select: {
+          variantId: true,
+        },
+      })
+    ).map(({ variantId }) => variantId)
+
+    const vtwsToCreate = variants.filter(
+      ({ variantId }) => !existingVtwIds.includes(variantId),
+    )
+
+    return vtwsToCreate
+  }
+
+  private async getGoodsReceiptVariants(goodsReceiptId: string) {
+    const variants = await this.db.variantToGoodsReceipt.findMany({
+      where: {
+        goodsReceiptId,
+      },
+      select: {
+        variantId: true,
+        receivedQuantity: true,
+        supplierPrice: true,
+      },
+    })
+
+    return variants
+  }
+
   async create(createGoodsReceiptDto: CreateGoodsReceiptDto) {
     const [goodsReceiptsCount] = await Promise.all([
       this.db.goodsReceipt.count(),
@@ -76,20 +244,56 @@ export class GoodsReceiptsService {
       this.checkIfWarehouseExists(createGoodsReceiptDto.warehouseId),
     ])
 
-    await this.db.goodsReceipt.create({
-      data: {
-        name: `Приход #${goodsReceiptsCount + 1}`,
-        supplierId: createGoodsReceiptDto.supplierId,
-        goodsReceiptDate: createGoodsReceiptDto.goodsReceiptDate,
-        supplierInvoice: {
-          create: {
-            paymentOption: createGoodsReceiptDto.paymentOption,
-            paymentTerm: createGoodsReceiptDto.paymentTerm,
-            accountsPayable: 0,
+    const vtwsToCreate = await this.getVtwsToCreate(
+      createGoodsReceiptDto.warehouseId,
+      createGoodsReceiptDto.variants,
+    )
+
+    await this.db.$transaction([
+      this.db.goodsReceipt.create({
+        data: {
+          name: `Приход #${goodsReceiptsCount + 1}`,
+          supplierId: createGoodsReceiptDto.supplierId,
+          warehouseId: createGoodsReceiptDto.warehouseId,
+          goodsReceiptDate: createGoodsReceiptDto.goodsReceiptDate,
+          supplierInvoice: {
+            create: {
+              paymentOption: createGoodsReceiptDto.paymentOption,
+              paymentTerm: createGoodsReceiptDto.paymentTerm,
+              accountsPayable: createGoodsReceiptDto.variants
+                .map(
+                  ({ receivedQuantity, supplierPrice }) =>
+                    receivedQuantity * supplierPrice,
+                )
+                .reduce((accumulator, current) => accumulator + current, 0),
+            },
+          },
+          productVariants: {
+            createMany: {
+              data: createGoodsReceiptDto.variants.map(
+                ({ receivedQuantity, supplierPrice, variantId }) => ({
+                  receivedQuantity,
+                  supplierPrice,
+                  variantId,
+                }),
+              ),
+            },
           },
         },
-      },
-    })
+      }),
+      this.db.variantToWarehouse.createMany({
+        data: vtwsToCreate.map(({ variantId }) => ({
+          variantId,
+          warehouseId: createGoodsReceiptDto.warehouseId,
+          warehouseQuantity: 0,
+        })),
+      }),
+    ])
+
+    await this.incrementQuantity(
+      createGoodsReceiptDto.variants,
+      createGoodsReceiptDto.warehouseId,
+    )
   }
 
   async findAll({ page, rowsPerPage, orderBy, query }: FindAllGoodsReceiptDto) {
@@ -127,26 +331,192 @@ export class GoodsReceiptsService {
   }
 
   async update(id: string, updateGoodsReceiptDto: UpdateGoodsReceiptDto) {
-    await Promise.all([
+    const [goodsReceipt] = await Promise.all([
       this.getGoodsReceipt(id),
       this.checkIfSupplierExists(updateGoodsReceiptDto.supplierId),
       this.checkIfWarehouseExists(updateGoodsReceiptDto.warehouseId),
     ])
 
-    await this.db.goodsReceipt.update({
-      where: {
+    const oldWarehouseId = goodsReceipt.warehouseId
+    const newWarehouseId = updateGoodsReceiptDto.warehouseId
+
+    const goodsReceiptVariants = await this.getGoodsReceiptVariants(id)
+
+    const arraysDif = updateGoodsReceiptDto.variants
+      ? compareArrays(
+          goodsReceiptVariants as unknown as GoodsReceiptVariant[],
+          updateGoodsReceiptDto.variants,
+          'variantId',
+          'receivedQuantity',
+          'supplierPrice',
+        )
+      : undefined
+
+    const vtwsToCreate = arraysDif?.newItems
+      ? await this.getVtwsToCreate(
+          (newWarehouseId ?? oldWarehouseId) as string,
+          arraysDif?.newItems,
+        )
+      : []
+
+    if (arraysDif?.deleted) {
+      await this.incrementQuantity(
+        arraysDif?.deleted.map((obj) => ({
+          ...obj,
+          receivedQuantity: obj.receivedQuantity * -1,
+        })),
+        (newWarehouseId ?? oldWarehouseId) as string,
+      )
+    }
+
+    if (arraysDif?.updated) {
+      await this.updateQuantities(
         id,
-      },
-      data: {
-        supplierId: updateGoodsReceiptDto.supplierId,
-        goodsReceiptDate: updateGoodsReceiptDto.goodsReceiptDate,
-        supplierInvoice: {
-          update: {
-            paymentOption: updateGoodsReceiptDto.paymentOption,
-            paymentTerm: updateGoodsReceiptDto.paymentTerm,
+        (newWarehouseId ?? oldWarehouseId) as string,
+        arraysDif.updated,
+      )
+    }
+
+    if (arraysDif?.updated && arraysDif.updated.length >= 1) {
+      const promises = arraysDif.updated.map(
+        ({ receivedQuantity, supplierPrice, variantId }) =>
+          this.db.variantToGoodsReceipt.updateMany({
+            where: {
+              variantId,
+              goodsReceiptId: id,
+            },
+            data: {
+              receivedQuantity,
+              supplierPrice,
+            },
+          }),
+      )
+
+      await Promise.all(promises)
+    }
+
+    await this.db.$transaction([
+      this.db.goodsReceipt.update({
+        data: {
+          supplierId: updateGoodsReceiptDto.supplierId,
+          warehouseId: updateGoodsReceiptDto.warehouseId,
+          goodsReceiptDate: updateGoodsReceiptDto.goodsReceiptDate,
+          supplierInvoice: {
+            update: {
+              paymentOption: updateGoodsReceiptDto.paymentOption,
+              paymentTerm: updateGoodsReceiptDto.paymentTerm,
+              accountsPayable: updateGoodsReceiptDto.variants
+                ?.map(
+                  ({ receivedQuantity, supplierPrice }) =>
+                    receivedQuantity * supplierPrice,
+                )
+                .reduce((accumulator, current) => accumulator + current, 0),
+            },
+          },
+          productVariants: {
+            deleteMany: arraysDif?.deleted,
+            createMany:
+              arraysDif?.newItems && arraysDif.newItems.length >= 1
+                ? {
+                    data: arraysDif.newItems,
+                  }
+                : undefined,
           },
         },
-      },
-    })
+        where: {
+          id,
+        },
+      }),
+      this.db.variantToWarehouse.createMany({
+        data: vtwsToCreate?.map(({ variantId, receivedQuantity }) => ({
+          variantId,
+          warehouseId: newWarehouseId ?? oldWarehouseId,
+          warehouseQuantity: receivedQuantity,
+        })),
+      }),
+    ])
+  }
+
+  private async updateVariantQuantities(
+    action: 'increment' | 'decrement',
+    variants: { variantId: string | null; receivedQuantity: number }[],
+  ) {
+    await Promise.all(
+      variants.map(({ variantId, receivedQuantity }) =>
+        variantId
+          ? this.db.variant.update({
+              where: {
+                id: variantId,
+              },
+              data: {
+                totalReceivedQuantity: {
+                  [action]: receivedQuantity,
+                },
+                totalWarehouseQuantity: {
+                  [action]: receivedQuantity,
+                },
+                warehouseStockEntries: {
+                  updateMany: {
+                    where: {
+                      variantId,
+                    },
+                    data: {
+                      warehouseQuantity: {
+                        [action]: receivedQuantity,
+                      },
+                    },
+                  },
+                },
+                product: {
+                  update: {
+                    totalReceivedQuantity: {
+                      [action]: receivedQuantity,
+                    },
+                    totalWarehouseQuantity: {
+                      [action]: receivedQuantity,
+                    },
+                  },
+                },
+              },
+            })
+          : undefined,
+      ),
+    )
+  }
+
+  async archive(id: string) {
+    const goodsReceipt = await this.getGoodsReceipt(id)
+
+    if (!goodsReceipt.isArchived) {
+      await Promise.all([
+        this.updateVariantQuantities('decrement', goodsReceipt.productVariants),
+        this.db.goodsReceipt.update({
+          where: {
+            id,
+          },
+          data: {
+            isArchived: true,
+          },
+        }),
+      ])
+    }
+  }
+
+  async restore(id: string) {
+    const goodsReceipt = await this.getGoodsReceipt(id)
+
+    if (goodsReceipt.isArchived) {
+      await Promise.all([
+        this.updateVariantQuantities('increment', goodsReceipt.productVariants),
+        this.db.goodsReceipt.update({
+          where: {
+            id,
+          },
+          data: {
+            isArchived: false,
+          },
+        }),
+      ])
+    }
   }
 }

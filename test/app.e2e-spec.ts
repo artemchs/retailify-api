@@ -767,6 +767,7 @@ describe('App', () => {
             paymentTerm: 'PAYMENT_ON_REALIZATION',
             supplierId: supplierId!,
             warehouseId: warehouseId!,
+            variants: [],
           }
 
           await spec()
@@ -783,6 +784,7 @@ describe('App', () => {
             paymentTerm: 'PAYMENT_ON_REALIZATION',
             supplierId: supplierId!,
             warehouseId: warehouseId!,
+            variants: [],
           }
 
           await spec()
@@ -860,6 +862,46 @@ describe('App', () => {
             .put(url)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
             .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe('(DELETE) /system/goods-receipts/:id', () => {
+        it('should archive the requested goods receipt', async () => {
+          const url = `/system/goods-receipts/${goodsReceiptId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `/system/goods-receipts/${goodsReceiptId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/goods-receipts/restore/:id', () => {
+        it('should restore the requested goods receipt', async () => {
+          const url = `/system/goods-receipts/restore/${goodsReceiptId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `/system/goods-receipts/restore/${goodsReceiptId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
             .expectStatus(403)
         })
       })

@@ -2,7 +2,8 @@ export function compareArrays<T>(
   oldArray: T[],
   newArray: T[],
   idField: keyof T,
-  optionalField?: keyof T,
+  optionalField1?: keyof T,
+  optionalField2?: keyof T,
 ): {
   updated: T[]
   deleted: T[]
@@ -22,7 +23,8 @@ export function compareArrays<T>(
       newItems.push(newObj)
     } else if (
       oldObj[idField] !== newObj[idField] ||
-      (optionalField && oldObj[optionalField] !== newObj[optionalField])
+      (optionalField1 && oldObj[optionalField1] !== newObj[optionalField1]) ||
+      (optionalField2 && oldObj[optionalField2] !== newObj[optionalField2])
     ) {
       // Updated Item
       updated.push(newObj)

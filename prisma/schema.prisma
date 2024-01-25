@@ -90,6 +90,8 @@ model GoodsReceipt {
   supplierInvoice  SupplierInvoice?
   productVariants  VariantToGoodsReceipt[]
   goodsReceiptDate DateTime
+
+  isArchived Boolean @default(false)
 }
 
 model VariantToGoodsReceipt {
