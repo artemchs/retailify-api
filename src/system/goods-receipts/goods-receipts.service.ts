@@ -19,7 +19,7 @@ import { compareArrays } from '../common/utils/compare-arrays'
 export class GoodsReceiptsService {
   constructor(private db: DbService) {}
 
-  private async getGoodsReceipt(id: string) {
+  private async getFullGoodsReceipt(id: string) {
     const goodsReceipt = await this.db.goodsReceipt.findUnique({
       where: {
         id,
@@ -29,6 +29,29 @@ export class GoodsReceiptsService {
         productVariants: {
           include: {
             variant: true,
+          },
+        },
+      },
+    })
+
+    if (!goodsReceipt) {
+      throw new NotFoundException('Накладная прихода не найдена.')
+    }
+
+    return goodsReceipt
+  }
+
+  private async getGoodsReceipt(id: string) {
+    const goodsReceipt = await this.db.goodsReceipt.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        supplierInvoice: {
+          select: {
+            accountsPayable: true,
+            paymentOption: true,
+            paymentTerm: true,
           },
         },
       },
@@ -309,6 +332,15 @@ export class GoodsReceiptsService {
         take,
         skip,
         orderBy: buildOrderByArray({ orderBy }),
+        include: {
+          supplierInvoice: {
+            select: {
+              accountsPayable: true,
+              paymentOption: true,
+              paymentTerm: true,
+            },
+          },
+        },
       }),
       this.db.goodsReceipt.count({
         where,
@@ -332,7 +364,7 @@ export class GoodsReceiptsService {
 
   async update(id: string, updateGoodsReceiptDto: UpdateGoodsReceiptDto) {
     const [goodsReceipt] = await Promise.all([
-      this.getGoodsReceipt(id),
+      this.getFullGoodsReceipt(id),
       this.checkIfSupplierExists(updateGoodsReceiptDto.supplierId),
       this.checkIfWarehouseExists(updateGoodsReceiptDto.warehouseId),
     ])
@@ -485,7 +517,7 @@ export class GoodsReceiptsService {
   }
 
   async archive(id: string) {
-    const goodsReceipt = await this.getGoodsReceipt(id)
+    const goodsReceipt = await this.getFullGoodsReceipt(id)
 
     if (!goodsReceipt.isArchived) {
       await Promise.all([
@@ -503,7 +535,7 @@ export class GoodsReceiptsService {
   }
 
   async restore(id: string) {
-    const goodsReceipt = await this.getGoodsReceipt(id)
+    const goodsReceipt = await this.getFullGoodsReceipt(id)
 
     if (goodsReceipt.isArchived) {
       await Promise.all([

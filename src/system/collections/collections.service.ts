@@ -21,7 +21,7 @@ import { compareArrays } from '../common/utils/compare-arrays'
 export class CollectionsService {
   constructor(private db: DbService) {}
 
-  private async getCollection(id: string) {
+  private async getFullCollection(id: string) {
     const collection = await this.db.collection.findUnique({
       where: {
         id,
@@ -29,6 +29,20 @@ export class CollectionsService {
       include: {
         characteristics: true,
         products: true,
+      },
+    })
+
+    if (!collection) {
+      throw new NotFoundException('Коллекция не найдена.')
+    }
+
+    return collection
+  }
+
+  private async getCollection(id: string) {
+    const collection = await this.db.collection.findUnique({
+      where: {
+        id,
       },
     })
 
@@ -139,7 +153,7 @@ export class CollectionsService {
   }
 
   async update(id: string, updateCollectionDto: UpdateCollectionDto) {
-    const collection = await this.getCollection(id)
+    const collection = await this.getFullCollection(id)
 
     await Promise.all([
       this.db.collection.update({

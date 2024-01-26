@@ -88,10 +88,11 @@ async function seedSystemUsers() {
   }
 }
 
+const supplierIds: string[] = []
 async function seedSuppliers() {
   for (let i = 0; i < 5; i++) {
     try {
-      await prisma.supplier.create({
+      const supplier = await prisma.supplier.create({
         data: {
           name: faker.company.name(),
           contactPerson: faker.person.fullName(),
@@ -101,22 +102,25 @@ async function seedSuppliers() {
         },
       })
       console.log('Successfully created a new supplier.')
+      supplierIds.push(supplier.id)
     } catch (e) {
       console.log('Could not create a new supplier: ', e)
     }
   }
 }
 
+const warehouseIds: string[] = []
 async function seedWarehouses() {
   for (let i = 0; i < 3; i++) {
     try {
-      await prisma.warehouse.create({
+      const warehouse = await prisma.warehouse.create({
         data: {
           name: faker.company.name(),
           address: faker.location.streetAddress(),
         },
       })
       console.log('Successfully created a new warehouse.')
+      warehouseIds.push(warehouse.id)
     } catch (e) {
       console.log('Could not create a new warehouse: ', e)
     }

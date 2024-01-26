@@ -36,6 +36,10 @@ export class ProductCharacteristicValuesDto {
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
+  collectionId: string
+
+  @IsString()
+  @IsNotEmpty()
   title: string
 
   @IsString()

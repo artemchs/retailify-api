@@ -13,41 +13,59 @@ import {
 } from 'class-validator'
 
 export class GoodsReceiptVariant {
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: 'Идентификатор варианта не должен быть пустым' })
+  @IsString({ message: 'Идентификатор варианта должен быть строкой' })
   variantId: string
 
-  @IsNotEmpty()
-  @IsNumber()
+  @IsNotEmpty({ message: 'Цена закупки не должна быть пустой' })
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: 'Цена закупки должна быть числом' },
+  )
   supplierPrice: number
 
-  @IsNotEmpty()
-  @IsNumber()
+  @IsNotEmpty({ message: 'Количество не должно быть пустым' })
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: 'Количество должно быть числом' },
+  )
   receivedQuantity: number
 }
 
 export class CreateGoodsReceiptDto {
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: 'Идентификатор поставщика не должен быть пустым' })
+  @IsString({ message: 'Идентификатор поставщика должен быть строкой' })
   supplierId: string
 
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: 'Идентификатор склада не должен быть пустым' })
+  @IsString({ message: 'Идентификатор склада должен быть строкой' })
   warehouseId: string
 
-  @IsNotEmpty()
-  @IsDateString()
+  @IsNotEmpty({ message: 'Дата поступления товара не должна быть пустой' })
+  @IsDateString(
+    {},
+    {
+      message: 'Дата поступления товара должна быть корректной датой',
+    },
+  )
   goodsReceiptDate: Date
 
-  @IsNotEmpty()
-  @IsEnum(SupplierInvoicePaymentTerm)
+  @IsNotEmpty({ message: 'Условия оплаты не должны быть пустыми' })
+  @IsEnum(SupplierInvoicePaymentTerm, {
+    message: 'Условия оплаты должны быть выбраны из списка',
+  })
   paymentTerm: SupplierInvoicePaymentTerm
 
-  @IsNotEmpty()
-  @IsEnum(SupplierInvoicePaymentOption)
+  @IsNotEmpty({ message: 'Опция оплаты не должна быть пустой' })
+  @IsEnum(SupplierInvoicePaymentOption, {
+    message: 'Способ оплаты должен быть выбран из списка',
+  })
   paymentOption: SupplierInvoicePaymentOption
 
-  @ValidateNested({ each: true })
+  @ValidateNested({
+    each: true,
+    message: 'Варианты товаров должны быть корректными',
+  })
   @Type(() => GoodsReceiptVariant)
   variants: GoodsReceiptVariant[]
 }

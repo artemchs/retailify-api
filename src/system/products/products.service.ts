@@ -60,26 +60,38 @@ export class ProductsService {
   }
 
   async create(createProductDto: CreateProductDto) {
-    await this.db.product.create({
-      data: {
-        ...createProductDto,
-        colors: {
-          createMany: {
-            data: createProductDto.colors,
+    await Promise.all([
+      this.db.product.create({
+        data: {
+          ...createProductDto,
+          colors: {
+            createMany: {
+              data: createProductDto.colors,
+            },
+          },
+          media: {
+            createMany: {
+              data: createProductDto.media,
+            },
+          },
+          characteristics: {
+            connect: createProductDto.characteristics?.map(({ id }) => ({
+              id,
+            })),
           },
         },
-        media: {
-          createMany: {
-            data: createProductDto.media,
+      }),
+      this.db.collection.update({
+        where: {
+          id: createProductDto.collectionId,
+        },
+        data: {
+          numOfProducts: {
+            increment: 1,
           },
         },
-        characteristics: {
-          connect: createProductDto.characteristics?.map(({ id }) => ({
-            id,
-          })),
-        },
-      },
-    })
+      }),
+    ])
   }
 
   async findAll({
@@ -229,6 +241,40 @@ export class ProductsService {
     }
   }
 
+  private async updateProductCollection(
+    oldCollectionId: string | null,
+    newCollectionId?: string,
+  ) {
+    if (
+      oldCollectionId &&
+      newCollectionId &&
+      oldCollectionId !== newCollectionId
+    ) {
+      await Promise.all([
+        this.db.collection.update({
+          where: {
+            id: oldCollectionId,
+          },
+          data: {
+            numOfProducts: {
+              decrement: 1,
+            },
+          },
+        }),
+        this.db.collection.update({
+          where: {
+            id: newCollectionId,
+          },
+          data: {
+            numOfProducts: {
+              increment: 1,
+            },
+          },
+        }),
+      ])
+    }
+  }
+
   async update(id: string, updateProductDto: UpdateProductDto) {
     const product = await this.getFullProduct(id)
 
@@ -251,6 +297,10 @@ export class ProductsService {
         product.characteristics,
         updateProductDto.characteristics,
       ),
+      this.updateProductCollection(
+        product.collectionId,
+        updateProductDto.collectionId,
+      ),
     ])
   }
 
@@ -263,6 +313,13 @@ export class ProductsService {
       },
       data: {
         isArchived: true,
+        collection: {
+          update: {
+            numOfProducts: {
+              decrement: 1,
+            },
+          },
+        },
       },
     })
   }
@@ -276,6 +333,13 @@ export class ProductsService {
       },
       data: {
         isArchived: false,
+        collection: {
+          update: {
+            numOfProducts: {
+              increment: 1,
+            },
+          },
+        },
       },
     })
   }
