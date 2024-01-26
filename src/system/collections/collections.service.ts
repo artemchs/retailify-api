@@ -43,6 +43,15 @@ export class CollectionsService {
       where: {
         id,
       },
+      include: {
+        _count: {
+          select: {
+            characteristics: true,
+            children: true,
+            products: true,
+          },
+        },
+      },
     })
 
     if (!collection) {
@@ -83,6 +92,15 @@ export class CollectionsService {
         take,
         skip,
         orderBy: buildOrderByArray({ orderBy }),
+        include: {
+          _count: {
+            select: {
+              characteristics: true,
+              children: true,
+              products: true,
+            },
+          },
+        },
       }),
       this.db.collection.count({
         where,

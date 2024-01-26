@@ -265,7 +265,6 @@ model Collection {
   parentId        String?
   children        Collection[]     @relation("parent")
   products        Product[]
-  numOfProducts   Int              @default(0)
 
   isArchived Boolean @default(false)
 }
