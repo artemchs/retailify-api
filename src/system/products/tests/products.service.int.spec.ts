@@ -50,6 +50,12 @@ describe('ProductsService', () => {
           },
         ],
       }),
+      db.collection.create({
+        data: {
+          id: 'Test Collection 1',
+          name: 'Test Collection 1',
+        },
+      }),
     ])
   })
 
@@ -67,6 +73,7 @@ describe('ProductsService', () => {
           index: 1,
         },
       ],
+      collectionId: 'Test Collection 1',
       media: [
         {
           id: 'media_1',
@@ -574,6 +581,7 @@ describe('ProductsService', () => {
           packagingLength: 10,
           packagingWeight: 10,
           packagingWidth: 10,
+          collectionId: 'Test Collection 1',
         },
       })
     })
@@ -612,6 +620,7 @@ describe('ProductsService', () => {
           packagingLength: 10,
           packagingWeight: 10,
           packagingWidth: 10,
+          collectionId: 'Test Collection 1',
         },
       })
     })

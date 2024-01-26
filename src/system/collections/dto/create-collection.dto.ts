@@ -12,12 +12,6 @@ export class CollectionDefaultCharacteristic {
   id: string
 }
 
-export class CollectionProduct {
-  @IsNotEmpty({ message: 'Идентификатор продукта не должен быть пустым' })
-  @IsString({ message: 'Идентификатор продукта должен быть строкой' })
-  id: string
-}
-
 export class CreateCollectionDto {
   @IsNotEmpty({ message: 'Наименование коллекции не должно быть пустым' })
   @IsString({ message: 'Наименование коллекции должно быть строкой' })
@@ -33,9 +27,4 @@ export class CreateCollectionDto {
   @ValidateNested({ each: true })
   @Type(() => CollectionDefaultCharacteristic)
   characteristics?: CollectionDefaultCharacteristic[]
-
-  @IsOptional({ message: 'Продукты коллекции должны быть корректными' })
-  @ValidateNested({ each: true })
-  @Type(() => CollectionProduct)
-  products?: CollectionProduct[]
 }

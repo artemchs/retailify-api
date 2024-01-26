@@ -1382,6 +1382,7 @@ describe('App', () => {
           packagingLength: 10,
           packagingWeight: 10,
           packagingWidth: 10,
+          collectionId: '',
         }
 
         it('should create a new product', async () => {
@@ -1399,6 +1400,7 @@ describe('App', () => {
                   colorId: color2Id!,
                   index: 1,
                 },
+                collectionId,
               ],
             })
             .expectStatus(201)
@@ -1419,6 +1421,7 @@ describe('App', () => {
                   colorId: color2Id!,
                   index: 1,
                 },
+                collectionId,
               ],
             })
             .expectStatus(403)

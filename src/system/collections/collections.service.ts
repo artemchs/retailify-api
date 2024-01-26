@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import {
   CollectionDefaultCharacteristic,
-  CollectionProduct,
   CreateCollectionDto,
 } from './dto/create-collection.dto'
 import { UpdateCollectionDto } from './dto/update-collection.dto'
@@ -57,9 +56,6 @@ export class CollectionsService {
     await this.db.collection.create({
       data: {
         ...createCollectionDto,
-        products: {
-          connect: createCollectionDto.products?.map((obj) => obj),
-        },
         characteristics: {
           connect: createCollectionDto.characteristics?.map((obj) => obj),
         },
@@ -130,28 +126,6 @@ export class CollectionsService {
     }
   }
 
-  private async updateCollectionProducts(
-    collectionId: string,
-    oldArray: CollectionProduct[],
-    newArray?: CollectionProduct[],
-  ) {
-    if (newArray) {
-      const { deleted, newItems } = compareArrays(oldArray, newArray, 'id')
-
-      return this.db.collection.update({
-        where: {
-          id: collectionId,
-        },
-        data: {
-          products: {
-            disconnect: deleted,
-            connect: newItems,
-          },
-        },
-      })
-    }
-  }
-
   async update(id: string, updateCollectionDto: UpdateCollectionDto) {
     const collection = await this.getFullCollection(id)
 
@@ -170,11 +144,6 @@ export class CollectionsService {
         id,
         collection.characteristics,
         updateCollectionDto.characteristics,
-      ),
-      this.updateCollectionProducts(
-        id,
-        collection.products,
-        updateCollectionDto.products,
       ),
     ])
   }
