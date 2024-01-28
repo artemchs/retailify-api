@@ -47,7 +47,6 @@ export class CollectionsService {
         _count: {
           select: {
             characteristics: true,
-            children: true,
             products: true,
           },
         },
@@ -96,7 +95,6 @@ export class CollectionsService {
           _count: {
             select: {
               characteristics: true,
-              children: true,
               products: true,
             },
           },
@@ -161,7 +159,7 @@ export class CollectionsService {
       this.updateCollectionCharacteristics(
         id,
         collection.characteristics,
-        updateCollectionDto.characteristics,
+        updateCollectionDto.characteristics ?? [],
       ),
     ])
   }

@@ -14,6 +14,7 @@ async function resetDb() {
     prisma.allowedSystemUserEmail.deleteMany(),
     prisma.systemUser.deleteMany(),
     prisma.supplier.deleteMany(),
+    prisma.characteristic.deleteMany(),
   ])
 }
 
@@ -127,12 +128,30 @@ async function seedWarehouses() {
   }
 }
 
+const characteristicIds: string[] = []
+async function seedCharacteristics() {
+  for (let i = 0; i < 20; i++) {
+    try {
+      const characteristic = await prisma.characteristic.create({
+        data: {
+          name: faker.lorem.word(),
+        },
+      })
+      console.log('Successfully created a new characteristic')
+      characteristicIds.push(characteristic.id)
+    } catch (e) {
+      console.log('Could not create a new characteristic: ', e)
+    }
+  }
+}
+
 async function main() {
   if (env.NODE_ENV === 'development') {
     await resetDb()
     await seedSystemUsers()
     await seedSuppliers()
     await seedWarehouses()
+    await seedCharacteristics()
   }
 }
 

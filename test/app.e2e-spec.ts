@@ -1355,6 +1355,154 @@ describe('App', () => {
       })
     })
 
+    describe('Collections', () => {
+      const baseUrl = '/system/collections'
+
+      describe('(POST) /system/collections', () => {
+        afterAll(async () => {
+          const createdCollection = await db.collection.findFirst()
+          collectionId = createdCollection?.id
+        })
+
+        const data: CreateCollectionDto = {
+          name: 'Test Collection 1',
+        }
+
+        it('should create a new collection', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody({
+              ...data,
+              characteristics: [
+                {
+                  id: characteristicId,
+                },
+              ],
+              products: [
+                {
+                  id: productId,
+                },
+              ],
+            })
+            .expectStatus(201)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody({
+              ...data,
+              characteristics: [
+                {
+                  id: characteristicId,
+                },
+              ],
+              products: [
+                {
+                  id: productId,
+                },
+              ],
+            })
+            .expectStatus(403)
+        })
+      })
+
+      describe('(GET) /system/collections', () => {
+        it('should list collections', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(GET) /system/collections/:id', () => {
+        it('should find the requested collection', async () => {
+          await spec()
+            .get(`${baseUrl}/${collectionId}`)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the requested collection does not exist', async () => {
+          await spec()
+            .get(`${baseUrl}/non-existent`)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .get(`${baseUrl}/${collectionId}`)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/collections/:id', () => {
+        const data: UpdateCollectionDto = {
+          name: 'Updated Test Collection 1',
+        }
+
+        it('should update the requested collection', async () => {
+          await spec()
+            .put(`${baseUrl}/${collectionId}`)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .put(`${baseUrl}/${collectionId}`)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe('(DELETE) /system/collections/:id', () => {
+        it('should archive the requested collection', async () => {
+          await spec()
+            .delete(`${baseUrl}/${collectionId}`)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .delete(`${baseUrl}/${collectionId}`)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(PUT) /system/collections/restore/:id', () => {
+        it('should archive the requested collection', async () => {
+          await spec()
+            .put(`${baseUrl}/restore/${collectionId}`)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .put(`${baseUrl}/restore/${collectionId}`)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+    })
+
     describe('Products', () => {
       const baseUrl = '/system/products'
 
@@ -1400,8 +1548,8 @@ describe('App', () => {
                   colorId: color2Id!,
                   index: 1,
                 },
-                collectionId,
               ],
+              collectionId,
             })
             .expectStatus(201)
         })
@@ -1421,8 +1569,8 @@ describe('App', () => {
                   colorId: color2Id!,
                   index: 1,
                 },
-                collectionId,
               ],
+              collectionId,
             })
             .expectStatus(403)
         })
@@ -1708,154 +1856,6 @@ describe('App', () => {
               .withHeaders('Authorization', 'Bearer $S{accessToken}')
               .expectStatus(403)
           })
-        })
-      })
-    })
-
-    describe('Collections', () => {
-      const baseUrl = '/system/collections'
-
-      describe('(POST) /system/collections', () => {
-        afterAll(async () => {
-          const createdCollection = await db.collection.findFirst()
-          collectionId = createdCollection?.id
-        })
-
-        const data: CreateCollectionDto = {
-          name: 'Test Collection 1',
-        }
-
-        it('should create a new collection', async () => {
-          await spec()
-            .post(baseUrl)
-            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .withBody({
-              ...data,
-              characteristics: [
-                {
-                  id: characteristicId,
-                },
-              ],
-              products: [
-                {
-                  id: productId,
-                },
-              ],
-            })
-            .expectStatus(201)
-        })
-
-        it('should respond with a `403` status code if the user is not an admin', async () => {
-          await spec()
-            .post(baseUrl)
-            .withHeaders('Authorization', 'Bearer $S{accessToken}')
-            .withBody({
-              ...data,
-              characteristics: [
-                {
-                  id: characteristicId,
-                },
-              ],
-              products: [
-                {
-                  id: productId,
-                },
-              ],
-            })
-            .expectStatus(403)
-        })
-      })
-
-      describe('(GET) /system/collections', () => {
-        it('should list collections', async () => {
-          await spec()
-            .get(baseUrl)
-            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .expectStatus(200)
-        })
-
-        it('should respond with a `403` status code for a non-admin user', async () => {
-          await spec()
-            .get(baseUrl)
-            .withHeaders('Authorization', 'Bearer $S{accessToken}')
-            .expectStatus(403)
-        })
-      })
-
-      describe('(GET) /system/collections/:id', () => {
-        it('should find the requested collection', async () => {
-          await spec()
-            .get(`${baseUrl}/${collectionId}`)
-            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .expectStatus(200)
-        })
-
-        it('should respond with a `404` status code if the requested collection does not exist', async () => {
-          await spec()
-            .get(`${baseUrl}/non-existent`)
-            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .expectStatus(404)
-        })
-
-        it('should respond with a `403` status code if the user is not an admin', async () => {
-          await spec()
-            .get(`${baseUrl}/${collectionId}`)
-            .withHeaders('Authorization', 'Bearer $S{accessToken}')
-            .expectStatus(403)
-        })
-      })
-
-      describe('(PUT) /system/collections/:id', () => {
-        const data: UpdateCollectionDto = {
-          name: 'Updated Test Collection 1',
-        }
-
-        it('should update the requested collection', async () => {
-          await spec()
-            .put(`${baseUrl}/${collectionId}`)
-            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .withBody(data)
-            .expectStatus(200)
-        })
-
-        it('should respond with a `403` status code if the user is not an admin', async () => {
-          await spec()
-            .put(`${baseUrl}/${collectionId}`)
-            .withHeaders('Authorization', 'Bearer $S{accessToken}')
-            .withBody(data)
-            .expectStatus(403)
-        })
-      })
-
-      describe('(DELETE) /system/collections/:id', () => {
-        it('should archive the requested collection', async () => {
-          await spec()
-            .delete(`${baseUrl}/${collectionId}`)
-            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .expectStatus(200)
-        })
-
-        it('should respond with a `403` status code if the user is not an admin', async () => {
-          await spec()
-            .delete(`${baseUrl}/${collectionId}`)
-            .withHeaders('Authorization', 'Bearer $S{accessToken}')
-            .expectStatus(403)
-        })
-      })
-
-      describe('(PUT) /system/collections/restore/:id', () => {
-        it('should archive the requested collection', async () => {
-          await spec()
-            .put(`${baseUrl}/restore/${collectionId}`)
-            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .expectStatus(200)
-        })
-
-        it('should respond with a `403` status code if the user is not an admin', async () => {
-          await spec()
-            .put(`${baseUrl}/restore/${collectionId}`)
-            .withHeaders('Authorization', 'Bearer $S{accessToken}')
-            .expectStatus(403)
         })
       })
     })

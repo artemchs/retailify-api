@@ -1,9 +1,19 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  Query,
+} from '@nestjs/common'
 import { CharacteristicsService } from './characteristics.service'
 import { CreateCharacteristicDto } from './dto/create-characteristic.dto'
 import { UpdateCharacteristicDto } from './dto/update-characteristic.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
+import { FindAllCharacteristicDto } from './dto/findAll-characteristic.dto'
 
 @Roles(Role.Admin)
 @Controller('system/characteristics')
@@ -17,9 +27,14 @@ export class CharacteristicsController {
     return this.characteristicsService.create(createCharacteristicDto)
   }
 
+  @Get('for-collection')
+  findAllForCollection(@Query() query: { collectionId: string }) {
+    return this.characteristicsService.findAllForCollection(query)
+  }
+
   @Get()
-  findAll() {
-    return this.characteristicsService.findAll()
+  findAll(@Query() query: FindAllCharacteristicDto) {
+    return this.characteristicsService.findAll(query)
   }
 
   @Get(':characteristicId')
