@@ -11,6 +11,7 @@ import {
   checkIsArchived,
   getPaginationData,
 } from '../common/utils/db-helpers'
+import { FindAllInfiniteListSupplierDto } from './dto/findAllInfiniteList-supplier.dto'
 
 @Injectable()
 export class SuppliersService {
@@ -71,6 +72,37 @@ export class SuppliersService {
         totalPages: calculateTotalPages(totalItems, take),
         totalItems,
       },
+    }
+  }
+
+  async findAllInfiniteList({ cursor, query }: FindAllInfiniteListSupplierDto) {
+    const limit = 10
+
+    const where: Prisma.SupplierWhereInput = {
+      OR: buildContainsArray({
+        fields: ['name', 'contactPerson', 'email', 'phone', 'address'],
+        query,
+      }),
+    }
+
+    const items = await this.db.supplier.findMany({
+      take: limit + 1,
+      where,
+      cursor: cursor ? { id: cursor } : undefined,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    let nextCursor: typeof cursor | undefined = undefined
+    if (items.length > limit) {
+      const nextItem = items.pop()
+      nextCursor = nextItem!.id
+    }
+
+    return {
+      items,
+      nextCursor,
     }
   }
 

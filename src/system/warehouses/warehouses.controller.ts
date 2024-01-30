@@ -14,6 +14,7 @@ import { WarehousesService } from './warehouses.service'
 import { CreateWarehouseDto } from './dto/create-warehouse.dto'
 import { FindAllWarehouseDto } from './dto/findAll-warehouse.dto'
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto'
+import { FindAllInfiniteListWarehouseDto } from './dto/findAllInfiniteList-warehouse.dto'
 
 @Roles(Role.Admin)
 @Controller('system/warehouses')
@@ -28,6 +29,11 @@ export class WarehousesController {
   @Get()
   findAll(@Query() query: FindAllWarehouseDto) {
     return this.warehousesService.findAll(query)
+  }
+
+  @Get('infinite-list')
+  findAllInfiniteList(@Query() query: FindAllInfiniteListWarehouseDto) {
+    return this.warehousesService.findAllInfiniteList(query)
   }
 
   @Get(':id')

@@ -265,16 +265,6 @@ export class CollectionsService {
       },
       data: {
         isArchived: false,
-        children: {
-          updateMany: {
-            where: {
-              parentId: id,
-            },
-            data: {
-              isArchived: false,
-            },
-          },
-        },
       },
     })
   }

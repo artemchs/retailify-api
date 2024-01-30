@@ -12,6 +12,7 @@ import {
   checkIsArchived,
   getPaginationData,
 } from '../common/utils/db-helpers'
+import { FindAllInfiniteListWarehouseDto } from './dto/findAllInfiniteList-warehouse.dto'
 
 @Injectable()
 export class WarehousesService {
@@ -72,6 +73,40 @@ export class WarehousesService {
         totalPages: calculateTotalPages(totalItems, take),
         totalItems,
       },
+    }
+  }
+
+  async findAllInfiniteList({
+    cursor,
+    query,
+  }: FindAllInfiniteListWarehouseDto) {
+    const limit = 10
+
+    const where: Prisma.WarehouseWhereInput = {
+      OR: buildContainsArray({
+        fields: ['name', 'address'],
+        query,
+      }),
+    }
+
+    const items = await this.db.warehouse.findMany({
+      take: limit + 1,
+      where,
+      cursor: cursor ? { id: cursor } : undefined,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    let nextCursor: typeof cursor | undefined = undefined
+    if (items.length > limit) {
+      const nextItem = items.pop()
+      nextCursor = nextItem!.id
+    }
+
+    return {
+      items,
+      nextCursor,
     }
   }
 

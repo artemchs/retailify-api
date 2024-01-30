@@ -14,6 +14,7 @@ import { UpdateSupplierDto } from './dto/update-supplier.dto'
 import { FindAllSupplierDto } from './dto/findAll-supplier.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
+import { FindAllInfiniteListCollectionDto } from '../collections/dto/findAllInfiniteList-collection.dto'
 
 @Controller('system/suppliers')
 export class SuppliersController {
@@ -28,6 +29,11 @@ export class SuppliersController {
   @Get()
   findAll(@Query() query: FindAllSupplierDto) {
     return this.suppliersService.findAll(query)
+  }
+
+  @Get('infinite-list')
+  findAllInfiniteList(@Query() query: FindAllInfiniteListCollectionDto) {
+    return this.suppliersService.findAllInfiniteList(query)
   }
 
   @Get(':id')
