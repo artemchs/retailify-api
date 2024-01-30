@@ -149,6 +149,8 @@ model Product {
   characteristics CharacteristicValue[]
   collection      Collection?           @relation(fields: [collectionId], references: [id])
   collectionId    String?
+  brand           Brand?                @relation(fields: [brandId], references: [id])
+  brandId         String?
 
   variants               Variant[]
   totalReceivedQuantity  Int       @default(0)
@@ -267,4 +269,13 @@ model Collection {
   products        Product[]
 
   isArchived Boolean @default(false)
+}
+
+model Brand {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name     String
+  products Product[]
 }

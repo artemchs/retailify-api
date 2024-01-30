@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import {
   CollectionDefaultCharacteristic,
   CreateCollectionDto,
@@ -15,6 +19,7 @@ import {
 } from '../common/utils/db-helpers'
 import { Prisma } from '@prisma/client'
 import { compareArrays } from '../common/utils/compare-arrays'
+import { FindAllInfiniteListCollectionDto } from './dto/findAllInfiniteList-collection.dto'
 
 @Injectable()
 export class CollectionsService {
@@ -48,6 +53,7 @@ export class CollectionsService {
           select: {
             characteristics: true,
             products: true,
+            children: true,
           },
         },
       },
@@ -61,6 +67,16 @@ export class CollectionsService {
   }
 
   async create(createCollectionDto: CreateCollectionDto) {
+    const parent = createCollectionDto.parentId
+      ? await this.getCollection(createCollectionDto.parentId)
+      : null
+
+    if (parent?.parentId) {
+      throw new BadRequestException(
+        'Выбранная коллекция уже являеться субколлекцией.',
+      )
+    }
+
     await this.db.collection.create({
       data: {
         ...createCollectionDto,
@@ -87,7 +103,10 @@ export class CollectionsService {
 
     const [items, totalItems] = await Promise.all([
       this.db.collection.findMany({
-        where,
+        where: {
+          ...where,
+          parentId: checkIsArchived(isArchived) ? undefined : null,
+        },
         take,
         skip,
         orderBy: buildOrderByArray({ orderBy }),
@@ -96,8 +115,14 @@ export class CollectionsService {
             select: {
               characteristics: true,
               products: true,
+              children: true,
             },
           },
+          children: !checkIsArchived(isArchived)
+            ? {
+                where,
+              }
+            : undefined,
         },
       }),
       this.db.collection.count({
@@ -111,6 +136,40 @@ export class CollectionsService {
         totalPages: calculateTotalPages(totalItems, take),
         totalItems,
       },
+    }
+  }
+
+  async findAllInfiniteList({
+    query,
+    cursor,
+    parentId,
+  }: FindAllInfiniteListCollectionDto) {
+    const limit = 10
+
+    const where: Prisma.CollectionWhereInput = {
+      OR: buildContainsArray({ fields: ['name'], query }),
+      isArchived: false,
+      parentId: parentId ?? null,
+    }
+
+    const items = await this.db.collection.findMany({
+      take: limit + 1,
+      where,
+      cursor: cursor ? { id: cursor } : undefined,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    let nextCursor: typeof cursor | undefined = undefined
+    if (items.length > limit) {
+      const nextItem = items.pop()
+      nextCursor = nextItem!.id
+    }
+
+    return {
+      items,
+      nextCursor,
     }
   }
 
@@ -145,6 +204,16 @@ export class CollectionsService {
   async update(id: string, updateCollectionDto: UpdateCollectionDto) {
     const collection = await this.getFullCollection(id)
 
+    const parent = updateCollectionDto?.parentId
+      ? await this.getCollection(updateCollectionDto.parentId)
+      : null
+
+    if (parent?.parentId) {
+      throw new BadRequestException(
+        'Выбранная коллекция уже являеться субколлекцией.',
+      )
+    }
+
     await Promise.all([
       this.db.collection.update({
         where: {
@@ -173,6 +242,16 @@ export class CollectionsService {
       },
       data: {
         isArchived: true,
+        children: {
+          updateMany: {
+            where: {
+              parentId: id,
+            },
+            data: {
+              isArchived: true,
+            },
+          },
+        },
       },
     })
   }
@@ -186,6 +265,16 @@ export class CollectionsService {
       },
       data: {
         isArchived: false,
+        children: {
+          updateMany: {
+            where: {
+              parentId: id,
+            },
+            data: {
+              isArchived: false,
+            },
+          },
+        },
       },
     })
   }

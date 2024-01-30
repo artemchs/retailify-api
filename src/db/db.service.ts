@@ -46,6 +46,7 @@ export class DbService
         this.characteristic.deleteMany(),
         this.characteristicValue.deleteMany(),
         this.collection.deleteMany(),
+        this.brand.deleteMany(),
       ])
     }
   }

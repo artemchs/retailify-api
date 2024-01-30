@@ -27,6 +27,8 @@ import { CreateCollectionDto } from 'src/system/collections/dto/create-collectio
 import { UpdateCollectionDto } from 'src/system/collections/dto/update-collection.dto'
 import { CreateVariantDto } from 'src/system/products/variants/dto/create-variant.dto'
 import { UpdateVariantDto } from 'src/system/products/variants/dto/update-variant.dto'
+import { CreateBrandDto } from 'src/system/brands/dto/create-brand.dto'
+import { UpdateBrandDto } from 'src/system/brands/dto/update-brand.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -93,6 +95,7 @@ describe('App', () => {
     let variantId: string | undefined
     let characteristicValueId: string | undefined
     let collectionId: string | undefined
+    let brandId: string | undefined
 
     describe('Auth', () => {
       describe('(POST) /system/auth/sign-up', () => {
@@ -1067,6 +1070,147 @@ describe('App', () => {
 
         it('should remove the requested color', async () => {
           const url = baseUrl + '/' + 'Test Color 3'
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+      })
+    })
+
+    describe('Brands', () => {
+      const baseUrl = '/system/brands'
+
+      describe(`(POST) ${baseUrl}`, () => {
+        afterAll(async () => {
+          const createdBrand = await db.brand.findFirst()
+          brandId = createdBrand?.id
+        })
+
+        const data: CreateBrandDto = {
+          name: 'Test Brand 1',
+        }
+
+        it('should create a new brand', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(201)
+        })
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}`, () => {
+        it('should list brands', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}/:id`, () => {
+        it('should find the requested brand', async () => {
+          const url = `${baseUrl}/${brandId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the brand does not exist', async () => {
+          const url = `${baseUrl}/non-existent`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${brandId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(PUT) ${baseUrl}/:id`, () => {
+        const data: UpdateBrandDto = {
+          name: 'Updated Test Brand 1',
+        }
+
+        it('should update the requested brand', async () => {
+          const url = `${baseUrl}/${brandId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${brandId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(DELETE) ${baseUrl}/:id`, () => {
+        beforeAll(async () => {
+          await db.brand.create({
+            data: {
+              id: 'Test Brand 2',
+              name: 'Test Brand 2',
+            },
+          })
+        })
+
+        const id = 'Test Brand 2'
+
+        it('should respond with a `404` status code if the brand does not exist', async () => {
+          const url = `${baseUrl}/non-existent`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${id}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+
+        it('should remove the requested brand', async () => {
+          const url = `${baseUrl}/${id}`
 
           await spec()
             .delete(url)

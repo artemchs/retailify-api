@@ -14,6 +14,7 @@ import { UpdateCollectionDto } from './dto/update-collection.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { FindAllCollectionDto } from './dto/findAll-collection.dto'
+import { FindAllInfiniteListCollectionDto } from './dto/findAllInfiniteList-collection.dto'
 
 @Roles(Role.Admin)
 @Controller('system/collections')
@@ -28,6 +29,11 @@ export class CollectionsController {
   @Get()
   findAll(@Query() query: FindAllCollectionDto) {
     return this.collectionsService.findAll(query)
+  }
+
+  @Get('infinite-list')
+  findAllInfiniteList(@Query() query: FindAllInfiniteListCollectionDto) {
+    return this.collectionsService.findAllInfiniteList(query)
   }
 
   @Get(':id')
