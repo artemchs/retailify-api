@@ -1,9 +1,19 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  Query,
+} from '@nestjs/common'
 import { ValuesService } from './values.service'
 import { CreateValueDto } from './dto/create-value.dto'
 import { UpdateValueDto } from './dto/update-value.dto'
 import { Roles } from '../../../system/common/decorators'
 import { Role } from '../../../system/common/enums'
+import { FindAllCharacteristicValueDto } from './dto/findAll-value.dto'
 
 @Roles(Role.Admin)
 @Controller('system/characteristics/:characteristicId/values')
@@ -19,8 +29,11 @@ export class ValuesController {
   }
 
   @Get()
-  findAll(@Param('characteristicId') characteristicId: string) {
-    return this.valuesService.findAll(characteristicId)
+  findAll(
+    @Param('characteristicId') characteristicId: string,
+    @Query() query: FindAllCharacteristicValueDto,
+  ) {
+    return this.valuesService.findAll(characteristicId, query)
   }
 
   @Get(':valueId')

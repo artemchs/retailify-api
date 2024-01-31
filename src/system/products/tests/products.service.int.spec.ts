@@ -210,6 +210,8 @@ describe('ProductsService', () => {
     it('should find the requested product', async () => {
       const res = await service.findOne(id)
 
+      console.log(res)
+
       expect(res.id).toBe(id)
     })
 

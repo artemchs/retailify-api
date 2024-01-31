@@ -6,6 +6,9 @@ import {
 import { CreateValueDto } from './dto/create-value.dto'
 import { UpdateValueDto } from './dto/update-value.dto'
 import { DbService } from '../../../db/db.service'
+import { FindAllCharacteristicValueDto } from './dto/findAll-value.dto'
+import { Prisma } from '@prisma/client'
+import { buildContainsArray } from '../../common/utils/db-helpers'
 
 @Injectable()
 export class ValuesService {
@@ -59,17 +62,36 @@ export class ValuesService {
     })
   }
 
-  async findAll(characteristicId: string) {
-    const values = await this.db.characteristicValue.findMany({
-      where: {
-        characteristicId,
-      },
+  async findAll(
+    characteristicId: string,
+    { cursor, query }: FindAllCharacteristicValueDto,
+  ) {
+    const limit = 10
+
+    const where: Prisma.CharacteristicValueWhereInput = {
+      OR: buildContainsArray({ fields: ['value'], query }),
+      characteristicId,
+    }
+
+    const items = await this.db.characteristicValue.findMany({
+      take: limit + 1,
+      where,
+      cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
-        value: 'asc',
+        createdAt: 'desc',
       },
     })
 
-    return values
+    let nextCursor: typeof cursor | undefined = undefined
+    if (items.length > limit) {
+      const nextItem = items.pop()
+      nextCursor = nextItem!.id
+    }
+
+    return {
+      items,
+      nextCursor,
+    }
   }
 
   async findOne(characteristicId: string, id: string) {

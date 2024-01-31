@@ -69,9 +69,9 @@ describe('CharacteristicValuesService', () => {
     })
 
     it('should list all values', async () => {
-      const values = await service.findAll(characteristicId)
+      const values = await service.findAll(characteristicId, {})
 
-      expect(values.length).toBe(2)
+      expect(values.items.length).toBe(2)
     })
   })
 
