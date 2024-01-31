@@ -1,9 +1,19 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  Query,
+} from '@nestjs/common'
 import { ColorsService } from './colors.service'
 import { CreateColorDto } from './dto/create-color.dto'
 import { UpdateColorDto } from './dto/update-color.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
+import { FindAllColorDto } from './dto/findAll-color.dto'
 
 @Roles(Role.Admin)
 @Controller('system/colors')
@@ -16,8 +26,8 @@ export class ColorsController {
   }
 
   @Get()
-  findAll() {
-    return this.colorsService.findAll()
+  findAll(@Query() query: FindAllColorDto) {
+    return this.colorsService.findAll(query)
   }
 
   @Get(':id')

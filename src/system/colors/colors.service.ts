@@ -6,6 +6,9 @@ import {
 import { CreateColorDto } from './dto/create-color.dto'
 import { UpdateColorDto } from './dto/update-color.dto'
 import { DbService } from '../../db/db.service'
+import { FindAllColorDto } from './dto/findAll-color.dto'
+import { Prisma } from '@prisma/client'
+import { buildContainsArray } from '../common/utils/db-helpers'
 
 @Injectable()
 export class ColorsService {
@@ -38,14 +41,32 @@ export class ColorsService {
     })
   }
 
-  async findAll() {
-    const colors = await this.db.color.findMany({
+  async findAll({ cursor, query }: FindAllColorDto) {
+    const limit = 10
+
+    const where: Prisma.ColorWhereInput = {
+      OR: buildContainsArray({ fields: ['name', 'color'], query }),
+    }
+
+    const items = await this.db.color.findMany({
+      take: limit + 1,
+      where,
+      cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
-        name: 'asc',
+        createdAt: 'desc',
       },
     })
 
-    return colors
+    let nextCursor: typeof cursor | undefined = undefined
+    if (items.length > limit) {
+      const nextItem = items.pop()
+      nextCursor = nextItem!.id
+    }
+
+    return {
+      items,
+      nextCursor,
+    }
   }
 
   async findOne(id: string) {

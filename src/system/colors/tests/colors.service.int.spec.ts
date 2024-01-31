@@ -59,9 +59,9 @@ describe('ColorsService', () => {
     })
 
     it('should list all colors', async () => {
-      const colors = await service.findAll()
+      const colors = await service.findAll({})
 
-      expect(colors.length).toBe(2)
+      expect(colors.items.length).toBe(2)
     })
   })
 
