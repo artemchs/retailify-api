@@ -5,7 +5,7 @@ import { DbService } from '../src/db/db.service'
 import { LogInDto, SignUpDto } from '../src/system/auth/dto'
 import { request, spec } from 'pactum'
 import { UpdateMeDto } from '../src/system/users/dto/update-me.dto'
-import { StorageService } from '../src/storage/storage.service'
+import { StorageService } from '../src/system/storage/storage.service'
 import { UpdatePasswordDto } from 'src/system/users/dto'
 import { CreateDto, UpdateDto } from '../src/system/employees/dto'
 import { CreateSupplierDto } from 'src/system/suppliers/dto/create-supplier.dto'
@@ -29,6 +29,7 @@ import { CreateVariantDto } from 'src/system/products/variants/dto/create-varian
 import { UpdateVariantDto } from 'src/system/products/variants/dto/update-variant.dto'
 import { CreateBrandDto } from 'src/system/brands/dto/create-brand.dto'
 import { UpdateBrandDto } from 'src/system/brands/dto/update-brand.dto'
+import { randomUUID } from 'crypto'
 
 describe('App', () => {
   let app: INestApplication
@@ -277,6 +278,40 @@ describe('App', () => {
           .post('/system/employees/')
           .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
           .expectStatus(400)
+      })
+    })
+
+    describe('Storage', () => {
+      describe('(POST) /system/storage', () => {
+        it('should generate a new presigned url for put object command', async () => {
+          await spec()
+            .post('/system/storage')
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(201)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .post('/system/storage')
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe('(GET) /system/storage', () => {
+        const key = randomUUID()
+
+        beforeAll(async () => {
+          await storage.uploadFile(key, Buffer.from('Hello World!'))
+        })
+
+        it('should generate a new presigned url for get object command', async () => {
+          await spec()
+            .get('/system/storage')
+            .withQueryParams('key', key)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(200)
+        })
       })
     })
 

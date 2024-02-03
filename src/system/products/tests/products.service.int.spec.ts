@@ -6,7 +6,7 @@ import { CreateProductDto } from '../dto/create-product.dto'
 import { FindAllProductDto } from '../dto/findAll-product.dto'
 import { NotFoundException } from '@nestjs/common'
 import { UpdateProductDto } from '../dto/update-product.dto'
-import { StorageService } from '../../../storage/storage.service'
+import { StorageService } from '../../storage/storage.service'
 import { ListObjectsV2Command } from '@aws-sdk/client-s3'
 
 describe('ProductsService', () => {

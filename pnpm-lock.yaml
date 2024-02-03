@@ -11,6 +11,9 @@ dependencies:
   '@aws-sdk/s3-request-presigner':
     specifier: ^3.484.0
     version: 3.484.0
+  '@aws-sdk/util-format-url':
+    specifier: ^3.502.0
+    version: 3.502.0
   '@nestjs/common':
     specifier: ^10.0.0
     version: 10.0.0(class-transformer@0.5.1)(class-validator@0.14.0)(reflect-metadata@0.1.13)(rxjs@7.8.1)
@@ -756,6 +759,14 @@ packages:
       tslib: 2.6.2
     dev: false
 
+  /@aws-sdk/types@3.502.0:
+    resolution: {integrity: sha512-M0DSPYe/gXhwD2QHgoukaZv5oDxhW3FfvYIrJptyqUq3OnPJBcDbihHjrE0PBtfh/9kgMZT60/fQ2NVFANfa2g==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      '@smithy/types': 2.9.1
+      tslib: 2.6.2
+    dev: false
+
   /@aws-sdk/util-arn-parser@3.465.0:
     resolution: {integrity: sha512-zOJ82vzDJFqBX9yZBlNeHHrul/kpx/DCoxzW5UBbZeb26kfV53QhMSoEmY8/lEbBqlqargJ/sgRC845GFhHNQw==}
     engines: {node: '>=14.0.0'}
@@ -779,6 +790,16 @@ packages:
       '@aws-sdk/types': 3.468.0
       '@smithy/querystring-builder': 2.0.15
       '@smithy/types': 2.7.0
+      tslib: 2.6.2
+    dev: false
+
+  /@aws-sdk/util-format-url@3.502.0:
+    resolution: {integrity: sha512-4+0zBD0ZIJqtTzSE6VRruRwUx3lG+is8Egv+LN99X5y7i6OdrS9ePYHbCJ9FxkzTThgbkUq6k2W7psEDYvn4VA==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      '@aws-sdk/types': 3.502.0
+      '@smithy/querystring-builder': 2.1.1
+      '@smithy/types': 2.9.1
       tslib: 2.6.2
     dev: false
 
@@ -2276,6 +2297,15 @@ packages:
       tslib: 2.6.2
     dev: false
 
+  /@smithy/querystring-builder@2.1.1:
+    resolution: {integrity: sha512-C/ko/CeEa8jdYE4gt6nHO5XDrlSJ3vdCG0ZAc6nD5ZIE7LBp0jCx4qoqp7eoutBu7VrGMXERSRoPqwi1WjCPbg==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      '@smithy/types': 2.9.1
+      '@smithy/util-uri-escape': 2.1.1
+      tslib: 2.6.2
+    dev: false
+
   /@smithy/querystring-parser@2.0.15:
     resolution: {integrity: sha512-jbBvoK3cc81Cj1c1TH1qMYxNQKHrYQ2DoTntN9FBbtUWcGhc+T4FP6kCKYwRLXyU4AajwGIZstvNAmIEgUUNTQ==}
     engines: {node: '>=14.0.0'}
@@ -2327,6 +2357,13 @@ packages:
 
   /@smithy/types@2.7.0:
     resolution: {integrity: sha512-1OIFyhK+vOkMbu4aN2HZz/MomREkrAC/HqY5mlJMUJfGrPRwijJDTeiN8Rnj9zUaB8ogXAfIOtZrrgqZ4w7Wnw==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      tslib: 2.6.2
+    dev: false
+
+  /@smithy/types@2.9.1:
+    resolution: {integrity: sha512-vjXlKNXyprDYDuJ7UW5iobdmyDm6g8dDG+BFUncAg/3XJaN45Gy5RWWWUVgrzIK7S4R1KWgIX5LeJcfvSI24bw==}
     engines: {node: '>=14.0.0'}
     dependencies:
       tslib: 2.6.2
@@ -2449,6 +2486,13 @@ packages:
 
   /@smithy/util-uri-escape@2.0.0:
     resolution: {integrity: sha512-ebkxsqinSdEooQduuk9CbKcI+wheijxEb3utGXkCoYQkJnwTnLbH1JXGimJtUkQwNQbsbuYwG2+aFVyZf5TLaw==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      tslib: 2.6.2
+    dev: false
+
+  /@smithy/util-uri-escape@2.1.1:
+    resolution: {integrity: sha512-saVzI1h6iRBUVSqtnlOnc9ssU09ypo7n+shdQ8hBTZno/9rZ3AuRYvoHInV57VF7Qn7B+pFJG7qTzFiHxWlWBw==}
     engines: {node: '>=14.0.0'}
     dependencies:
       tslib: 2.6.2

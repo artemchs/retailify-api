@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common'
 import { UpdateMeDto } from './dto/update-me.dto'
 import { DbService } from '../../db/db.service'
-import { StorageService } from '../../storage/storage.service'
+import { StorageService } from '../storage/storage.service'
 import { hashData } from '../common/utils/hash-data'
 
 @Injectable()
@@ -34,7 +34,9 @@ export class UsersService {
     let profilePicture: string | null = null
 
     if (user.profilePictureKey) {
-      profilePicture = await this.storage.getFileUrl(user.profilePictureKey)
+      profilePicture = await this.storage.generatePresignedGetUrl(
+        user.profilePictureKey,
+      )
     }
 
     return {

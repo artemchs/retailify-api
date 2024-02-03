@@ -12,7 +12,8 @@ import { ColorsModule } from './colors/colors.module'
 import { CharacteristicsModule } from './characteristics/characteristics.module'
 import { CollectionsModule } from './collections/collections.module'
 import { VariantsModule } from './products/variants/variants.module'
-import { BrandsModule } from './brands/brands.module';
+import { BrandsModule } from './brands/brands.module'
+import { StorageModule } from './storage/storage.module'
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { BrandsModule } from './brands/brands.module';
     CollectionsModule,
     VariantsModule,
     BrandsModule,
+    StorageModule,
   ],
   providers: [
     {

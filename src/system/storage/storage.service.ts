@@ -2,13 +2,16 @@ import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
+  GetObjectCommandInput,
   ListObjectsCommand,
   PutObjectCommand,
+  PutObjectCommandInput,
   S3Client,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { randomUUID } from 'crypto'
 
 @Injectable()
 export class StorageService extends S3Client {
@@ -91,5 +94,31 @@ export class StorageService extends S3Client {
         )
       }
     }
+  }
+
+  async generatePresignedGetUrl(key: string) {
+    const params: GetObjectCommandInput = {
+      Bucket: this.bucketName,
+      Key: key,
+    }
+
+    const command = new GetObjectCommand(params)
+    const url = await getSignedUrl(this, command)
+
+    return url
+  }
+
+  async generatePresignedPutUrl() {
+    const key = randomUUID()
+
+    const params: PutObjectCommandInput = {
+      Bucket: this.bucketName,
+      Key: key,
+    }
+
+    const command = new PutObjectCommand(params)
+    const url = await getSignedUrl(this, command)
+
+    return url
   }
 }

@@ -7,7 +7,7 @@ import {
 } from './dto/create-product.dto'
 import { UpdateProductDto } from './dto/update-product.dto'
 import { DbService } from '../../db/db.service'
-import { StorageService } from '../../storage/storage.service'
+import { StorageService } from '../storage/storage.service'
 import { FindAllProductDto } from './dto/findAll-product.dto'
 import {
   buildContainsArray,
