@@ -27,7 +27,11 @@ export class CategoryGroupsService {
       include: {
         _count: {
           select: {
-            categories: true,
+            categories: {
+              where: {
+                isArchived: false,
+              },
+            },
           },
         },
       },
@@ -71,6 +75,17 @@ export class CategoryGroupsService {
         take,
         skip,
         orderBy: buildOrderByArray({ orderBy }),
+        include: {
+          _count: {
+            select: {
+              categories: {
+                where: {
+                  isArchived: false,
+                },
+              },
+            },
+          },
+        },
       }),
       this.db.categoryGroup.count({
         where,

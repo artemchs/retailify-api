@@ -1693,6 +1693,7 @@ describe('App', () => {
         const data: CreateCategoryDto = {
           groupId: '',
           name: 'Test Category 1',
+          productName: 'Test Category 1',
         }
 
         it('should create a new category', async () => {

@@ -43,6 +43,7 @@ describe('CategoriesService', () => {
   describe('create', () => {
     const data: CreateCategoryDto = {
       name: 'Test Category 1',
+      productName: 'Test Category 1',
       groupId: 'Test Category Group 1',
     }
 
@@ -67,10 +68,12 @@ describe('CategoriesService', () => {
         data: [
           {
             id: 'Test Category 1',
+            productName: 'Test Category 1',
             name: 'Test Category 1',
           },
           {
             id: 'Test Category 2',
+            productName: 'Test Category 2',
             name: 'Test Category 2',
           },
         ],
@@ -106,10 +109,12 @@ describe('CategoriesService', () => {
           {
             id: 'Test Category 1',
             name: 'Test Category 1',
+            productName: 'Test Category 1',
           },
           {
             id: 'Test Category 2',
             name: 'Test Category 2',
+            productName: 'Test Category 2',
           },
         ],
       })
@@ -165,6 +170,7 @@ describe('CategoriesService', () => {
           id,
           name: id,
           groupId: 'Test Category Group 1',
+          productName: id,
           characteristics: {
             create: {
               id: 'Test Characteristic 1',
@@ -250,6 +256,7 @@ describe('CategoriesService', () => {
         data: {
           id,
           name: id,
+          productName: id,
         },
       })
     })
@@ -281,6 +288,7 @@ describe('CategoriesService', () => {
         data: {
           id,
           name: id,
+          productName: id,
         },
       })
     })

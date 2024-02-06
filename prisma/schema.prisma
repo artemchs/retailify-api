@@ -290,6 +290,7 @@ model Category {
   updatedAt DateTime @updatedAt
 
   name            String
+  productName     String
   products        Product[]
   characteristics Characteristic[]
   group           CategoryGroup?   @relation(fields: [groupId], references: [id])

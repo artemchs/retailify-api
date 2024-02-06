@@ -32,6 +32,13 @@ export class CharacteristicsController {
     return this.characteristicsService.findAll(query)
   }
 
+  @Get('for-category')
+  getCategoryCharacteristics(
+    @Query() query: { categoryId?: string; categoryGroupId?: string },
+  ) {
+    return this.characteristicsService.getCategoryCharacteristics(query)
+  }
+
   @Get(':characteristicId')
   findOne(@Param('characteristicId') id: string) {
     return this.characteristicsService.findOne(id)

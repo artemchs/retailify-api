@@ -54,6 +54,7 @@ describe('ProductsService', () => {
         data: {
           id: 'Test Category 1',
           name: 'Test Category 1',
+          productName: 'Test Category 1',
         },
       }),
     ])

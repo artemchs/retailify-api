@@ -76,6 +76,37 @@ export class CharacteristicsService {
     }
   }
 
+  async getCategoryCharacteristics({
+    categoryId,
+    categoryGroupId,
+  }: {
+    categoryId?: string
+    categoryGroupId?: string
+  }) {
+    if (!categoryId && !categoryGroupId) return null
+
+    const items = await this.db.characteristic.findMany({
+      where: {
+        categories: categoryId
+          ? {
+              some: {
+                id: categoryId,
+              },
+            }
+          : undefined,
+        categoryGroups: categoryGroupId
+          ? {
+              some: {
+                id: categoryGroupId,
+              },
+            }
+          : undefined,
+      },
+    })
+
+    return items
+  }
+
   async findOne(id: string) {
     const characteristic = await this.getCharacteristic(id)
 

@@ -27,7 +27,11 @@ export class CategoriesService {
       include: {
         _count: {
           select: {
-            products: true,
+            products: {
+              where: {
+                isArchived: false,
+              },
+            },
           },
         },
       },
@@ -67,6 +71,7 @@ export class CategoriesService {
     await this.db.category.create({
       data: {
         name: createCategoryDto.name,
+        productName: createCategoryDto.productName,
         groupId: createCategoryDto.groupId,
         characteristics: {
           connect: createCategoryDto.characteristics,
@@ -95,6 +100,17 @@ export class CategoriesService {
         take,
         skip,
         orderBy: buildOrderByArray({ orderBy }),
+        include: {
+          _count: {
+            select: {
+              products: {
+                where: {
+                  isArchived: false,
+                },
+              },
+            },
+          },
+        },
       }),
       this.db.category.count({
         where,
@@ -157,6 +173,7 @@ export class CategoriesService {
       },
       data: {
         name: updateCategoryDto.name,
+        productName: updateCategoryDto.productName,
         groupId: updateCategoryDto.groupId,
         characteristics: updateCategoryDto.characteristics
           ? {

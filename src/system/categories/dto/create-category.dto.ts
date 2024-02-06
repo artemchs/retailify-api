@@ -17,6 +17,10 @@ export class CreateCategoryDto {
   @IsString()
   name: string
 
+  @IsNotEmpty()
+  @IsString()
+  productName: string
+
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => CategoryCharacteristic)
