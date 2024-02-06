@@ -48,20 +48,6 @@ export class CharacteristicsService {
     })
   }
 
-  async findAllForCollection({ collectionId }: { collectionId: string }) {
-    const characteristics = await this.db.characteristic.findMany({
-      where: {
-        collections: {
-          some: {
-            id: collectionId,
-          },
-        },
-      },
-    })
-
-    return characteristics
-  }
-
   async findAll({ cursor, query }: FindAllCharacteristicDto) {
     const limit = 10
 

@@ -1,5 +1,7 @@
+import { ProductGender, ProductSeason } from '@prisma/client'
 import { Type } from 'class-transformer'
 import {
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -34,9 +36,13 @@ export class ProductCharacteristicValuesDto {
 }
 
 export class CreateProductDto {
-  @IsString()
   @IsNotEmpty()
-  collectionId: string
+  @IsEnum(ProductGender)
+  gender: ProductGender
+
+  @IsNotEmpty()
+  @IsEnum(ProductSeason)
+  season: ProductSeason
 
   @IsString()
   @IsNotEmpty()
@@ -74,4 +80,8 @@ export class CreateProductDto {
   @IsNotEmpty()
   @IsNumber()
   packagingWeight: number
+
+  @IsNotEmpty()
+  @IsString()
+  categoryId: string
 }

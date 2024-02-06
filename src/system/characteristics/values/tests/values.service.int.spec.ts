@@ -187,6 +187,8 @@ describe('CharacteristicValuesService', () => {
               id: 'Test Value 2',
             },
           },
+          gender: 'UNISEX',
+          season: 'ALL_SEASON',
         },
       })
     })

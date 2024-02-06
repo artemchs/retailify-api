@@ -1,4 +1,4 @@
-export class FindAllCollectionDto {
+export class FindAllCategoryGroupDto {
   page: number
   rowsPerPage: number
   query?: string
@@ -8,4 +8,9 @@ export class FindAllCollectionDto {
     name?: 'asc' | 'desc'
   }
   isArchived?: number // 0 or 1
+}
+
+export class FindAllInfiniteListCategoryGroupDto {
+  query?: string
+  cursor?: string
 }

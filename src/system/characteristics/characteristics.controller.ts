@@ -27,11 +27,6 @@ export class CharacteristicsController {
     return this.characteristicsService.create(createCharacteristicDto)
   }
 
-  @Get('for-collection')
-  findAllForCollection(@Query() query: { collectionId: string }) {
-    return this.characteristicsService.findAllForCollection(query)
-  }
-
   @Get()
   findAll(@Query() query: FindAllCharacteristicDto) {
     return this.characteristicsService.findAll(query)

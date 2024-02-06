@@ -40,6 +40,8 @@ describe('VariantsService', () => {
         packagingLength: 0,
         packagingWeight: 0,
         packagingWidth: 0,
+        gender: 'UNISEX',
+        season: 'ALL_SEASON',
       },
     })
   })

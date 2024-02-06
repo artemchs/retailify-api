@@ -14,7 +14,7 @@ export class StorageController {
 
   @Roles(Role.Admin)
   @Post()
-  generatePresignedPutUrl() {
-    return this.storageService.generatePresignedPutUrl()
+  generatePresignedPutUrl(@Query('key') key: string) {
+    return this.storageService.generatePresignedPutUrl(key)
   }
 }

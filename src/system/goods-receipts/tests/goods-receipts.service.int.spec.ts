@@ -40,6 +40,8 @@ describe('GoodsReceiptsService', () => {
         packagingWidth: 10,
         totalReceivedQuantity: 10,
         totalWarehouseQuantity: 10,
+        gender: 'UNISEX',
+        season: 'ALL_SEASON',
       },
     })
 

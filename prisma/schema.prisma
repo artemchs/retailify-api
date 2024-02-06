@@ -147,10 +147,12 @@ model Product {
   media           ProductMedia[]
   colors          ProductToColor[]
   characteristics CharacteristicValue[]
-  collection      Collection?           @relation(fields: [collectionId], references: [id])
-  collectionId    String?
+  category        Category?             @relation(fields: [categoryId], references: [id])
+  categoryId      String?
   brand           Brand?                @relation(fields: [brandId], references: [id])
   brandId         String?
+  gender          ProductGender
+  season          ProductSeason
 
   variants               Variant[]
   totalReceivedQuantity  Int       @default(0)
@@ -164,6 +166,19 @@ model Product {
   isArchived Boolean @default(false)
 
   @@index([title, isArchived])
+}
+
+enum ProductSeason {
+  WINTER
+  SPRING_FALL
+  SUMMER
+  ALL_SEASON
+}
+
+enum ProductGender {
+  MALE
+  FEMALE
+  UNISEX
 }
 
 model ProductMedia {
@@ -236,9 +251,10 @@ model Characteristic {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name        String
-  values      CharacteristicValue[]
-  collections Collection[]
+  name           String
+  values         CharacteristicValue[]
+  categoryGroups CategoryGroup[]
+  categories     Category[]
 
   @@index([name])
 }
@@ -256,17 +272,28 @@ model CharacteristicValue {
   @@index([characteristicId])
 }
 
-model Collection {
+model CategoryGroup {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   name            String
   characteristics Characteristic[]
-  parent          Collection?      @relation("parent", fields: [parentId], references: [id])
-  parentId        String?
-  children        Collection[]     @relation("parent")
+  categories      Category[]
+
+  isArchived Boolean @default(false)
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name            String
   products        Product[]
+  characteristics Characteristic[]
+  group           CategoryGroup?   @relation(fields: [groupId], references: [id])
+  groupId         String?
 
   isArchived Boolean @default(false)
 }

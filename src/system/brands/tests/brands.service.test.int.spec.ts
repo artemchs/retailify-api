@@ -147,6 +147,8 @@ describe('BrandsService', () => {
           packagingWeight: 10,
           packagingWidth: 10,
           brandId: 'Test Brand 2',
+          gender: 'UNISEX',
+          season: 'ALL_SEASON',
         },
       })
     })

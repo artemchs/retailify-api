@@ -23,13 +23,15 @@ import { CreateCharacteristicDto } from 'src/system/characteristics/dto/create-c
 import { UpdateCharacteristicDto } from 'src/system/characteristics/dto/update-characteristic.dto'
 import { CreateValueDto } from 'src/system/characteristics/values/dto/create-value.dto'
 import { UpdateValueDto } from 'src/system/characteristics/values/dto/update-value.dto'
-import { CreateCollectionDto } from 'src/system/collections/dto/create-collection.dto'
-import { UpdateCollectionDto } from 'src/system/collections/dto/update-collection.dto'
 import { CreateVariantDto } from 'src/system/products/variants/dto/create-variant.dto'
 import { UpdateVariantDto } from 'src/system/products/variants/dto/update-variant.dto'
 import { CreateBrandDto } from 'src/system/brands/dto/create-brand.dto'
 import { UpdateBrandDto } from 'src/system/brands/dto/update-brand.dto'
 import { randomUUID } from 'crypto'
+import { CreateCategoryGroupDto } from 'src/system/category-groups/dto/create-category-group.dto'
+import { UpdateCategoryGroupDto } from 'src/system/category-groups/dto/update-category-group.dto'
+import { CreateCategoryDto } from 'src/system/categories/dto/create-category.dto'
+import { UpdateCategoryDto } from 'src/system/categories/dto/update-category.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -95,7 +97,8 @@ describe('App', () => {
     let characteristicId: string | undefined
     let variantId: string | undefined
     let characteristicValueId: string | undefined
-    let collectionId: string | undefined
+    let categoryGroupId: string | undefined
+    let categoryId: string | undefined
     let brandId: string | undefined
 
     describe('Auth', () => {
@@ -282,22 +285,6 @@ describe('App', () => {
     })
 
     describe('Storage', () => {
-      describe('(POST) /system/storage', () => {
-        it('should generate a new presigned url for put object command', async () => {
-          await spec()
-            .post('/system/storage')
-            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .expectStatus(201)
-        })
-
-        it('should respond with a `403` status code if the user is not an admin', async () => {
-          await spec()
-            .post('/system/storage')
-            .withHeaders('Authorization', 'Bearer $S{accessToken}')
-            .expectStatus(403)
-        })
-      })
-
       describe('(GET) /system/storage', () => {
         const key = randomUUID()
 
@@ -1534,36 +1521,24 @@ describe('App', () => {
       })
     })
 
-    describe('Collections', () => {
-      const baseUrl = '/system/collections'
+    describe('Category groups', () => {
+      const baseUrl = '/system/category-groups'
 
-      describe('(POST) /system/collections', () => {
+      describe(`(POST) ${baseUrl}`, () => {
         afterAll(async () => {
-          const createdCollection = await db.collection.findFirst()
-          collectionId = createdCollection?.id
+          const createdCategoryGroup = await db.categoryGroup.findFirst()
+          categoryGroupId = createdCategoryGroup?.id
         })
 
-        const data: CreateCollectionDto = {
-          name: 'Test Collection 1',
+        const data: CreateCategoryGroupDto = {
+          name: 'Test Category Group 1',
         }
 
-        it('should create a new collection', async () => {
+        it('should create a new category group', async () => {
           await spec()
             .post(baseUrl)
             .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
-            .withBody({
-              ...data,
-              characteristics: [
-                {
-                  id: characteristicId,
-                },
-              ],
-              products: [
-                {
-                  id: productId,
-                },
-              ],
-            })
+            .withBody(data)
             .expectStatus(201)
         })
 
@@ -1571,25 +1546,13 @@ describe('App', () => {
           await spec()
             .post(baseUrl)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
-            .withBody({
-              ...data,
-              characteristics: [
-                {
-                  id: characteristicId,
-                },
-              ],
-              products: [
-                {
-                  id: productId,
-                },
-              ],
-            })
+            .withBody(data)
             .expectStatus(403)
         })
       })
 
-      describe('(GET) /system/collections', () => {
-        it('should list collections', async () => {
+      describe(`(GET) ${baseUrl}`, () => {
+        it('should list category groups', async () => {
           await spec()
             .get(baseUrl)
             .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
@@ -1604,78 +1567,299 @@ describe('App', () => {
         })
       })
 
-      describe('(GET) /system/collections/:id', () => {
-        it('should find the requested collection', async () => {
+      describe(`(GET) ${baseUrl}/:groupId`, () => {
+        it('should find the requested category group', async () => {
+          const url = `${baseUrl}/${categoryGroupId}`
+
           await spec()
-            .get(`${baseUrl}/${collectionId}`)
+            .get(url)
             .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
             .expectStatus(200)
         })
 
-        it('should respond with a `404` status code if the requested collection does not exist', async () => {
+        it('should respond with a `404` status code if the category group does not exist', async () => {
+          const url = `${baseUrl}/non-existent`
+
           await spec()
-            .get(`${baseUrl}/non-existent`)
+            .get(url)
             .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
             .expectStatus(404)
         })
 
         it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${categoryGroupId}`
+
           await spec()
-            .get(`${baseUrl}/${collectionId}`)
+            .get(url)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
             .expectStatus(403)
         })
       })
 
-      describe('(PUT) /system/collections/:id', () => {
-        const data: UpdateCollectionDto = {
-          name: 'Updated Test Collection 1',
+      describe(`(PUT) ${baseUrl}/:groupId`, () => {
+        const data: UpdateCategoryGroupDto = {
+          name: 'Updated Category Group 1',
         }
 
-        it('should update the requested collection', async () => {
+        it('should update the requested category group', async () => {
+          const url = `${baseUrl}/${categoryGroupId}`
+
           await spec()
-            .put(`${baseUrl}/${collectionId}`)
+            .put(url)
             .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
             .withBody(data)
             .expectStatus(200)
         })
 
         it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${categoryGroupId}`
+
           await spec()
-            .put(`${baseUrl}/${collectionId}`)
+            .put(url)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
             .withBody(data)
             .expectStatus(403)
         })
       })
 
-      describe('(DELETE) /system/collections/:id', () => {
-        it('should archive the requested collection', async () => {
+      describe(`(DELETE) ${baseUrl}/:groupId`, () => {
+        it('should archive the requested category group', async () => {
+          const url = `${baseUrl}/${categoryGroupId}`
+
           await spec()
-            .delete(`${baseUrl}/${collectionId}`)
+            .delete(url)
             .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
             .expectStatus(200)
         })
 
-        it('should respond with a `403` status code if the user is not an admin', async () => {
+        it('should respond with a `404` status code if the category group does not exist', async () => {
+          const url = `${baseUrl}/non-existent`
+
           await spec()
-            .delete(`${baseUrl}/${collectionId}`)
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${categoryGroupId}`
+
+          await spec()
+            .delete(url)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
             .expectStatus(403)
         })
       })
 
-      describe('(PUT) /system/collections/restore/:id', () => {
-        it('should archive the requested collection', async () => {
+      describe(`(DELETE) ${baseUrl}/restore/:groupId`, () => {
+        it('should restore the requested category group', async () => {
+          const url = `${baseUrl}/restore/${categoryGroupId}`
+
           await spec()
-            .put(`${baseUrl}/restore/${collectionId}`)
+            .put(url)
             .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
             .expectStatus(200)
         })
 
+        it('should respond with a `404` status code if the category group does not exist', async () => {
+          const url = `${baseUrl}/restore/non-existent`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/restore/${categoryGroupId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+    })
+
+    describe('Categories', () => {
+      const baseUrl = '/system/categories'
+
+      describe(`(POST) ${baseUrl}`, () => {
+        afterAll(async () => {
+          const createdCategory = await db.category.findFirst()
+          categoryId = createdCategory?.id
+        })
+
+        const data: CreateCategoryDto = {
+          groupId: '',
+          name: 'Test Category 1',
+        }
+
+        it('should create a new category', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody({
+              ...data,
+              groupId: categoryGroupId,
+            })
+            .expectStatus(201)
+        })
+
         it('should respond with a `403` status code if the user is not an admin', async () => {
           await spec()
-            .put(`${baseUrl}/restore/${collectionId}`)
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody({
+              ...data,
+              groupId: categoryGroupId,
+            })
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}`, () => {
+        it('should list all categories', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}/infinite-list`, () => {
+        const url = `${baseUrl}/infinite-list`
+
+        it('should list all categories', async () => {
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}/:id`, () => {
+        it('should find the requested category', async () => {
+          const url = `${baseUrl}/${categoryId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the category does not exist', async () => {
+          const url = `${baseUrl}/non-existent`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${categoryId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(PUT) ${baseUrl}/:id`, () => {
+        const data: UpdateCategoryDto = {
+          name: 'Updated Test Category 1',
+        }
+
+        it('should update the requested category', async () => {
+          const url = `${baseUrl}/${categoryId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${categoryId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(DELETE) ${baseUrl}/:id`, () => {
+        it('should archive the requested category', async () => {
+          const url = `${baseUrl}/${categoryId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the category does not exist', async () => {
+          const url = `${baseUrl}/non-existent`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${categoryId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(PUT) ${baseUrl}/restore/:id`, () => {
+        it('should restore the requested category', async () => {
+          const url = `${baseUrl}/restore/${categoryId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the product does not exist', async () => {
+          const url = `${baseUrl}/restore/non-existent`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/restore/${categoryId}`
+
+          await spec()
+            .put(url)
             .withHeaders('Authorization', 'Bearer $S{accessToken}')
             .expectStatus(403)
         })
@@ -1709,7 +1893,9 @@ describe('App', () => {
           packagingLength: 10,
           packagingWeight: 10,
           packagingWidth: 10,
-          collectionId: '',
+          categoryId: '',
+          gender: 'UNISEX',
+          season: 'ALL_SEASON',
         }
 
         it('should create a new product', async () => {
@@ -1728,7 +1914,7 @@ describe('App', () => {
                   index: 1,
                 },
               ],
-              collectionId,
+              categoryId,
             })
             .expectStatus(201)
         })
@@ -1749,7 +1935,7 @@ describe('App', () => {
                   index: 1,
                 },
               ],
-              collectionId,
+              categoryId,
             })
             .expectStatus(403)
         })

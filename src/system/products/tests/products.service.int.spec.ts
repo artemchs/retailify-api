@@ -50,10 +50,10 @@ describe('ProductsService', () => {
           },
         ],
       }),
-      db.collection.create({
+      db.category.create({
         data: {
-          id: 'Test Collection 1',
-          name: 'Test Collection 1',
+          id: 'Test Category 1',
+          name: 'Test Category 1',
         },
       }),
     ])
@@ -73,7 +73,6 @@ describe('ProductsService', () => {
           index: 1,
         },
       ],
-      collectionId: 'Test Collection 1',
       media: [
         {
           id: 'media_1',
@@ -88,6 +87,9 @@ describe('ProductsService', () => {
       packagingLength: 10,
       packagingWeight: 10,
       packagingWidth: 10,
+      gender: 'UNISEX',
+      season: 'SPRING_FALL',
+      categoryId: 'Test Category 1',
     }
 
     it('should successfully create a new product', async () => {
@@ -127,6 +129,8 @@ describe('ProductsService', () => {
             packagingLength: 10,
             packagingWeight: 10,
             packagingWidth: 10,
+            gender: 'UNISEX',
+            season: 'ALL_SEASON',
           },
           {
             id: 'Test Product 2',
@@ -136,6 +140,8 @@ describe('ProductsService', () => {
             packagingLength: 20,
             packagingWeight: 20,
             packagingWidth: 20,
+            gender: 'UNISEX',
+            season: 'ALL_SEASON',
           },
           {
             id: 'Test Product 3',
@@ -145,6 +151,8 @@ describe('ProductsService', () => {
             packagingLength: 30,
             packagingWeight: 30,
             packagingWidth: 30,
+            gender: 'UNISEX',
+            season: 'ALL_SEASON',
           },
           {
             id: 'Test Product 4',
@@ -155,6 +163,8 @@ describe('ProductsService', () => {
             packagingWeight: 40,
             packagingWidth: 40,
             isArchived: true,
+            gender: 'UNISEX',
+            season: 'ALL_SEASON',
           },
         ],
       })
@@ -201,6 +211,8 @@ describe('ProductsService', () => {
           packagingLength: 10,
           packagingWeight: 10,
           packagingWidth: 10,
+          gender: 'UNISEX',
+          season: 'ALL_SEASON',
         },
       })
     })
@@ -267,6 +279,8 @@ describe('ProductsService', () => {
               value: 'Test Value 1',
             },
           },
+          gender: 'UNISEX',
+          season: 'ALL_SEASON',
         },
       })
     })
@@ -583,7 +597,9 @@ describe('ProductsService', () => {
           packagingLength: 10,
           packagingWeight: 10,
           packagingWidth: 10,
-          collectionId: 'Test Collection 1',
+          categoryId: 'Test Category 1',
+          gender: 'UNISEX',
+          season: 'ALL_SEASON',
         },
       })
     })
@@ -622,7 +638,9 @@ describe('ProductsService', () => {
           packagingLength: 10,
           packagingWeight: 10,
           packagingWidth: 10,
-          collectionId: 'Test Collection 1',
+          categoryId: 'Test Category 1',
+          gender: 'UNISEX',
+          season: 'ALL_SEASON',
         },
       })
     })

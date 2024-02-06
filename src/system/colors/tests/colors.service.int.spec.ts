@@ -138,6 +138,8 @@ describe('ColorsService', () => {
           packagingLength: 10,
           packagingWeight: 10,
           packagingWidth: 10,
+          gender: 'UNISEX',
+          season: 'ALL_SEASON',
         },
       })
 

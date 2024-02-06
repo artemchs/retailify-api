@@ -10,10 +10,11 @@ import { GoodsReceiptsModule } from './goods-receipts/goods-receipts.module'
 import { ProductsModule } from './products/products.module'
 import { ColorsModule } from './colors/colors.module'
 import { CharacteristicsModule } from './characteristics/characteristics.module'
-import { CollectionsModule } from './collections/collections.module'
 import { VariantsModule } from './products/variants/variants.module'
 import { BrandsModule } from './brands/brands.module'
 import { StorageModule } from './storage/storage.module'
+import { CategoryGroupsModule } from './category-groups/category-groups.module'
+import { CategoriesModule } from './categories/categories.module'
 
 @Module({
   imports: [
@@ -26,10 +27,11 @@ import { StorageModule } from './storage/storage.module'
     ProductsModule,
     ColorsModule,
     CharacteristicsModule,
-    CollectionsModule,
     VariantsModule,
     BrandsModule,
     StorageModule,
+    CategoryGroupsModule,
+    CategoriesModule,
   ],
   providers: [
     {
