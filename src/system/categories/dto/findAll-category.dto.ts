@@ -6,6 +6,7 @@ export class FindAllCategoryDto {
     createdAt?: 'asc' | 'desc'
     updatedAt?: 'asc' | 'desc'
     name?: 'asc' | 'desc'
+    productName?: 'asc' | 'desc'
   }
   isArchived?: number // 0 or 1
 }
