@@ -66,11 +66,11 @@ describe('ProductsService', () => {
       description: 'Test Product 1',
       colors: [
         {
-          colorId: 'color_1',
+          id: 'color_1',
           index: 0,
         },
         {
-          colorId: 'color_2',
+          id: 'color_2',
           index: 1,
         },
       ],
@@ -339,15 +339,15 @@ describe('ProductsService', () => {
         ...data,
         colors: [
           {
-            colorId: 'color_1',
+            id: 'color_1',
             index: 0,
           },
           {
-            colorId: 'color_2',
+            id: 'color_2',
             index: 1,
           },
           {
-            colorId: 'color_3',
+            id: 'color_3',
             index: 2,
           },
         ],
@@ -374,7 +374,7 @@ describe('ProductsService', () => {
         ...data,
         colors: [
           {
-            colorId: 'color_1',
+            id: 'color_1',
             index: 0,
           },
         ],
@@ -401,11 +401,11 @@ describe('ProductsService', () => {
         ...data,
         colors: [
           {
-            colorId: 'color_1',
+            id: 'color_1',
             index: 1,
           },
           {
-            colorId: 'color_2',
+            id: 'color_2',
             index: 0,
           },
         ],

@@ -65,7 +65,10 @@ export class ProductsService {
         ...createProductDto,
         colors: {
           createMany: {
-            data: createProductDto.colors,
+            data: createProductDto.colors.map(({ id, index }) => ({
+              colorId: id,
+              index,
+            })),
           },
         },
         media: {
@@ -176,7 +179,7 @@ export class ProductsService {
       const { deleted, updated, newItems } = compareArrays(
         oldColors,
         newColors,
-        'colorId',
+        'id',
         'index',
       )
 
@@ -186,18 +189,21 @@ export class ProductsService {
         },
         data: {
           colors: {
-            updateMany: updated.map(({ colorId, index }) => ({
+            updateMany: updated.map(({ id, index }) => ({
               data: {
                 index,
               },
               where: {
-                colorId,
+                colorId: id,
                 productId,
               },
             })),
-            deleteMany: deleted,
+            deleteMany: deleted.map(({ id, index }) => ({
+              colorId: id,
+              index,
+            })),
             createMany: {
-              data: newItems.map(({ colorId, index }) => ({ colorId, index })),
+              data: newItems.map(({ id, index }) => ({ colorId: id, index })),
             },
           },
         },
@@ -245,7 +251,14 @@ export class ProductsService {
         },
       }),
       this.updateProductMedia(id, product.media, updateProductDto.media),
-      this.updateProductColors(id, product.colors, updateProductDto.colors),
+      this.updateProductColors(
+        id,
+        product.colors.map(({ colorId, index }) => ({
+          id: colorId,
+          index,
+        })),
+        updateProductDto.colors,
+      ),
       this.updateProductCharacteristicValues(
         id,
         product.characteristicValues,

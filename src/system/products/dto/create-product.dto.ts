@@ -12,7 +12,7 @@ import {
 export class ProductColorDto {
   @IsString()
   @IsNotEmpty()
-  colorId: string
+  id: string
 
   @IsNumber()
   @IsNotEmpty()

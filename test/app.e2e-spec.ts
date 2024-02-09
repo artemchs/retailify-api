@@ -1907,11 +1907,11 @@ describe('App', () => {
               ...data,
               colors: [
                 {
-                  colorId: color1Id!,
+                  id: color1Id!,
                   index: 0,
                 },
                 {
-                  colorId: color2Id!,
+                  id: color2Id!,
                   index: 1,
                 },
               ],
@@ -1928,11 +1928,11 @@ describe('App', () => {
               ...data,
               colors: [
                 {
-                  colorId: color1Id!,
+                  id: color1Id!,
                   index: 0,
                 },
                 {
-                  colorId: color2Id!,
+                  id: color2Id!,
                   index: 1,
                 },
               ],
