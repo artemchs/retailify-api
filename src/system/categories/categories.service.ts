@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { CreateCategoryDto } from './dto/create-category.dto'
 import { UpdateCategoryDto } from './dto/update-category.dto'
 import { DbService } from '../../db/db.service'
@@ -65,8 +69,46 @@ export class CategoriesService {
     return categoryGroup
   }
 
+  private async checkIfCharacteristicsAreUsedInGroup(
+    groupId: string,
+    characteristicIds: string[],
+  ) {
+    const characteristics = await this.db.characteristic.findMany({
+      where: {
+        categoryGroups: {
+          some: {
+            id: groupId,
+          },
+        },
+        id: {
+          in: characteristicIds,
+        },
+      },
+      select: {
+        name: true,
+      },
+    })
+
+    if (characteristics.length >= 1) {
+      throw new BadRequestException(
+        `Характеристики: "${characteristics
+          .map(({ name }) => name)
+          .join(', ')}" уже используються в родительской группе категорий.`,
+      )
+    }
+  }
+
   async create(createCategoryDto: CreateCategoryDto) {
     await this.getCategoryGroup(createCategoryDto.groupId)
+    if (
+      createCategoryDto.characteristics &&
+      createCategoryDto.characteristics.length >= 1
+    ) {
+      await this.checkIfCharacteristicsAreUsedInGroup(
+        createCategoryDto.groupId,
+        createCategoryDto.characteristics?.map(({ id }) => id),
+      )
+    }
 
     await this.db.category.create({
       data: {
@@ -162,9 +204,22 @@ export class CategoriesService {
   }
 
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
-    await this.getCategory(id)
+    const category = await this.getCategory(id)
     if (updateCategoryDto.groupId) {
       await this.getCategoryGroup(updateCategoryDto.groupId)
+    }
+
+    if (
+      updateCategoryDto.characteristics &&
+      updateCategoryDto.characteristics?.length >= 1
+    ) {
+      const groupId = updateCategoryDto.groupId ?? category.groupId
+      if (groupId) {
+        await this.checkIfCharacteristicsAreUsedInGroup(
+          groupId,
+          updateCategoryDto.characteristics.map(({ id }) => id),
+        )
+      }
     }
 
     await this.db.category.update({

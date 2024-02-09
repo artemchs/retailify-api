@@ -3,7 +3,7 @@ import { DbService } from '../../../db/db.service'
 import { CategoriesService } from '../categories.service'
 import { AppModule } from 'src/app.module'
 import { CreateCategoryDto } from '../dto/create-category.dto'
-import { NotFoundException } from '@nestjs/common'
+import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { UpdateCategoryDto } from '../dto/update-category.dto'
 import {
   FindAllCategoryDto,
@@ -59,6 +59,30 @@ describe('CategoriesService', () => {
       await expect(
         service.create({ ...data, groupId: 'non-existent' }),
       ).rejects.toThrow(NotFoundException)
+    })
+
+    it('should throw an error if the user tries to assign a characteristic already used in the parent group', async () => {
+      await db.categoryGroup.create({
+        data: {
+          id: 'Test Category Group 2',
+          name: 'Test Category Group 2',
+          characteristics: {
+            create: {
+              id: 'Test Characteristic 1',
+              name: 'Test Characteristic 1',
+            },
+          },
+        },
+      })
+
+      const data: CreateCategoryDto = {
+        groupId: 'Test Category Group 2',
+        name: 'Test Category Group 2',
+        productName: 'Test Category Group 2',
+        characteristics: [{ id: 'Test Characteristic 1' }],
+      }
+
+      await expect(service.create(data)).rejects.toThrow(BadRequestException)
     })
   })
 
@@ -245,6 +269,35 @@ describe('CategoriesService', () => {
       await expect(service.update('non-existent', data)).rejects.toThrow(
         NotFoundException,
       )
+    })
+
+    it('should throw an error if the user tries to assign a characteristic already used in the parent group', async () => {
+      await db.categoryGroup.create({
+        data: {
+          id: 'Test Category Group 2',
+          name: 'Test Category Group 2',
+          categories: {
+            connect: {
+              id,
+            },
+          },
+          characteristics: {
+            create: {
+              id: 'Test Characteristic 2',
+              name: 'Test Characteristic 2',
+            },
+          },
+        },
+      })
+
+      const data: CreateCategoryDto = {
+        groupId: 'Test Category Group 2',
+        name: 'Test Category Group 2',
+        productName: 'Test Category Group 2',
+        characteristics: [{ id: 'Test Characteristic 2' }],
+      }
+
+      await expect(service.create(data)).rejects.toThrow(BadRequestException)
     })
   })
 
