@@ -42,7 +42,7 @@ export class ValuesService {
   private async getProductsCountForValue(id: string) {
     const count = await this.db.product.count({
       where: {
-        characteristics: {
+        characteristicValues: {
           some: {
             id,
           },

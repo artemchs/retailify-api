@@ -48,7 +48,7 @@ export class ProductsService {
       include: {
         colors: true,
         media: true,
-        characteristics: true,
+        characteristicValues: true,
       },
     })
 
@@ -73,8 +73,8 @@ export class ProductsService {
             data: createProductDto.media,
           },
         },
-        characteristics: {
-          connect: createProductDto.characteristics?.map(({ id }) => ({
+        characteristicValues: {
+          connect: createProductDto.characteristicValues?.map(({ id }) => ({
             id,
           })),
         },
@@ -218,7 +218,7 @@ export class ProductsService {
           id: productId,
         },
         data: {
-          characteristics: {
+          characteristicValues: {
             disconnect: deleted,
             connect: newItems.map(({ id }) => ({
               id,
@@ -241,15 +241,15 @@ export class ProductsService {
           ...updateProductDto,
           colors: undefined,
           media: undefined,
-          characteristics: undefined,
+          characteristicValues: undefined,
         },
       }),
       this.updateProductMedia(id, product.media, updateProductDto.media),
       this.updateProductColors(id, product.colors, updateProductDto.colors),
       this.updateProductCharacteristicValues(
         id,
-        product.characteristics,
-        updateProductDto.characteristics,
+        product.characteristicValues,
+        updateProductDto.characteristicValues,
       ),
     ])
   }

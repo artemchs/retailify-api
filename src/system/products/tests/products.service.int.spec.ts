@@ -274,7 +274,7 @@ describe('ProductsService', () => {
               ],
             },
           },
-          characteristics: {
+          characteristicValues: {
             create: {
               id: 'Test Value 1',
               value: 'Test Value 1',
@@ -530,19 +530,19 @@ describe('ProductsService', () => {
     })
 
     it('should handle the case when the user de-selects a characteristic value', async () => {
-      await service.update(id, { ...data, characteristics: [] })
+      await service.update(id, { ...data, characteristicValues: [] })
 
       const product = await db.product.findUnique({
         where: {
           id,
         },
         include: {
-          characteristics: true,
+          characteristicValues: true,
         },
       })
       const characteristicValuesCount = await db.characteristicValue.count()
 
-      expect(product?.characteristics.length).toBe(0)
+      expect(product?.characteristicValues.length).toBe(0)
       expect(characteristicValuesCount).toBe(1)
     })
 
@@ -556,7 +556,7 @@ describe('ProductsService', () => {
 
       await service.update(id, {
         ...data,
-        characteristics: [
+        characteristicValues: [
           {
             id: 'Test Value 1',
           },
@@ -571,12 +571,12 @@ describe('ProductsService', () => {
           id,
         },
         include: {
-          characteristics: true,
+          characteristicValues: true,
         },
       })
       const characteristicValuesCount = await db.characteristicValue.count()
 
-      expect(product?.characteristics.length).toBe(2)
+      expect(product?.characteristicValues.length).toBe(2)
       expect(characteristicValuesCount).toBe(2)
     })
 

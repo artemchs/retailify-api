@@ -148,11 +148,9 @@ export class CategoryGroupsService {
       },
       data: {
         name: updateCategoryGroupDto.name,
-        characteristics: updateCategoryGroupDto.characteristics
-          ? {
-              set: updateCategoryGroupDto.characteristics,
-            }
-          : undefined,
+        characteristics: {
+          set: updateCategoryGroupDto.characteristics ?? [],
+        },
       },
     })
   }

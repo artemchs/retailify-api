@@ -175,11 +175,9 @@ export class CategoriesService {
         name: updateCategoryDto.name,
         productName: updateCategoryDto.productName,
         groupId: updateCategoryDto.groupId,
-        characteristics: updateCategoryDto.characteristics
-          ? {
-              set: updateCategoryDto.characteristics,
-            }
-          : undefined,
+        characteristics: {
+          set: updateCategoryDto.characteristics ?? [],
+        },
       },
     })
   }

@@ -142,17 +142,17 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  title           String
-  description     String?               @db.Text
-  media           ProductMedia[]
-  colors          ProductToColor[]
-  characteristics CharacteristicValue[]
-  category        Category?             @relation(fields: [categoryId], references: [id])
-  categoryId      String?
-  brand           Brand?                @relation(fields: [brandId], references: [id])
-  brandId         String?
-  gender          ProductGender
-  season          ProductSeason
+  title                String
+  description          String?               @db.Text
+  media                ProductMedia[]
+  colors               ProductToColor[]
+  characteristicValues CharacteristicValue[]
+  category             Category?             @relation(fields: [categoryId], references: [id])
+  categoryId           String?
+  brand                Brand?                @relation(fields: [brandId], references: [id])
+  brandId              String?
+  gender               ProductGender
+  season               ProductSeason
 
   variants               Variant[]
   totalReceivedQuantity  Int       @default(0)

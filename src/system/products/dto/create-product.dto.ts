@@ -63,7 +63,7 @@ export class CreateProductDto {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => ProductCharacteristicValuesDto)
-  characteristics?: ProductCharacteristicValuesDto[]
+  characteristicValues?: ProductCharacteristicValuesDto[]
 
   @IsNotEmpty()
   @IsNumber()

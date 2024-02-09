@@ -161,7 +161,7 @@ describe('CharacteristicsService', () => {
           packagingLength: 10,
           packagingWeight: 10,
           packagingWidth: 10,
-          characteristics: {
+          characteristicValues: {
             connect: {
               id: 'Test Value 2',
             },
