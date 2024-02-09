@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { CreateCategoryGroupDto } from './dto/create-category-group.dto'
 import { UpdateCategoryGroupDto } from './dto/update-category-group.dto'
 import { DbService } from '../../db/db.service'
@@ -42,6 +46,34 @@ export class CategoryGroupsService {
     }
 
     return categoryGroup
+  }
+
+  private async checkIfCharacteristicsAreUsedInCategories(
+    groupId: string,
+    characteristicIds: string[],
+  ) {
+    const characteristics = await this.db.characteristic.findMany({
+      where: {
+        categories: {
+          some: {
+            groupId,
+          },
+        },
+      },
+      select: {
+        name: true,
+      },
+    })
+
+    if (characteristics.length >= 1) {
+      throw new BadRequestException(
+        `Характеристики: "${characteristics
+          .map(({ name }) => name)
+          .join(
+            ', ',
+          )}" уже используються в категориях привязанных к этой группе.`,
+      )
+    }
   }
 
   async create(createCategoryGroupDto: CreateCategoryGroupDto) {
@@ -141,6 +173,15 @@ export class CategoryGroupsService {
 
   async update(id: string, updateCategoryGroupDto: UpdateCategoryGroupDto) {
     await this.getCategoryGroup(id)
+    if (
+      updateCategoryGroupDto.characteristics &&
+      updateCategoryGroupDto.characteristics.length >= 1
+    ) {
+      await this.checkIfCharacteristicsAreUsedInCategories(
+        id,
+        updateCategoryGroupDto.characteristics.map(({ id }) => id),
+      )
+    }
 
     await this.db.categoryGroup.update({
       where: {

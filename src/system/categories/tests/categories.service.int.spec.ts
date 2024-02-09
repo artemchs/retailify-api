@@ -290,14 +290,16 @@ describe('CategoriesService', () => {
         },
       })
 
-      const data: CreateCategoryDto = {
+      const data: UpdateCategoryDto = {
         groupId: 'Test Category Group 2',
         name: 'Test Category Group 2',
         productName: 'Test Category Group 2',
         characteristics: [{ id: 'Test Characteristic 2' }],
       }
 
-      await expect(service.create(data)).rejects.toThrow(BadRequestException)
+      await expect(service.update(id, data)).rejects.toThrow(
+        BadRequestException,
+      )
     })
   })
 

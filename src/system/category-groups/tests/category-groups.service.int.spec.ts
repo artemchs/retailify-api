@@ -7,7 +7,7 @@ import {
   FindAllCategoryGroupDto,
   FindAllInfiniteListCategoryGroupDto,
 } from '../dto/findAll-category-group-dto'
-import { NotFoundException } from '@nestjs/common'
+import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { UpdateCategoryGroupDto } from '../dto/update-category-group.dto'
 
 describe('CategoryGroupsService', () => {
@@ -247,6 +247,49 @@ describe('CategoryGroupsService', () => {
       await expect(service.update('non-existent', data)).rejects.toThrow(
         NotFoundException,
       )
+    })
+
+    it('should throw an error if the user tries to assign a characteristic already used in the child category', async () => {
+      await db.categoryGroup.create({
+        data: {
+          id: 'Test Category Group 2',
+          name: 'Test Category Group 2',
+          categories: {
+            create: {
+              id: 'Test Category 2',
+              name: 'Test Category 2',
+              productName: 'Test Category 2',
+              characteristics: {
+                create: {
+                  id: 'Test Characteristic 3',
+                  name: 'Test Characteristic 3',
+                },
+              },
+            },
+          },
+          characteristics: {
+            create: {
+              id: 'Test Characteristic 2',
+              name: 'Test Characteristic 2',
+            },
+          },
+        },
+      })
+
+      const data: UpdateCategoryGroupDto = {
+        characteristics: [
+          {
+            id: 'Test Characteristic 2',
+          },
+          {
+            id: 'Test Characteristic 3',
+          },
+        ],
+      }
+
+      await expect(
+        service.update('Test Category Group 2', data),
+      ).rejects.toThrow(BadRequestException)
     })
   })
 
