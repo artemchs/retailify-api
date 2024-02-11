@@ -2,6 +2,7 @@ import { ProductGender, ProductSeason } from '@prisma/client'
 import { Type } from 'class-transformer'
 import {
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -14,8 +15,8 @@ export class ProductColorDto {
   @IsNotEmpty()
   id: string
 
-  @IsNumber()
   @IsNotEmpty()
+  @IsInt()
   index: number
 }
 
@@ -24,8 +25,8 @@ export class ProductMediaDto {
   @IsNotEmpty()
   id: string
 
-  @IsNumber()
   @IsNotEmpty()
+  @IsInt()
   index: number
 }
 
