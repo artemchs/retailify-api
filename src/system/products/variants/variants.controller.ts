@@ -14,6 +14,7 @@ import { UpdateVariantDto } from './dto/update-variant.dto'
 import { FindAllVariantDto } from './dto/findAll-variant.dto'
 import { Roles } from '../../../system/common/decorators'
 import { Role } from '../../../system/common/enums'
+import { FindAllInfiniteListVariantDto } from './dto/findAllInfiniteList-variant.dto'
 
 @Roles(Role.Admin)
 @Controller('system/products/:productId/variants')
@@ -31,6 +32,11 @@ export class VariantsController {
   @Get()
   findAll(@Query() query: FindAllVariantDto) {
     return this.variantsService.findAll(query)
+  }
+
+  @Get('infinite-list')
+  findAllInfiniteList(@Query() query: FindAllInfiniteListVariantDto) {
+    return this.variantsService.findAllInfiniteList(query)
   }
 
   @Get(':variantId')

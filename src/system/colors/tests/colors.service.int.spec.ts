@@ -140,6 +140,7 @@ describe('ColorsService', () => {
           packagingWidth: 10,
           gender: 'UNISEX',
           season: 'ALL_SEASON',
+          sku: '1',
         },
       })
 

@@ -1897,6 +1897,7 @@ describe('App', () => {
           categoryId: '',
           gender: 'UNISEX',
           season: 'ALL_SEASON',
+          brandId: '',
         }
 
         it('should create a new product', async () => {
@@ -1916,6 +1917,7 @@ describe('App', () => {
                 },
               ],
               categoryId,
+              brandId,
             })
             .expectStatus(201)
         })
@@ -1937,6 +1939,7 @@ describe('App', () => {
                 },
               ],
               categoryId,
+              brandId,
             })
             .expectStatus(403)
         })
@@ -2081,7 +2084,6 @@ describe('App', () => {
           const data: CreateVariantDto = {
             price: 59.99,
             size: 'XL',
-            sku: '12345',
           }
 
           it('should create a new product', async () => {

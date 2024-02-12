@@ -57,6 +57,12 @@ describe('ProductsService', () => {
           productName: 'Test Category 1',
         },
       }),
+      db.brand.create({
+        data: {
+          id: 'Test Brand 1',
+          name: 'Test Brand 1',
+        },
+      }),
     ])
   })
 
@@ -91,6 +97,7 @@ describe('ProductsService', () => {
       gender: 'UNISEX',
       season: 'SPRING_FALL',
       categoryId: 'Test Category 1',
+      brandId: 'Test Brand 1',
     }
 
     it('should successfully create a new product', async () => {
@@ -116,6 +123,20 @@ describe('ProductsService', () => {
 
       expect(productMediaCount).toBe(2)
     })
+
+    it('should correctly generate the sku field', async () => {
+      await service.create(data)
+
+      const product = await db.product.findFirst({
+        where: {
+          title: data.title,
+        },
+      })
+
+      expect(product?.sku).toBeDefined()
+      expect(product?.sku).not.toBeNull()
+      expect(product?.sku).toBe('TETESFU241')
+    })
   })
 
   describe('findAll', () => {
@@ -132,6 +153,7 @@ describe('ProductsService', () => {
             packagingWidth: 10,
             gender: 'UNISEX',
             season: 'ALL_SEASON',
+            sku: '1',
           },
           {
             id: 'Test Product 2',
@@ -143,6 +165,7 @@ describe('ProductsService', () => {
             packagingWidth: 20,
             gender: 'UNISEX',
             season: 'ALL_SEASON',
+            sku: '2',
           },
           {
             id: 'Test Product 3',
@@ -154,6 +177,7 @@ describe('ProductsService', () => {
             packagingWidth: 30,
             gender: 'UNISEX',
             season: 'ALL_SEASON',
+            sku: '3',
           },
           {
             id: 'Test Product 4',
@@ -166,6 +190,7 @@ describe('ProductsService', () => {
             isArchived: true,
             gender: 'UNISEX',
             season: 'ALL_SEASON',
+            sku: '4',
           },
         ],
       })
@@ -214,6 +239,31 @@ describe('ProductsService', () => {
           packagingWidth: 10,
           gender: 'UNISEX',
           season: 'ALL_SEASON',
+          brand: {
+            create: {
+              name: 'Test Brand 1',
+            },
+          },
+          category: {
+            create: {
+              name: 'Test Category 1',
+              productName: 'Test Category 1',
+            },
+          },
+          characteristicValues: {
+            create: {
+              value: 'Test Characteristic Value 1',
+            },
+          },
+          variants: {
+            create: {
+              price: 10,
+              size: 'XL',
+              totalReceivedQuantity: 0,
+              totalWarehouseQuantity: 0,
+            },
+          },
+          sku: '1',
         },
       })
     })
@@ -282,6 +332,7 @@ describe('ProductsService', () => {
           },
           gender: 'UNISEX',
           season: 'ALL_SEASON',
+          sku: '1',
         },
       })
     })
@@ -601,6 +652,7 @@ describe('ProductsService', () => {
           categoryId: 'Test Category 1',
           gender: 'UNISEX',
           season: 'ALL_SEASON',
+          sku: '1',
         },
       })
     })
@@ -642,6 +694,7 @@ describe('ProductsService', () => {
           categoryId: 'Test Category 1',
           gender: 'UNISEX',
           season: 'ALL_SEASON',
+          sku: '1',
         },
       })
     })

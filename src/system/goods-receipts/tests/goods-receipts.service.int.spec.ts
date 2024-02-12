@@ -42,6 +42,7 @@ describe('GoodsReceiptsService', () => {
         totalWarehouseQuantity: 10,
         gender: 'UNISEX',
         season: 'ALL_SEASON',
+        sku: '1',
       },
     })
 
@@ -69,7 +70,6 @@ describe('GoodsReceiptsService', () => {
             id: 'Test Variant 1',
             price: 100,
             size: 'SM',
-            sku: '1',
             totalReceivedQuantity: 0,
             totalWarehouseQuantity: 0,
             productId: 'Test Product 1',
@@ -78,7 +78,6 @@ describe('GoodsReceiptsService', () => {
             id: 'Test Variant 2',
             price: 200,
             size: 'XL',
-            sku: '2',
             totalReceivedQuantity: 10,
             totalWarehouseQuantity: 10,
             productId: 'Test Product 1',

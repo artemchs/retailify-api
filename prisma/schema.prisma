@@ -143,6 +143,7 @@ model Product {
   updatedAt DateTime @updatedAt
 
   title                String
+  sku                  String                @unique
   description          String?               @db.Text
   media                ProductMedia[]
   colors               ProductToColor[]
@@ -213,14 +214,13 @@ model Variant {
   totalWarehouseQuantity Int
 
   size    String
-  sku     String   @unique
   barcode String   @unique @default(uuid())
   price   Decimal  @db.Decimal(8, 2)
   sale    Decimal? @db.Decimal(8, 2)
 
   isArchived Boolean @default(false)
 
-  @@index([productId, barcode, sku])
+  @@index([productId, barcode])
 }
 
 model Color {

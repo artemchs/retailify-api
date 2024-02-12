@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { CreateVariantDto } from './dto/create-variant.dto'
 import { UpdateVariantDto } from './dto/update-variant.dto'
 import { DbService } from '../../../db/db.service'
@@ -15,6 +11,7 @@ import {
   getPaginationData,
 } from '../../common/utils/db-helpers'
 import { Prisma } from '@prisma/client'
+import { FindAllInfiniteListVariantDto } from './dto/findAllInfiniteList-variant.dto'
 
 @Injectable()
 export class VariantsService {
@@ -35,18 +32,6 @@ export class VariantsService {
   }
 
   async create(productId: string, createVariantDto: CreateVariantDto) {
-    const variantWithTheSameSku = await this.db.variant.findUnique({
-      where: {
-        sku: createVariantDto.sku,
-      },
-    })
-
-    if (variantWithTheSameSku) {
-      throw new BadRequestException(
-        `Артикул ${variantWithTheSameSku.sku} уже занят.`,
-      )
-    }
-
     await this.db.variant.create({
       data: {
         ...createVariantDto,
@@ -96,6 +81,38 @@ export class VariantsService {
         totalPages: calculateTotalPages(totalItems, take),
         totalItems,
       },
+    }
+  }
+
+  async findAllInfiniteList({ cursor, query }: FindAllInfiniteListVariantDto) {
+    const limit = 10
+
+    const where: Prisma.VariantWhereInput = {
+      OR: buildContainsArray({
+        fields: ['size', 'sku', 'barcode'],
+        query,
+      }),
+      isArchived: false,
+    }
+
+    const items = await this.db.variant.findMany({
+      take: limit + 1,
+      where,
+      cursor: cursor ? { id: cursor } : undefined,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    let nextCursor: typeof cursor | undefined = undefined
+    if (items.length > limit) {
+      const nextItem = items.pop()
+      nextCursor = nextItem!.id
+    }
+
+    return {
+      items,
+      nextCursor,
     }
   }
 

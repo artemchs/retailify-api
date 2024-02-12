@@ -168,6 +168,7 @@ describe('CharacteristicsService', () => {
           },
           gender: 'UNISEX',
           season: 'ALL_SEASON',
+          sku: '1',
         },
       })
     })

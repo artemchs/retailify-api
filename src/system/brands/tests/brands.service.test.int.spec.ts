@@ -149,6 +149,7 @@ describe('BrandsService', () => {
           brandId: 'Test Brand 2',
           gender: 'UNISEX',
           season: 'ALL_SEASON',
+          sku: '1',
         },
       })
     })

@@ -14,6 +14,7 @@ import { UpdateProductDto } from './dto/update-product.dto'
 import { FindAllProductDto } from './dto/findAll-product.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
+import { FindAllInfiniteListProductDto } from './dto/findAllInfiniteList-product.dto'
 
 @Roles(Role.Admin)
 @Controller('system/products')
@@ -28,6 +29,11 @@ export class ProductsController {
   @Get()
   findAll(@Query() query: FindAllProductDto) {
     return this.productsService.findAll(query)
+  }
+
+  @Get('infinite-list')
+  findAllInfiniteList(@Query() query: FindAllInfiniteListProductDto) {
+    return this.productsService.findAllInfiniteList(query)
   }
 
   @Get(':productId')

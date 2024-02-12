@@ -56,7 +56,8 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "transliteration": "^2.3.5"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.4.3",

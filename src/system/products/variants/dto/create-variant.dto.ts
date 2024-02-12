@@ -6,10 +6,6 @@ export class CreateVariantDto {
   size: string
 
   @IsNotEmpty()
-  @IsString()
-  sku: string
-
-  @IsNotEmpty()
   @IsNumber()
   price: number
 

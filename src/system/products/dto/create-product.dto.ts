@@ -85,4 +85,8 @@ export class CreateProductDto {
   @IsNotEmpty()
   @IsString()
   categoryId: string
+
+  @IsNotEmpty()
+  @IsString()
+  brandId: string
 }

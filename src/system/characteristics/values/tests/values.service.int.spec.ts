@@ -189,6 +189,7 @@ describe('CharacteristicValuesService', () => {
           },
           gender: 'UNISEX',
           season: 'ALL_SEASON',
+          sku: '12345',
         },
       })
     })

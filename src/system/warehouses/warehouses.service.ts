@@ -87,6 +87,7 @@ export class WarehousesService {
         fields: ['name', 'address'],
         query,
       }),
+      isArchived: false,
     }
 
     const items = await this.db.warehouse.findMany({

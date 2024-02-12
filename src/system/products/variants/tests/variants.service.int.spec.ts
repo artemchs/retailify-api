@@ -3,7 +3,7 @@ import { VariantsService } from '../variants.service'
 import { Test } from '@nestjs/testing'
 import { AppModule } from 'src/app.module'
 import { CreateVariantDto } from '../dto/create-variant.dto'
-import { BadRequestException, NotFoundException } from '@nestjs/common'
+import { NotFoundException } from '@nestjs/common'
 import { FindAllVariantDto } from '../dto/findAll-variant.dto'
 import { UpdateVariantDto } from '../dto/update-variant.dto'
 
@@ -42,6 +42,7 @@ describe('VariantsService', () => {
         packagingWidth: 0,
         gender: 'UNISEX',
         season: 'ALL_SEASON',
+        sku: '12345',
       },
     })
   })
@@ -50,7 +51,6 @@ describe('VariantsService', () => {
     const data: CreateVariantDto = {
       price: 59.99,
       size: 'XL',
-      sku: '12345',
     }
 
     it('should successfully create a new variant', async () => {
@@ -69,23 +69,6 @@ describe('VariantsService', () => {
       expect(variantsCount).toBe(1)
       expect(product?.variants.length).toBe(1)
     })
-
-    it('should fail if the sku is already taken', async () => {
-      await db.variant.create({
-        data: {
-          productId,
-          price: 1,
-          size: 'XL',
-          sku: '12345',
-          totalReceivedQuantity: 0,
-          totalWarehouseQuantity: 0,
-        },
-      })
-
-      await expect(service.create(productId, data)).rejects.toThrow(
-        BadRequestException,
-      )
-    })
   })
 
   describe('findAll', () => {
@@ -96,7 +79,6 @@ describe('VariantsService', () => {
             productId,
             price: 1,
             size: 'XL',
-            sku: '1',
             totalReceivedQuantity: 1,
             totalWarehouseQuantity: 1,
           },
@@ -104,7 +86,6 @@ describe('VariantsService', () => {
             productId,
             price: 1,
             size: 'XL',
-            sku: '12',
             totalReceivedQuantity: 2,
             totalWarehouseQuantity: 2,
           },
@@ -112,7 +93,6 @@ describe('VariantsService', () => {
             productId,
             price: 1,
             size: 'XL',
-            sku: '123',
             totalReceivedQuantity: 3,
             totalWarehouseQuantity: 3,
           },
@@ -120,7 +100,6 @@ describe('VariantsService', () => {
             productId,
             price: 1,
             size: 'XL',
-            sku: '1234',
             totalReceivedQuantity: 4,
             totalWarehouseQuantity: 4,
             isArchived: true,
@@ -148,15 +127,6 @@ describe('VariantsService', () => {
       expect(info.totalItems).toBe(3)
       expect(info.totalPages).toBe(1)
     })
-
-    it('should filter items by sku query', async () => {
-      const { info } = await service.findAll({
-        ...data,
-        query: '123',
-      })
-
-      expect(info.totalItems).toBe(1)
-    })
   })
 
   describe('findOne', () => {
@@ -169,7 +139,6 @@ describe('VariantsService', () => {
           id,
           price: 1,
           size: 'XL',
-          sku: '12345',
           totalReceivedQuantity: 0,
           totalWarehouseQuantity: 0,
         },
@@ -199,7 +168,6 @@ describe('VariantsService', () => {
           id,
           price: 1,
           size: 'XL',
-          sku: '12345',
           totalReceivedQuantity: 0,
           totalWarehouseQuantity: 0,
         },
@@ -239,7 +207,6 @@ describe('VariantsService', () => {
           id,
           price: 1,
           size: 'XL',
-          sku: '12345',
           totalReceivedQuantity: 0,
           totalWarehouseQuantity: 0,
         },
@@ -277,7 +244,6 @@ describe('VariantsService', () => {
           id,
           price: 1,
           size: 'XL',
-          sku: '12345',
           totalReceivedQuantity: 0,
           totalWarehouseQuantity: 0,
         },

@@ -16,8 +16,10 @@ import {
   checkIsArchived,
   getPaginationData,
 } from '../common/utils/db-helpers'
-import { Prisma } from '@prisma/client'
+import { Prisma, ProductGender, ProductSeason } from '@prisma/client'
 import { compareArrays } from '../common/utils/compare-arrays'
+import { FindAllInfiniteListProductDto } from './dto/findAllInfiniteList-product.dto'
+import { slugify } from 'transliteration'
 
 @Injectable()
 export class ProductsService {
@@ -26,10 +28,139 @@ export class ProductsService {
     private storage: StorageService,
   ) {}
 
+  private async generateSku(
+    brandId: string,
+    categoryId: string,
+    season: ProductSeason,
+    gender: ProductGender,
+    oldYearCode?: string,
+  ) {
+    let seasonCode = ''
+    const genderCode = gender[0].toUpperCase()
+    let brandCode = ''
+    let categoryCode = ''
+    const yearCode =
+      oldYearCode ?? new Date().getFullYear().toString().slice(-2)
+
+    const [brand, category, uniqueField] = await Promise.all([
+      this.db.brand.findUnique({
+        where: {
+          id: brandId,
+        },
+        select: {
+          name: true,
+        },
+      }),
+      this.db.category.findUnique({
+        where: {
+          id: categoryId,
+        },
+        select: {
+          name: true,
+        },
+      }),
+      (
+        (await this.db.product.count({
+          where: {
+            AND: [
+              {
+                brandId,
+              },
+              {
+                categoryId,
+              },
+              {
+                gender,
+              },
+              {
+                season,
+              },
+              {
+                createdAt: {
+                  gte: new Date(new Date().getFullYear()),
+                  lte: new Date(new Date().getFullYear() + 1),
+                },
+              },
+            ],
+          },
+        })) + 1
+      ).toString(),
+    ])
+
+    if (season.split('_').length > 1) {
+      const a = season.split('_')[0][0].toUpperCase()
+      const b = season.split('_')[1][0].toUpperCase()
+      seasonCode = a + b
+    } else {
+      seasonCode = season[0] + season[1]
+    }
+
+    if (brand?.name) {
+      brandCode = slugify(brand?.name, {
+        uppercase: true,
+      }).slice(0, 2)
+    }
+
+    if (category?.name) {
+      categoryCode = slugify(category.name, {
+        uppercase: true,
+      }).slice(0, 2)
+    }
+
+    return `${brandCode.padEnd(2, '_')}${categoryCode.padEnd(
+      2,
+      '_',
+    )}${seasonCode}${genderCode}${yearCode}${uniqueField}`
+  }
+
   private async getProduct(id: string) {
     const product = await this.db.product.findUnique({
       where: {
         id,
+      },
+      include: {
+        brand: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        colors: {
+          select: {
+            colorId: true,
+            index: true,
+            color: {
+              select: {
+                name: true,
+                color: true,
+              },
+            },
+          },
+          orderBy: {
+            index: 'asc',
+          },
+        },
+        media: {
+          select: {
+            id: true,
+            index: true,
+          },
+          orderBy: {
+            index: 'asc',
+          },
+        },
+        characteristicValues: {
+          select: {
+            id: true,
+            characteristicId: true,
+          },
+        },
       },
     })
 
@@ -60,6 +191,13 @@ export class ProductsService {
   }
 
   async create(createProductDto: CreateProductDto) {
+    const sku = await this.generateSku(
+      createProductDto.brandId,
+      createProductDto.categoryId,
+      createProductDto.season,
+      createProductDto.gender,
+    )
+
     await this.db.product.create({
       data: {
         ...createProductDto,
@@ -81,8 +219,41 @@ export class ProductsService {
             id,
           })),
         },
+        sku,
       },
     })
+  }
+
+  async findAllInfiniteList({ cursor, query }: FindAllInfiniteListProductDto) {
+    const limit = 10
+
+    const where: Prisma.ProductWhereInput = {
+      OR: buildContainsArray({
+        fields: ['title'],
+        query,
+      }),
+      isArchived: false,
+    }
+
+    const items = await this.db.product.findMany({
+      take: limit + 1,
+      where,
+      cursor: cursor ? { id: cursor } : undefined,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    let nextCursor: typeof cursor | undefined = undefined
+    if (items.length > limit) {
+      const nextItem = items.pop()
+      nextCursor = nextItem!.id
+    }
+
+    return {
+      items,
+      nextCursor,
+    }
   }
 
   async findAll({
@@ -105,6 +276,57 @@ export class ProductsService {
         take,
         skip,
         orderBy: buildOrderByArray({ orderBy }),
+        select: {
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          title: true,
+          gender: true,
+          season: true,
+          totalReceivedQuantity: true,
+          totalWarehouseQuantity: true,
+          packagingLength: true,
+          packagingHeight: true,
+          packagingWeight: true,
+          packagingWidth: true,
+          isArchived: true,
+          brand: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          colors: {
+            select: {
+              colorId: true,
+              index: true,
+              color: {
+                select: {
+                  name: true,
+                  color: true,
+                },
+              },
+            },
+            orderBy: {
+              index: 'asc',
+            },
+          },
+          media: {
+            select: {
+              id: true,
+              index: true,
+            },
+            orderBy: {
+              index: 'asc',
+            },
+          },
+        },
       }),
       this.db.product.count({
         where,
@@ -237,6 +459,16 @@ export class ProductsService {
 
   async update(id: string, updateProductDto: UpdateProductDto) {
     const product = await this.getFullProduct(id)
+    let sku: string | undefined
+    if (product.brandId && product.categoryId) {
+      sku = await this.generateSku(
+        updateProductDto.brandId ?? product.brandId,
+        updateProductDto.categoryId ?? product.categoryId,
+        updateProductDto.season ?? product.season,
+        updateProductDto.gender ?? product.gender,
+        new Date(product.createdAt).getFullYear().toString().slice(-2),
+      )
+    }
 
     await Promise.all([
       this.db.product.update({
@@ -245,6 +477,7 @@ export class ProductsService {
         },
         data: {
           ...updateProductDto,
+          sku,
           colors: undefined,
           media: undefined,
           characteristicValues: undefined,

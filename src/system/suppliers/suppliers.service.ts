@@ -83,6 +83,7 @@ export class SuppliersService {
         fields: ['name', 'contactPerson', 'email', 'phone', 'address'],
         query,
       }),
+      isArchived: false,
     }
 
     const items = await this.db.supplier.findMany({
