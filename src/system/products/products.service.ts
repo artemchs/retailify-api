@@ -229,7 +229,7 @@ export class ProductsService {
 
     const where: Prisma.ProductWhereInput = {
       OR: buildContainsArray({
-        fields: ['title'],
+        fields: ['title', 'sku'],
         query,
       }),
       isArchived: false,
@@ -241,6 +241,10 @@ export class ProductsService {
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
         createdAt: 'desc',
+      },
+      include: {
+        variants: true,
+        media: true,
       },
     })
 
@@ -267,7 +271,7 @@ export class ProductsService {
 
     const where: Prisma.ProductWhereInput = {
       isArchived: checkIsArchived(isArchived),
-      OR: buildContainsArray({ fields: ['title'], query }),
+      OR: buildContainsArray({ fields: ['title', 'sku'], query }),
     }
 
     const [items, totalItems] = await Promise.all([
@@ -278,6 +282,7 @@ export class ProductsService {
         orderBy: buildOrderByArray({ orderBy }),
         select: {
           id: true,
+          sku: true,
           createdAt: true,
           updatedAt: true,
           title: true,

@@ -126,9 +126,9 @@ model SupplierInvoice {
 }
 
 enum SupplierInvoicePaymentTerm {
-  CASH_ON_DELIVERY
-  PAYMENT_IN_ADVANCE
-  PAYMENT_ON_REALIZATION
+  ON_DELIVERY
+  IN_ADVANCE
+  ON_REALIZATION
 }
 
 enum SupplierInvoicePaymentOption {

@@ -3,17 +3,11 @@ export class FindAllProductDto {
   rowsPerPage: number
   query?: string
   orderBy?: {
-    createdAt?: 'asc' | 'desc'
-    updatedAt?: 'asc' | 'desc'
-    title?: 'asc' | 'desc'
-    description?: 'asc' | 'desc'
-    price?: 'asc' | 'desc'
-    sale?: 'asc' | 'desc'
-    packagingLength?: 'asc' | 'desc'
-    packagingWidth?: 'asc' | 'desc'
-    packagingHeight?: 'asc' | 'desc'
-    packagingWeight?: 'asc' | 'desc'
-    totalStock?: 'asc' | 'desc'
+    title: 'asc' | 'desc'
+    createdAt: 'asc' | 'desc'
+    sku: 'asc' | 'desc'
+    totalReceivedQuantity: 'asc' | 'desc'
+    totalWarehouseQuantity: 'asc' | 'desc'
   }
   isArchived?: number // 0 or 1
 }

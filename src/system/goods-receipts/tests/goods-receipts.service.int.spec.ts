@@ -47,22 +47,39 @@ describe('GoodsReceiptsService', () => {
     })
 
     await Promise.all([
-      db.supplier.create({
-        data: {
-          id: 'test-supplier',
-          name: 'Test Supplier 1',
-          address: 'Test Supplier Address',
-          contactPerson: 'Test Supplier Contact Person',
-          email: 'Test Supplier Email',
-          phone: 'Test Supplier Phone',
-        },
+      db.supplier.createMany({
+        data: [
+          {
+            id: 'test-supplier',
+            name: 'Test Supplier 1',
+            address: 'Test Supplier Address',
+            contactPerson: 'Test Supplier Contact Person',
+            email: 'Test Supplier Email',
+            phone: 'Test Supplier Phone',
+          },
+          {
+            id: 'test-supplier-2',
+            name: 'Test Supplier 2',
+            address: 'Test Supplier Address',
+            contactPerson: 'Test Supplier Contact Person',
+            email: 'Test Supplier Email',
+            phone: 'Test Supplier Phone',
+          },
+        ],
       }),
-      db.warehouse.create({
-        data: {
-          id: 'Test Warehouse 1',
-          name: 'Test Warehouse 1',
-          address: 'Test Warehouse 1',
-        },
+      db.warehouse.createMany({
+        data: [
+          {
+            id: 'Test Warehouse 1',
+            name: 'Test Warehouse 1',
+            address: 'Test Warehouse 1',
+          },
+          {
+            id: 'Test Warehouse 2',
+            name: 'Test Warehouse 2',
+            address: 'Test Warehouse 2',
+          },
+        ],
       }),
       db.variant.createMany({
         data: [
@@ -105,7 +122,7 @@ describe('GoodsReceiptsService', () => {
     const data: CreateGoodsReceiptDto = {
       goodsReceiptDate: new Date(),
       paymentOption: 'PRIVATE_FUNDS',
-      paymentTerm: 'PAYMENT_IN_ADVANCE',
+      paymentTerm: 'IN_ADVANCE',
       supplierId: 'test-supplier',
       warehouseId: 'Test Warehouse 1',
       variants: [],
@@ -269,7 +286,7 @@ describe('GoodsReceiptsService', () => {
       expect(supplierInvoicesCount).toBe(1)
       expect(Number(supplierInvoice?.accountsPayable)).toBe(550)
       expect(supplierInvoice?.paymentOption).toBe('PRIVATE_FUNDS')
-      expect(supplierInvoice?.paymentTerm).toBe('PAYMENT_IN_ADVANCE')
+      expect(supplierInvoice?.paymentTerm).toBe('IN_ADVANCE')
     })
 
     it('should throw an exception if the supplier does not exist', async () => {
@@ -287,16 +304,25 @@ describe('GoodsReceiptsService', () => {
             name: 'Goods Receipt 1',
             goodsReceiptDate: new Date(2021),
             supplierId: 'test-supplier',
+            warehouseId: 'Test Warehouse 1',
           },
           {
             name: 'Goods Receipt 2',
             goodsReceiptDate: new Date(2022),
             supplierId: 'test-supplier',
+            warehouseId: 'Test Warehouse 2',
           },
           {
             name: 'Goods Receipt 3',
             goodsReceiptDate: new Date(2023),
+            supplierId: 'test-supplier-2',
+            warehouseId: 'Test Warehouse 2',
+          },
+          {
+            name: 'Goods Receipt 4',
+            goodsReceiptDate: new Date(2024),
             supplierId: 'test-supplier',
+            isArchived: true,
           },
         ],
       })
@@ -329,6 +355,42 @@ describe('GoodsReceiptsService', () => {
       })
 
       expect(info.totalItems).toBe(1)
+    })
+
+    it('should filter items by isArchived status', async () => {
+      const { info } = await service.findAll({ ...data, isArchived: 1 })
+
+      expect(info.totalItems).toBe(1)
+    })
+
+    it('should filter items by warehouse id', async () => {
+      const { info } = await service.findAll({
+        ...data,
+        warehouseIds: ['Test Warehouse 1'],
+      })
+
+      expect(info.totalItems).toBe(1)
+    })
+
+    it('should filter items by supplier id', async () => {
+      const { info } = await service.findAll({
+        ...data,
+        supplierIds: ['test-supplier-2'],
+      })
+
+      expect(info.totalItems).toBe(1)
+    })
+
+    it('should filter items by goods receipt date', async () => {
+      const { info } = await service.findAll({
+        ...data,
+        goodsReceiptDate: {
+          from: new Date(2021).toISOString(),
+          to: new Date(2022).toISOString(),
+        },
+      })
+
+      expect(info.totalItems).toBe(2)
     })
   })
 
@@ -370,7 +432,7 @@ describe('GoodsReceiptsService', () => {
               create: {
                 accountsPayable: 100,
                 paymentOption: 'CASH_REGISTER',
-                paymentTerm: 'CASH_ON_DELIVERY',
+                paymentTerm: 'ON_DELIVERY',
               },
             },
             productVariants: {
@@ -415,7 +477,7 @@ describe('GoodsReceiptsService', () => {
     const data: UpdateGoodsReceiptDto = {
       goodsReceiptDate: new Date(2024),
       paymentOption: 'CASH_REGISTER',
-      paymentTerm: 'CASH_ON_DELIVERY',
+      paymentTerm: 'ON_DELIVERY',
       warehouseId: 'Test Warehouse 1',
       supplierId: 'test-supplier',
     }
@@ -595,7 +657,7 @@ describe('GoodsReceiptsService', () => {
               create: {
                 accountsPayable: 100,
                 paymentOption: 'CASH_REGISTER',
-                paymentTerm: 'CASH_ON_DELIVERY',
+                paymentTerm: 'ON_DELIVERY',
               },
             },
             productVariants: {
@@ -693,7 +755,7 @@ describe('GoodsReceiptsService', () => {
               create: {
                 accountsPayable: 100,
                 paymentOption: 'CASH_REGISTER',
-                paymentTerm: 'CASH_ON_DELIVERY',
+                paymentTerm: 'ON_DELIVERY',
               },
             },
             productVariants: {

@@ -10,6 +10,7 @@ import {
   buildContainsArray,
   buildOrderByArray,
   calculateTotalPages,
+  checkIsArchived,
   getPaginationData,
 } from '../common/utils/db-helpers'
 import { Prisma } from '@prisma/client'
@@ -52,6 +53,18 @@ export class GoodsReceiptsService {
             accountsPayable: true,
             paymentOption: true,
             paymentTerm: true,
+          },
+        },
+        supplier: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        warehouse: {
+          select: {
+            id: true,
+            name: true,
           },
         },
       },
@@ -319,11 +332,51 @@ export class GoodsReceiptsService {
     )
   }
 
-  async findAll({ page, rowsPerPage, orderBy, query }: FindAllGoodsReceiptDto) {
+  async findAll({
+    page,
+    rowsPerPage,
+    orderBy,
+    query,
+    goodsReceiptDate,
+    isArchived,
+    paymentOptions,
+    paymentTerms,
+    supplierIds,
+    warehouseIds,
+  }: FindAllGoodsReceiptDto) {
     const { skip, take } = getPaginationData({ page, rowsPerPage })
 
     const where: Prisma.GoodsReceiptWhereInput = {
       OR: buildContainsArray({ fields: ['name'], query }),
+      isArchived: checkIsArchived(isArchived),
+      goodsReceiptDate: goodsReceiptDate
+        ? {
+            gte: goodsReceiptDate.from ? goodsReceiptDate.from : undefined,
+            lte: goodsReceiptDate.to ? goodsReceiptDate.to : undefined,
+          }
+        : undefined,
+      supplierInvoice: {
+        paymentOption: paymentOptions
+          ? {
+              in: paymentOptions,
+            }
+          : undefined,
+        paymentTerm: paymentTerms
+          ? {
+              in: paymentTerms,
+            }
+          : undefined,
+      },
+      supplierId: supplierIds
+        ? {
+            in: supplierIds,
+          }
+        : undefined,
+      warehouseId: warehouseIds
+        ? {
+            in: warehouseIds,
+          }
+        : undefined,
     }
 
     const [items, totalItems] = await Promise.all([
@@ -338,6 +391,18 @@ export class GoodsReceiptsService {
               accountsPayable: true,
               paymentOption: true,
               paymentTerm: true,
+            },
+          },
+          supplier: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          warehouse: {
+            select: {
+              id: true,
+              name: true,
             },
           },
         },
