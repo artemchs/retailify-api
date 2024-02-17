@@ -54,7 +54,7 @@ export class VariantsService {
 
     const where: Prisma.VariantWhereInput = {
       isArchived: checkIsArchived(isArchived),
-      OR: buildContainsArray({ fields: ['sku', 'barcode'], query }),
+      OR: buildContainsArray({ fields: ['size'], query }),
       productId:
         productIds && productIds.length >= 1
           ? {
@@ -84,15 +84,19 @@ export class VariantsService {
     }
   }
 
-  async findAllInfiniteList({ cursor, query }: FindAllInfiniteListVariantDto) {
+  async findAllInfiniteList(
+    productId: string,
+    { cursor, query }: FindAllInfiniteListVariantDto,
+  ) {
     const limit = 10
 
     const where: Prisma.VariantWhereInput = {
       OR: buildContainsArray({
-        fields: ['size', 'sku', 'barcode'],
+        fields: ['size'],
         query,
       }),
       isArchived: false,
+      productId,
     }
 
     const items = await this.db.variant.findMany({
@@ -101,6 +105,9 @@ export class VariantsService {
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
         createdAt: 'desc',
+      },
+      include: {
+        warehouseStockEntries: true,
       },
     })
 

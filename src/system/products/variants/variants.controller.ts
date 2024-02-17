@@ -35,8 +35,11 @@ export class VariantsController {
   }
 
   @Get('infinite-list')
-  findAllInfiniteList(@Query() query: FindAllInfiniteListVariantDto) {
-    return this.variantsService.findAllInfiniteList(query)
+  findAllInfiniteList(
+    @Param('productId') productId: string,
+    @Query() query: FindAllInfiniteListVariantDto,
+  ) {
+    return this.variantsService.findAllInfiniteList(productId, query)
   }
 
   @Get(':variantId')
