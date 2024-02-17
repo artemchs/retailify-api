@@ -15,6 +15,7 @@ import { FindAllProductDto } from './dto/findAll-product.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { FindAllInfiniteListProductDto } from './dto/findAllInfiniteList-product.dto'
+import { BatchEditProductDto } from './dto/batch-edit-product.dto'
 
 @Roles(Role.Admin)
 @Controller('system/products')
@@ -39,6 +40,11 @@ export class ProductsController {
   @Get(':productId')
   findOne(@Param('productId') id: string) {
     return this.productsService.findOne(id)
+  }
+
+  @Put()
+  batchEdit(@Body() batchEditDto: BatchEditProductDto) {
+    return this.productsService.batchEdit(batchEditDto)
   }
 
   @Put(':productId')

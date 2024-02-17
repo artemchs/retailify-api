@@ -20,6 +20,7 @@ import { Prisma, ProductGender, ProductSeason } from '@prisma/client'
 import { compareArrays } from '../common/utils/compare-arrays'
 import { FindAllInfiniteListProductDto } from './dto/findAllInfiniteList-product.dto'
 import { slugify } from 'transliteration'
+import { BatchEditProductDto } from './dto/batch-edit-product.dto'
 
 type GenerateSkuProps = {
   brandId: string
@@ -537,6 +538,46 @@ export class ProductsService {
         updateProductDto.characteristicValues,
       ),
     ])
+  }
+
+  async batchEdit({ products }: BatchEditProductDto) {
+    await this.db.$transaction(async (tx) => {
+      await Promise.all(
+        products.map(async (product) => {
+          if (product.colors && product.colors.length >= 1) {
+            await tx.productToColor.deleteMany({
+              where: {
+                productId: product.id,
+              },
+            })
+
+            await tx.productToColor.createMany({
+              data: product.colors.map((c) => ({
+                colorId: c.id,
+                index: c.index,
+                productId: product.id,
+              })),
+            })
+          }
+
+          await tx.product.update({
+            where: {
+              id: product.id,
+            },
+            data: {
+              brandId: product.brandId,
+              categoryId: product.categoryId,
+              gender: product.gender,
+              season: product.season,
+              packagingHeight: product.packagingHeight,
+              packagingLength: product.packagingLength,
+              packagingWeight: product.packagingWeight,
+              packagingWidth: product.packagingWidth,
+            },
+          })
+        }),
+      )
+    })
   }
 
   async archive(id: string) {

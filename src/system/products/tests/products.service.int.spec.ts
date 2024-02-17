@@ -8,6 +8,7 @@ import { NotFoundException } from '@nestjs/common'
 import { UpdateProductDto } from '../dto/update-product.dto'
 import { StorageService } from '../../storage/storage.service'
 import { ListObjectsV2Command } from '@aws-sdk/client-s3'
+import { BatchEditProductDto } from '../dto/batch-edit-product.dto'
 
 describe('ProductsService', () => {
   let service: ProductsService
@@ -280,6 +281,188 @@ describe('ProductsService', () => {
       await expect(service.findOne('non-existent')).rejects.toThrow(
         NotFoundException,
       )
+    })
+  })
+
+  describe('batchEdit', () => {
+    beforeEach(async () => {
+      await Promise.all([
+        db.product.create({
+          data: {
+            id: 'Test Product 1',
+            title: 'Test Product 1',
+            description: 'Test Product 1',
+            packagingHeight: 10,
+            packagingLength: 10,
+            packagingWeight: 10,
+            packagingWidth: 10,
+            colors: {
+              createMany: {
+                data: [
+                  {
+                    colorId: 'color_1',
+                    index: 0,
+                  },
+                  {
+                    colorId: 'color_2',
+                    index: 1,
+                  },
+                ],
+              },
+            },
+            gender: 'UNISEX',
+            season: 'ALL_SEASON',
+            sku: '1',
+          },
+        }),
+        db.product.create({
+          data: {
+            id: 'Test Product 2',
+            title: 'Test Product 2',
+            description: 'Test Product 2',
+            packagingHeight: 10,
+            packagingLength: 10,
+            packagingWeight: 10,
+            packagingWidth: 10,
+            colors: {
+              createMany: {
+                data: [
+                  {
+                    colorId: 'color_1',
+                    index: 0,
+                  },
+                  {
+                    colorId: 'color_2',
+                    index: 1,
+                  },
+                ],
+              },
+            },
+            gender: 'UNISEX',
+            season: 'ALL_SEASON',
+            sku: '2',
+          },
+        }),
+        db.product.create({
+          data: {
+            id: 'Test Product 3',
+            title: 'Test Product 3',
+            description: 'Test Product 3',
+            packagingHeight: 10,
+            packagingLength: 10,
+            packagingWeight: 10,
+            packagingWidth: 10,
+            colors: {
+              createMany: {
+                data: [
+                  {
+                    colorId: 'color_1',
+                    index: 0,
+                  },
+                  {
+                    colorId: 'color_2',
+                    index: 1,
+                  },
+                ],
+              },
+            },
+            gender: 'UNISEX',
+            season: 'ALL_SEASON',
+            sku: '3',
+          },
+        }),
+      ])
+    })
+
+    it('should successfully edit many products', async () => {
+      const data: BatchEditProductDto = {
+        products: [
+          {
+            id: 'Test Product 1',
+            packagingHeight: 12345,
+          },
+          {
+            id: 'Test Product 2',
+            packagingHeight: 12345,
+          },
+          {
+            id: 'Test Product 3',
+            packagingHeight: 12345,
+          },
+        ],
+      }
+
+      await service.batchEdit(data)
+
+      const editedProductsCount = await db.product.count({
+        where: {
+          packagingHeight: 12345,
+        },
+      })
+
+      expect(editedProductsCount).toBe(3)
+    })
+
+    it('should successfully edit with changed colors', async () => {
+      await db.color.create({
+        data: {
+          id: 'New Color 1',
+          color: 'New Color 1',
+          name: 'New Color 1',
+        },
+      })
+
+      const data: BatchEditProductDto = {
+        products: [
+          {
+            id: 'Test Product 1',
+            colors: [
+              {
+                id: 'New Color 1',
+                index: 0,
+              },
+            ],
+          },
+          {
+            id: 'Test Product 2',
+            colors: [
+              {
+                id: 'New Color 1',
+                index: 0,
+              },
+            ],
+          },
+          {
+            id: 'Test Product 3',
+            colors: [
+              {
+                id: 'New Color 1',
+                index: 0,
+              },
+            ],
+          },
+        ],
+      }
+
+      await service.batchEdit(data)
+
+      const products = await db.product.findMany({
+        select: {
+          colors: {
+            select: {
+              index: true,
+              colorId: true,
+            },
+          },
+        },
+      })
+
+      expect(products.length).toBe(3)
+      for (const product of products) {
+        expect(product.colors[0].index).toBe(0)
+        expect(product.colors[0].colorId).toBe('New Color 1')
+        expect(product.colors[1]).toBeUndefined()
+      }
     })
   })
 
