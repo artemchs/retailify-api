@@ -67,6 +67,24 @@ export class GoodsReceiptsService {
             name: true,
           },
         },
+        productVariants: {
+          select: {
+            variant: {
+              select: {
+                id: true,
+                product: {
+                  select: {
+                    id: true,
+                    title: true,
+                  },
+                },
+                size: true,
+              },
+            },
+            receivedQuantity: true,
+            supplierPrice: true,
+          },
+        },
       },
     })
 
