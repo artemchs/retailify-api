@@ -9,6 +9,7 @@ import { DbService } from '../../db/db.service'
 import { FindAllBrandDto } from './dto/findAll-brand.dto'
 import { Prisma } from '@prisma/client'
 import { buildContainsArray } from '../common/utils/db-helpers'
+import { slugify } from 'transliteration'
 
 @Injectable()
 export class BrandsService {
@@ -68,15 +69,57 @@ export class BrandsService {
     return brand
   }
 
-  async update(id: string, updateBrandDto: UpdateBrandDto) {
-    await this.getBrand(id)
+  private async updateProductSkus(
+    brandId: string,
+    oldName: string,
+    newName?: string,
+  ) {
+    if (newName && oldName !== newName) {
+      const brandCode = slugify(newName, {
+        uppercase: true,
+      })
+        .slice(0, 2)
+        .padEnd(2, '_')
 
-    await this.db.brand.update({
-      where: {
-        id,
-      },
-      data: updateBrandDto,
-    })
+      await this.db.$transaction(async (tx) => {
+        const products = await tx.product.findMany({
+          where: {
+            brandId,
+          },
+          select: {
+            id: true,
+            sku: true,
+          },
+        })
+
+        await Promise.all(
+          products.map(({ id, sku }) =>
+            tx.product.update({
+              where: {
+                id,
+              },
+              data: {
+                sku: brandCode + sku.substring(2),
+              },
+            }),
+          ),
+        )
+      })
+    }
+  }
+
+  async update(id: string, updateBrandDto: UpdateBrandDto) {
+    const brand = await this.getBrand(id)
+
+    await Promise.all([
+      this.db.brand.update({
+        where: {
+          id,
+        },
+        data: updateBrandDto,
+      }),
+      this.updateProductSkus(brand.id, brand.name, updateBrandDto.name),
+    ])
   }
 
   async remove(id: string) {

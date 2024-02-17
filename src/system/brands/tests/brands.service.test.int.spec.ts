@@ -97,6 +97,20 @@ describe('BrandsService', () => {
           name: id,
         },
       })
+      await db.product.create({
+        data: {
+          id: 'Test Product 1',
+          title: 'Test Product 1',
+          gender: 'UNISEX',
+          packagingHeight: 1,
+          packagingLength: 1,
+          packagingWeight: 1,
+          packagingWidth: 1,
+          season: 'ALL_SEASON',
+          sku: 'TE_HelloWorld',
+          brandId: id,
+        },
+      })
     })
 
     const data: UpdateBrandDto = {
@@ -113,6 +127,18 @@ describe('BrandsService', () => {
       })
 
       expect(brand?.name).toBe(data.name)
+    })
+
+    it('should correctly update the connected product SKUs', async () => {
+      await service.update(id, data)
+
+      const product = await db.product.findUnique({
+        where: {
+          id: 'Test Product 1',
+        },
+      })
+
+      expect(product?.sku.substring(0, 2)).toBe('UP')
     })
 
     it('should throw an exception if the brand does not exist', async () => {
