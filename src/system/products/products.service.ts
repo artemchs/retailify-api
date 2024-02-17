@@ -21,6 +21,15 @@ import { compareArrays } from '../common/utils/compare-arrays'
 import { FindAllInfiniteListProductDto } from './dto/findAllInfiniteList-product.dto'
 import { slugify } from 'transliteration'
 
+type GenerateSkuProps = {
+  brandId: string
+  categoryId: string
+  firstColorId: string
+  season: ProductSeason
+  gender: ProductGender
+  oldYearCode?: string
+}
+
 @Injectable()
 export class ProductsService {
   constructor(
@@ -28,21 +37,23 @@ export class ProductsService {
     private storage: StorageService,
   ) {}
 
-  private async generateSku(
-    brandId: string,
-    categoryId: string,
-    season: ProductSeason,
-    gender: ProductGender,
-    oldYearCode?: string,
-  ) {
+  private async generateSku({
+    brandId,
+    categoryId,
+    gender,
+    season,
+    firstColorId,
+    oldYearCode,
+  }: GenerateSkuProps) {
     let seasonCode = ''
     const genderCode = gender[0].toUpperCase()
     let brandCode = ''
     let categoryCode = ''
+    let firstColorCode = ''
     const yearCode =
       oldYearCode ?? new Date().getFullYear().toString().slice(-2)
 
-    const [brand, category, uniqueField] = await Promise.all([
+    const [brand, category, color, uniqueField] = await Promise.all([
       this.db.brand.findUnique({
         where: {
           id: brandId,
@@ -54,6 +65,14 @@ export class ProductsService {
       this.db.category.findUnique({
         where: {
           id: categoryId,
+        },
+        select: {
+          name: true,
+        },
+      }),
+      this.db.color.findUnique({
+        where: {
+          id: firstColorId,
         },
         select: {
           name: true,
@@ -98,19 +117,28 @@ export class ProductsService {
     if (brand?.name) {
       brandCode = slugify(brand?.name, {
         uppercase: true,
-      }).slice(0, 2)
+      })
+        .slice(0, 2)
+        .padEnd(2, '_')
     }
 
     if (category?.name) {
       categoryCode = slugify(category.name, {
         uppercase: true,
-      }).slice(0, 2)
+      })
+        .slice(0, 2)
+        .padEnd(2, '_')
     }
 
-    return `${brandCode.padEnd(2, '_')}${categoryCode.padEnd(
-      2,
-      '_',
-    )}${seasonCode}${genderCode}${yearCode}${uniqueField}`
+    if (color?.name) {
+      firstColorCode = slugify(color.name, {
+        uppercase: true,
+      })
+        .slice(0, 2)
+        .padEnd(2, '_')
+    }
+
+    return `${brandCode}${categoryCode}${firstColorCode}${seasonCode}${genderCode}${yearCode}${uniqueField}`
   }
 
   private async getProduct(id: string) {
@@ -191,12 +219,13 @@ export class ProductsService {
   }
 
   async create(createProductDto: CreateProductDto) {
-    const sku = await this.generateSku(
-      createProductDto.brandId,
-      createProductDto.categoryId,
-      createProductDto.season,
-      createProductDto.gender,
-    )
+    const sku = await this.generateSku({
+      brandId: createProductDto.brandId,
+      categoryId: createProductDto.categoryId,
+      gender: createProductDto.gender,
+      season: createProductDto.season,
+      firstColorId: createProductDto.colors[0].id,
+    })
 
     await this.db.product.create({
       data: {
@@ -466,13 +495,18 @@ export class ProductsService {
     const product = await this.getFullProduct(id)
     let sku: string | undefined
     if (product.brandId && product.categoryId) {
-      sku = await this.generateSku(
-        updateProductDto.brandId ?? product.brandId,
-        updateProductDto.categoryId ?? product.categoryId,
-        updateProductDto.season ?? product.season,
-        updateProductDto.gender ?? product.gender,
-        new Date(product.createdAt).getFullYear().toString().slice(-2),
-      )
+      sku = await this.generateSku({
+        brandId: updateProductDto.brandId ?? product.brandId,
+        categoryId: updateProductDto.categoryId ?? product.categoryId,
+        firstColorId:
+          updateProductDto.colors?.[0].id ?? product.colors[0].colorId,
+        gender: updateProductDto.gender ?? product.gender,
+        season: updateProductDto.season ?? product.season,
+        oldYearCode: new Date(product.createdAt)
+          .getFullYear()
+          .toString()
+          .slice(-2),
+      })
     }
 
     await Promise.all([

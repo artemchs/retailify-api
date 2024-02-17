@@ -135,7 +135,7 @@ describe('ProductsService', () => {
 
       expect(product?.sku).toBeDefined()
       expect(product?.sku).not.toBeNull()
-      expect(product?.sku).toBe('TETESFU241')
+      expect(product?.sku).toBe('TETECOSFU241')
     })
   })
 

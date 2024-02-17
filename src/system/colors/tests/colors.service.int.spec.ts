@@ -92,17 +92,36 @@ describe('ColorsService', () => {
   })
 
   describe('update', () => {
+    const id = 'Test Color 1'
+
     beforeEach(async () => {
       await db.color.create({
         data: {
-          id: 'Test Color 1',
-          name: 'Test Color 1',
-          color: 'Test Color 1',
+          id,
+          name: id,
+          color: id,
+        },
+      })
+      await db.product.create({
+        data: {
+          id: 'Test Product 1',
+          title: 'Test Product 1',
+          gender: 'UNISEX',
+          packagingHeight: 1,
+          packagingLength: 1,
+          packagingWeight: 1,
+          packagingWidth: 1,
+          season: 'ALL_SEASON',
+          sku: '____TE__',
+          colors: {
+            create: {
+              index: 0,
+              colorId: id,
+            },
+          },
         },
       })
     })
-
-    const id = 'Test Color 1'
 
     const data: UpdateColorDto = {
       name: 'Updated Color 1',
@@ -118,6 +137,18 @@ describe('ColorsService', () => {
       })
 
       expect(color?.name).toBe(data.name)
+    })
+
+    it('should correctly update product SKUs', async () => {
+      await service.update(id, data)
+
+      const product = await db.product.findUnique({
+        where: {
+          id: 'Test Product 1',
+        },
+      })
+
+      expect(product?.sku).toBe('____UP__')
     })
 
     it('should throw an exception if the color does not exist', async () => {
