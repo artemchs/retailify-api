@@ -138,6 +138,16 @@ describe('ProductsService', () => {
       expect(product?.sku).not.toBeNull()
       expect(product?.sku).toBe('TETECOSFU241')
     })
+
+    it('should correctly increment sku unique field', async () => {
+      await service.create({ ...data, media: [] })
+      await service.create({ ...data, media: [] })
+      await service.create({ ...data, media: [] })
+
+      const products = await db.product.count()
+
+      expect(products).toBe(3)
+    })
   })
 
   describe('findAll', () => {

@@ -4,7 +4,7 @@ import {
 } from '@prisma/client'
 import { Type } from 'class-transformer'
 import {
-  IsDate,
+  IsDateString,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -42,9 +42,7 @@ export class CreateGoodsReceiptDto {
   warehouseId: string
 
   @IsNotEmpty({ message: 'Дата поступления товара не должна быть пустой' })
-  @IsDate({
-    message: 'Дата поступления товара должна быть корректной датой',
-  })
+  @IsDateString()
   goodsReceiptDate: Date
 
   @IsNotEmpty({ message: 'Условия оплаты не должны быть пустыми' })

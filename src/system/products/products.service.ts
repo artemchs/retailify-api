@@ -38,6 +38,18 @@ export class ProductsService {
     private storage: StorageService,
   ) {}
 
+  private async countProductWithSameSku(sku: string) {
+    const count = await this.db.product.count({
+      where: {
+        sku: {
+          startsWith: sku,
+        },
+      },
+    })
+
+    return count
+  }
+
   private async generateSku({
     brandId,
     categoryId,
@@ -54,7 +66,7 @@ export class ProductsService {
     const yearCode =
       oldYearCode ?? new Date().getFullYear().toString().slice(-2)
 
-    const [brand, category, color, uniqueField] = await Promise.all([
+    const [brand, category, color] = await Promise.all([
       this.db.brand.findUnique({
         where: {
           id: brandId,
@@ -79,32 +91,6 @@ export class ProductsService {
           name: true,
         },
       }),
-      (
-        (await this.db.product.count({
-          where: {
-            AND: [
-              {
-                brandId,
-              },
-              {
-                categoryId,
-              },
-              {
-                gender,
-              },
-              {
-                season,
-              },
-              {
-                createdAt: {
-                  gte: new Date(new Date().getFullYear()),
-                  lte: new Date(new Date().getFullYear() + 1),
-                },
-              },
-            ],
-          },
-        })) + 1
-      ).toString(),
     ])
 
     if (season.split('_').length > 1) {
@@ -139,7 +125,11 @@ export class ProductsService {
         .padEnd(2, '_')
     }
 
-    return `${brandCode}${categoryCode}${firstColorCode}${seasonCode}${genderCode}${yearCode}${uniqueField}`
+    const sku = `${brandCode}${categoryCode}${firstColorCode}${seasonCode}${genderCode}${yearCode}`
+
+    const count = await this.countProductWithSameSku(sku)
+
+    return `${sku}${count + 1}`
   }
 
   private async getProduct(id: string) {
@@ -239,16 +229,20 @@ export class ProductsService {
             })),
           },
         },
-        media: {
-          createMany: {
-            data: createProductDto.media,
-          },
-        },
-        characteristicValues: {
-          connect: createProductDto.characteristicValues?.map(({ id }) => ({
-            id,
-          })),
-        },
+        media: createProductDto.media
+          ? {
+              createMany: {
+                data: createProductDto.media,
+              },
+            }
+          : undefined,
+        characteristicValues: createProductDto.characteristicValues
+          ? {
+              connect: createProductDto.characteristicValues?.map(({ id }) => ({
+                id,
+              })),
+            }
+          : undefined,
         sku,
       },
     })

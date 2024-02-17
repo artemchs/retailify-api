@@ -789,7 +789,7 @@ describe('App', () => {
           const data: CreateGoodsReceiptDto = {
             goodsReceiptDate: new Date(),
             paymentOption: 'PRIVATE_FUNDS',
-            paymentTerm: 'PAYMENT_ON_REALIZATION',
+            paymentTerm: 'ON_REALIZATION',
             supplierId: supplierId!,
             warehouseId: warehouseId!,
             variants: [],
@@ -806,7 +806,7 @@ describe('App', () => {
           const data: CreateGoodsReceiptDto = {
             goodsReceiptDate: new Date(),
             paymentOption: 'PRIVATE_FUNDS',
-            paymentTerm: 'PAYMENT_ON_REALIZATION',
+            paymentTerm: 'ON_REALIZATION',
             supplierId: supplierId!,
             warehouseId: warehouseId!,
             variants: [],
