@@ -10,6 +10,7 @@ import { FindAllBrandDto } from './dto/findAll-brand.dto'
 import { Prisma } from '@prisma/client'
 import { buildContainsArray } from '../common/utils/db-helpers'
 import { slugify } from 'transliteration'
+import { replaceCharacters } from '../common/utils/replace-characters'
 
 @Injectable()
 export class BrandsService {
@@ -99,7 +100,7 @@ export class BrandsService {
                 id,
               },
               data: {
-                sku: brandCode + sku.substring(2),
+                sku: replaceCharacters(sku, 0, 1, brandCode),
               },
             }),
           ),

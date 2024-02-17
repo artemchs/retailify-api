@@ -18,6 +18,8 @@ import {
   getPaginationData,
 } from '../common/utils/db-helpers'
 import { Prisma } from '@prisma/client'
+import { slugify } from 'transliteration'
+import { replaceCharacters } from '../common/utils/replace-characters'
 
 @Injectable()
 export class CategoriesService {
@@ -203,6 +205,45 @@ export class CategoriesService {
     return category
   }
 
+  private async updateProductSkus(
+    categoryId: string,
+    oldName,
+    newName?: string,
+  ) {
+    if (newName && oldName !== newName) {
+      const categoryCode = slugify(newName, {
+        uppercase: true,
+      })
+        .slice(0, 2)
+        .padEnd(2, '_')
+
+      await this.db.$transaction(async (tx) => {
+        const products = await tx.product.findMany({
+          where: {
+            categoryId,
+          },
+          select: {
+            id: true,
+            sku: true,
+          },
+        })
+
+        await Promise.all(
+          products.map(({ id, sku }) =>
+            tx.product.update({
+              where: {
+                id,
+              },
+              data: {
+                sku: replaceCharacters(sku, 2, 3, categoryCode),
+              },
+            }),
+          ),
+        )
+      })
+    }
+  }
+
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
     const category = await this.getCategory(id)
     if (updateCategoryDto.groupId) {
@@ -222,19 +263,22 @@ export class CategoriesService {
       }
     }
 
-    await this.db.category.update({
-      where: {
-        id,
-      },
-      data: {
-        name: updateCategoryDto.name,
-        productName: updateCategoryDto.productName,
-        groupId: updateCategoryDto.groupId,
-        characteristics: {
-          set: updateCategoryDto.characteristics ?? [],
+    await Promise.all([
+      this.db.category.update({
+        where: {
+          id,
         },
-      },
-    })
+        data: {
+          name: updateCategoryDto.name,
+          productName: updateCategoryDto.productName,
+          groupId: updateCategoryDto.groupId,
+          characteristics: {
+            set: updateCategoryDto.characteristics ?? [],
+          },
+        },
+      }),
+      this.updateProductSkus(id, category.name, updateCategoryDto.name),
+    ])
   }
 
   async archive(id: string) {

@@ -203,6 +203,20 @@ describe('CategoriesService', () => {
           },
         },
       })
+      await db.product.create({
+        data: {
+          id: 'Test Product 1',
+          title: 'Test Product 1',
+          gender: 'UNISEX',
+          packagingHeight: 1,
+          packagingLength: 1,
+          packagingWeight: 1,
+          packagingWidth: 1,
+          season: 'ALL_SEASON',
+          sku: '__TE__',
+          categoryId: id,
+        },
+      })
     })
 
     const data: UpdateCategoryDto = {
@@ -219,6 +233,18 @@ describe('CategoriesService', () => {
       })
 
       expect(category?.name).toBe(data.name)
+    })
+
+    it('should correctly update product SKUs', async () => {
+      await service.update(id, data)
+
+      const product = await db.product.findUnique({
+        where: {
+          id: 'Test Product 1',
+        },
+      })
+
+      expect(product?.sku).toBe('__UP__')
     })
 
     it('should update connected characteristics', async () => {

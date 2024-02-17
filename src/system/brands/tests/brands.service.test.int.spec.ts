@@ -107,7 +107,7 @@ describe('BrandsService', () => {
           packagingWeight: 1,
           packagingWidth: 1,
           season: 'ALL_SEASON',
-          sku: 'TE_HelloWorld',
+          sku: 'TE__',
           brandId: id,
         },
       })
@@ -138,7 +138,7 @@ describe('BrandsService', () => {
         },
       })
 
-      expect(product?.sku.substring(0, 2)).toBe('UP')
+      expect(product?.sku).toBe('UP__')
     })
 
     it('should throw an exception if the brand does not exist', async () => {
