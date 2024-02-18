@@ -148,6 +148,30 @@ describe('ProductsService', () => {
 
       expect(products).toBe(3)
     })
+
+    it('should correctly create variants', async () => {
+      await service.create({
+        ...data,
+        variants: [
+          {
+            isArchived: false,
+            price: 10.99,
+            size: 'SM',
+          },
+          {
+            isArchived: false,
+            price: 10.99,
+            size: 'XL',
+          },
+        ],
+      })
+
+      const products = await db.product.count()
+      const variants = await db.variant.count()
+
+      expect(products).toBe(1)
+      expect(variants).toBe(2)
+    })
   })
 
   describe('findAll', () => {
@@ -820,6 +844,66 @@ describe('ProductsService', () => {
 
       expect(product?.characteristicValues.length).toBe(2)
       expect(characteristicValuesCount).toBe(2)
+    })
+
+    it('should correctly add a new variant', async () => {
+      await service.update(id, {
+        ...data,
+        variants: [
+          {
+            isArchived: false,
+            price: 10.99,
+            size: 'SM',
+          },
+        ],
+      })
+
+      const products = await db.product.count()
+      const variants = await db.variant.count()
+
+      expect(products).toBe(1)
+      expect(variants).toBe(1)
+    })
+
+    it('should update an existing variant', async () => {
+      await db.product.update({
+        where: {
+          id: 'Test Product 1',
+        },
+        data: {
+          variants: {
+            create: {
+              id: 'Test Variant 1',
+              price: 10.99,
+              size: 'SM',
+              totalReceivedQuantity: 0,
+              totalWarehouseQuantity: 0,
+            },
+          },
+        },
+      })
+
+      await service.update(id, {
+        ...data,
+        variants: [
+          {
+            id: 'Test Variant 1',
+            isArchived: false,
+            price: 10.99,
+            size: 'XL',
+          },
+        ],
+      })
+
+      const products = await db.product.count()
+      const updatedVariant = await db.variant.findUnique({
+        where: {
+          id: 'Test Variant 1',
+        },
+      })
+
+      expect(products).toBe(1)
+      expect(updatedVariant?.size).toBe('XL')
     })
 
     it('should fail if the product does not exist', async () => {

@@ -1,6 +1,7 @@
 import { ProductGender, ProductSeason } from '@prisma/client'
 import { Type } from 'class-transformer'
 import {
+  IsBoolean,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -36,6 +37,28 @@ export class ProductCharacteristicValuesDto {
   id: string
 }
 
+export class ProductVariantDto {
+  @IsNotEmpty()
+  @IsString()
+  size: string
+
+  @IsNotEmpty()
+  @IsNumber()
+  price: number
+
+  @IsNotEmpty()
+  @IsBoolean()
+  isArchived: boolean
+
+  @IsOptional()
+  @IsNumber()
+  sale?: number
+
+  @IsOptional()
+  @IsString()
+  id?: string
+}
+
 export class CreateProductDto {
   @IsNotEmpty()
   @IsEnum(ProductGender)
@@ -65,6 +88,11 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => ProductCharacteristicValuesDto)
   characteristicValues?: ProductCharacteristicValuesDto[]
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ProductVariantDto)
+  variants?: ProductVariantDto[]
 
   @IsNotEmpty()
   @IsNumber()

@@ -4,6 +4,7 @@ import {
   ProductCharacteristicValuesDto,
   ProductColorDto,
   ProductMediaDto,
+  ProductVariantDto,
 } from './dto/create-product.dto'
 import { UpdateProductDto } from './dto/update-product.dto'
 import { DbService } from '../../db/db.service'
@@ -221,6 +222,22 @@ export class ProductsService {
     await this.db.product.create({
       data: {
         ...createProductDto,
+        variants: createProductDto.variants
+          ? {
+              createMany: {
+                data: createProductDto.variants?.map(
+                  ({ price, size, sale, isArchived }) => ({
+                    price,
+                    size,
+                    sale,
+                    totalReceivedQuantity: 0,
+                    totalWarehouseQuantity: 0,
+                    isArchived,
+                  }),
+                ),
+              },
+            }
+          : undefined,
         colors: {
           createMany: {
             data: createProductDto.colors.map(({ id, index }) => ({
@@ -486,6 +503,47 @@ export class ProductsService {
     }
   }
 
+  private async updateProductVariants(
+    productId: string,
+    oldVariants: ProductVariantDto[],
+    newVariants: ProductVariantDto[],
+  ) {
+    if (oldVariants.length >= 1 || newVariants.length >= 1) {
+      const existingVariants = oldVariants.filter((v) => v.id)
+
+      await this.db.$transaction(async (tx) => {
+        await Promise.all([
+          tx.variant.createMany({
+            data: newVariants.map((v) => ({
+              size: v.size,
+              price: v.price,
+              sale: v.sale,
+              isArchived: v.isArchived,
+              totalReceivedQuantity: 0,
+              totalWarehouseQuantity: 0,
+            })),
+          }),
+          Promise.all(
+            existingVariants.map((v) =>
+              tx.variant.update({
+                where: {
+                  id: v.id,
+                  productId,
+                },
+                data: {
+                  size: v.size,
+                  price: v.price,
+                  sale: v.sale,
+                  isArchived: v.isArchived,
+                },
+              }),
+            ),
+          ),
+        ])
+      })
+    }
+  }
+
   async update(id: string, updateProductDto: UpdateProductDto) {
     const product = await this.getFullProduct(id)
     let sku: string | undefined
@@ -504,6 +562,19 @@ export class ProductsService {
       })
     }
 
+    const existingVariants: ProductVariantDto[] = []
+    const newVariants: ProductVariantDto[] = []
+
+    if (updateProductDto.variants) {
+      for (const variant of updateProductDto.variants) {
+        if (variant.id) {
+          existingVariants.push(variant)
+        } else {
+          newVariants.push(variant)
+        }
+      }
+    }
+
     await Promise.all([
       this.db.product.update({
         where: {
@@ -511,6 +582,7 @@ export class ProductsService {
         },
         data: {
           ...updateProductDto,
+          variants: undefined,
           sku,
           colors: undefined,
           media: undefined,
@@ -531,6 +603,7 @@ export class ProductsService {
         product.characteristicValues,
         updateProductDto.characteristicValues,
       ),
+      this.updateProductVariants(id, existingVariants, newVariants),
     ])
   }
 
