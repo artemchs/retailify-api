@@ -521,6 +521,7 @@ export class ProductsService {
               isArchived: v.isArchived,
               totalReceivedQuantity: 0,
               totalWarehouseQuantity: 0,
+              productId,
             })),
           }),
           Promise.all(

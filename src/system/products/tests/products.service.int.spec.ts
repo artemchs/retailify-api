@@ -166,11 +166,17 @@ describe('ProductsService', () => {
         ],
       })
 
-      const products = await db.product.count()
-      const variants = await db.variant.count()
+      const product = await db.product.findFirst({
+        where: {
+          title: 'Test Product 1',
+        },
+        include: {
+          variants: true,
+        },
+      })
 
-      expect(products).toBe(1)
-      expect(variants).toBe(2)
+      expect(product).toBeDefined()
+      expect(product?.variants.length).toBe(2)
     })
   })
 
@@ -858,11 +864,13 @@ describe('ProductsService', () => {
         ],
       })
 
-      const products = await db.product.count()
-      const variants = await db.variant.count()
+      const product = await db.product.findFirst({
+        include: {
+          variants: true,
+        },
+      })
 
-      expect(products).toBe(1)
-      expect(variants).toBe(1)
+      expect(product?.variants.length).toBe(1)
     })
 
     it('should update an existing variant', async () => {
