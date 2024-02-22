@@ -48,6 +48,9 @@ export class DbService
         this.brand.deleteMany(),
         this.categoryGroup.deleteMany(),
         this.category.deleteMany(),
+        this.inventoryAdjustment.deleteMany(),
+        this.inventoryAdjustmentToVariant.deleteMany(),
+        this.inventoryAdjustmentReason.deleteMany(),
       ])
     }
   }

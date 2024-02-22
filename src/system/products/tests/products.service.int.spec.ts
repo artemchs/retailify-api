@@ -154,12 +154,10 @@ describe('ProductsService', () => {
         ...data,
         variants: [
           {
-            isArchived: false,
             price: 10.99,
             size: 'SM',
           },
           {
-            isArchived: false,
             price: 10.99,
             size: 'XL',
           },
@@ -857,7 +855,6 @@ describe('ProductsService', () => {
         ...data,
         variants: [
           {
-            isArchived: false,
             price: 10.99,
             size: 'SM',
           },
@@ -896,7 +893,6 @@ describe('ProductsService', () => {
         variants: [
           {
             id: 'Test Variant 1',
-            isArchived: false,
             price: 10.99,
             size: 'XL',
           },

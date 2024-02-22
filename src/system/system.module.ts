@@ -15,6 +15,7 @@ import { BrandsModule } from './brands/brands.module'
 import { StorageModule } from './storage/storage.module'
 import { CategoryGroupsModule } from './category-groups/category-groups.module'
 import { CategoriesModule } from './categories/categories.module'
+import { InventoryAdjustmentsModule } from './inventory-adjustments/inventory-adjustments.module'
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CategoriesModule } from './categories/categories.module'
     StorageModule,
     CategoryGroupsModule,
     CategoriesModule,
+    InventoryAdjustmentsModule,
   ],
   providers: [
     {

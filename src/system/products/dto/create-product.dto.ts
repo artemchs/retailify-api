@@ -1,7 +1,6 @@
 import { ProductGender, ProductSeason } from '@prisma/client'
 import { Type } from 'class-transformer'
 import {
-  IsBoolean,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -45,10 +44,6 @@ export class ProductVariantDto {
   @IsNotEmpty()
   @IsNumber()
   price: number
-
-  @IsNotEmpty()
-  @IsBoolean()
-  isArchived: boolean
 
   @IsOptional()
   @IsNumber()

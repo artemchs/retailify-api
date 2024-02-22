@@ -181,6 +181,18 @@ export class ProductsService {
             characteristicId: true,
           },
         },
+        variants: {
+          select: {
+            id: true,
+            size: true,
+            price: true,
+            sale: true,
+            isArchived: true,
+          },
+          orderBy: {
+            size: 'asc',
+          },
+        },
       },
     })
 
@@ -226,13 +238,13 @@ export class ProductsService {
           ? {
               createMany: {
                 data: createProductDto.variants?.map(
-                  ({ price, size, sale, isArchived }) => ({
+                  ({ price, size, sale }) => ({
                     price,
                     size,
                     sale,
                     totalReceivedQuantity: 0,
                     totalWarehouseQuantity: 0,
-                    isArchived,
+                    isArchived: false,
                   }),
                 ),
               },
@@ -370,6 +382,33 @@ export class ProductsService {
             },
             orderBy: {
               index: 'asc',
+            },
+          },
+          variants: {
+            select: {
+              id: true,
+              size: true,
+              price: true,
+              sale: true,
+              totalReceivedQuantity: true,
+              totalWarehouseQuantity: true,
+              warehouseStockEntries: {
+                select: {
+                  warehouse: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                  warehouseQuantity: true,
+                },
+              },
+            },
+            orderBy: {
+              size: 'asc',
+            },
+            where: {
+              isArchived: false,
             },
           },
         },
@@ -518,7 +557,6 @@ export class ProductsService {
               size: v.size,
               price: v.price,
               sale: v.sale,
-              isArchived: v.isArchived,
               totalReceivedQuantity: 0,
               totalWarehouseQuantity: 0,
               productId,
@@ -535,7 +573,6 @@ export class ProductsService {
                   size: v.size,
                   price: v.price,
                   sale: v.sale,
-                  isArchived: v.isArchived,
                 },
               }),
             ),
