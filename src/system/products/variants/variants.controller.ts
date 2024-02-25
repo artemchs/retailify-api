@@ -42,6 +42,13 @@ export class VariantsController {
     return this.variantsService.findAllInfiniteList(productId, query)
   }
 
+  @Get('for-warehouse')
+  findAllInfiniteListForWarehouse(
+    @Query() query: { warehouseId: string; query?: string; cursor?: string },
+  ) {
+    return this.variantsService.findAllInfiniteListForWarehouse(query)
+  }
+
   @Get(':variantId')
   findOne(@Param('variantId') id: string) {
     return this.variantsService.findOne(id)

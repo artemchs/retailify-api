@@ -31,6 +31,20 @@ export class VariantsService {
     return variant
   }
 
+  private async getWarehouse(id: string) {
+    const warehouse = await this.db.warehouse.findUnique({
+      where: {
+        id,
+      },
+    })
+
+    if (!warehouse) {
+      throw new NotFoundException('Склад не найден.')
+    }
+
+    return warehouse
+  }
+
   async create(productId: string, createVariantDto: CreateVariantDto) {
     await this.db.variant.create({
       data: {
@@ -108,6 +122,87 @@ export class VariantsService {
       },
       include: {
         warehouseStockEntries: true,
+      },
+    })
+
+    let nextCursor: typeof cursor | undefined = undefined
+    if (items.length > limit) {
+      const nextItem = items.pop()
+      nextCursor = nextItem!.id
+    }
+
+    return {
+      items,
+      nextCursor,
+    }
+  }
+
+  async findAllInfiniteListForWarehouse({
+    warehouseId,
+    query,
+    cursor,
+  }: {
+    warehouseId: string
+    query?: string
+    cursor?: string
+  }) {
+    await this.getWarehouse(warehouseId)
+    const limit = 10
+
+    const where: Prisma.VariantWhereInput = {
+      OR: query
+        ? [
+            {
+              size: {
+                contains: query,
+              },
+            },
+            {
+              barcode: {
+                contains: query,
+              },
+            },
+            {
+              product: {
+                title: {
+                  contains: query,
+                },
+              },
+            },
+            {
+              product: {
+                sku: {
+                  contains: query,
+                },
+              },
+            },
+          ]
+        : undefined,
+      warehouseStockEntries: {
+        some: {
+          warehouseId,
+        },
+      },
+    }
+
+    const items = await this.db.variant.findMany({
+      take: limit + 1,
+      where,
+      cursor: cursor ? { id: cursor } : undefined,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        warehouseStockEntries: {
+          where: {
+            warehouseId,
+          },
+        },
+        product: {
+          select: {
+            title: true,
+          },
+        },
       },
     })
 

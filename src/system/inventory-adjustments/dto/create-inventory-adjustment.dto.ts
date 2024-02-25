@@ -31,6 +31,7 @@ export class CreateInventoryAdjustmentDto {
   @IsString()
   warehouseId: string
 
+  @IsNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => InventoryAdjustmentVariant)
   variants: InventoryAdjustmentVariant[]

@@ -31,6 +31,25 @@ export class InventoryAdjustmentsService {
       where: {
         id,
       },
+      include: {
+        reason: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        warehouse: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        _count: {
+          select: {
+            variants: true,
+          },
+        },
+      },
     })
 
     if (!inventoryAdjustment) {
@@ -47,7 +66,26 @@ export class InventoryAdjustmentsService {
       },
       include: {
         reason: true,
-        variants: true,
+        variants: {
+          include: {
+            variantToWarehouse: {
+              select: {
+                warehouseQuantity: true,
+                variant: {
+                  select: {
+                    product: {
+                      select: {
+                        title: true,
+                      },
+                    },
+                    size: true,
+                    id: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         warehouse: true,
       },
     })
@@ -227,7 +265,7 @@ export class InventoryAdjustmentsService {
   }
 
   async findOne(id: string) {
-    const inventoryAdjustment = await this.getInventoryAdjustment(id)
+    const inventoryAdjustment = await this.getFullInventoryAdjustment(id)
 
     return inventoryAdjustment
   }
