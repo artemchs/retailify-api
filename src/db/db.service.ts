@@ -51,6 +51,9 @@ export class DbService
         this.inventoryAdjustment.deleteMany(),
         this.inventoryAdjustmentToVariant.deleteMany(),
         this.inventoryAdjustmentReason.deleteMany(),
+        this.inventoryTransferItem.deleteMany(),
+        this.inventoryTransferReason.deleteMany(),
+        this.inventoryTransfer.deleteMany(),
       ])
     }
   }

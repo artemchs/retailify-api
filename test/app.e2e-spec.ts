@@ -36,6 +36,10 @@ import { CreateInventoryAdjustmentDto } from 'src/system/inventory-adjustments/d
 import { CreateInventoryAdjustmentReasonDto } from 'src/system/inventory-adjustments/dto/create-inventory-adjustment-reason.dto'
 import { UpdateInventoryAdjustmentReasonDto } from 'src/system/inventory-adjustments/dto/update-inventory-adjustment-reason.dto'
 import { UpdateInventoryAdjustmentDto } from 'src/system/inventory-adjustments/dto/update-inventory-adjustment.dto'
+import { CreateInventoryTransferReasonDto } from 'src/system/inventory-transfers/dto/create-inventory-transfer-reason.dto'
+import { UpdateInventoryTransferReasonDto } from 'src/system/inventory-transfers/dto/update-inventory-transfer-reason.dto'
+import { CreateInventoryTransferDto } from 'src/system/inventory-transfers/dto/create-inventory-transfer.dto'
+import { UpdateInventoryTransferDto } from 'src/system/inventory-transfers/dto/update-inventory-transfer.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -85,6 +89,21 @@ describe('App', () => {
         role: 'ADMIN',
       },
     })
+
+    await db.warehouse.createMany({
+      data: [
+        {
+          id: 'Source Warehouse',
+          address: 'Source Warehouse',
+          name: 'Source Warehouse',
+        },
+        {
+          id: 'Destination Warehouse',
+          name: 'Destination Warehouse',
+          address: 'Destination Warehouse',
+        },
+      ],
+    })
   })
 
   afterAll(async () => {
@@ -106,6 +125,10 @@ describe('App', () => {
     let brandId: string | undefined
     let inventoryAdjustmentReasonId: string | undefined
     let inventoryAdjustmentId: string | undefined
+    let inventoryTransferReasonId: string | undefined
+    let inventoryTransferId: string | undefined
+    const sourceWarehouseId = 'Source Warehouse'
+    const destinationWarehouseId = 'Destination Warehouse'
 
     describe('Auth', () => {
       describe('(POST) /system/auth/sign-up', () => {
@@ -2511,7 +2534,7 @@ describe('App', () => {
             .expectStatus(200)
         })
 
-        it('should respond with a `404` status code if the product does not exist', async () => {
+        it('should respond with a `404` status code if the inventory adjustment does not exist', async () => {
           const url = `${baseUrl}/restore/non-existent`
 
           await spec()
@@ -2522,6 +2545,301 @@ describe('App', () => {
 
         it('should respond with a `403` status code if the user is not an admin', async () => {
           const url = `${baseUrl}/restore/${inventoryAdjustmentId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+    })
+
+    describe('Inventory Transfers', () => {
+      const baseUrl = '/system/inventory-transfers'
+
+      describe(`(POST) ${baseUrl}/reasons`, () => {
+        afterAll(async () => {
+          const createdInventoryTransferReason =
+            await db.inventoryTransferReason.findFirst()
+          inventoryTransferReasonId = createdInventoryTransferReason?.id
+        })
+
+        const data: CreateInventoryTransferReasonDto = {
+          name: 'Test Inventory Transfer Reason 1',
+        }
+
+        it('should create a new inventory transfer reason', async () => {
+          await spec()
+            .post(`${baseUrl}/reasons`)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(201)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .post(`${baseUrl}/reasons`)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}/reasons`, () => {
+        it('should list inventory transfer reasons', async () => {
+          await spec()
+            .get(`${baseUrl}/reasons`)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(`${baseUrl}/reasons`)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}/reasons/:id`, () => {
+        it('should find the requested inventory transfer reason', async () => {
+          const url = `${baseUrl}/reasons/${inventoryTransferReasonId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the inventory transfer reasons does not exist', async () => {
+          const url = `${baseUrl}/reasons/non-existent`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/reasons/${inventoryTransferReasonId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(PUT) ${baseUrl}/reasons/:id`, () => {
+        const data: UpdateInventoryTransferReasonDto = {
+          name: 'Updated Inventory Transfer Reason 1',
+        }
+
+        it('should update the requested inventory transfer', async () => {
+          const url = `${baseUrl}/reasons/${inventoryTransferReasonId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/reasons/${inventoryTransferReasonId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(DELETE) ${baseUrl}/reasons/:id`, () => {
+        beforeAll(async () => {
+          await db.inventoryTransferReason.create({
+            data: {
+              id: 'test-transfer-reason',
+              name: 'test-transfer-reason',
+            },
+          })
+        })
+
+        it('should delete the requested inventory adjustment reason', async () => {
+          const url = `${baseUrl}/reasons/test-transfer-reason`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+      })
+
+      describe(`(POST) ${baseUrl}`, () => {
+        afterAll(async () => {
+          const createdInventoryTransfer =
+            await db.inventoryTransfer.findFirst()
+          inventoryTransferId = createdInventoryTransfer?.id
+        })
+
+        it('should create a new inventory transfer', async () => {
+          const data: CreateInventoryTransferDto = {
+            date: new Date(),
+            destinationWarehouseId,
+            sourceWarehouseId,
+            reasonId: inventoryTransferReasonId ?? '',
+            transferItems: [],
+          }
+
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(201)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const data: CreateInventoryTransferDto = {
+            date: new Date(),
+            destinationWarehouseId,
+            sourceWarehouseId,
+            reasonId: inventoryTransferReasonId ?? '',
+            transferItems: [],
+          }
+
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}`, () => {
+        it('should list inventory transfers', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}/:id`, () => {
+        it('should find the requested inventory transfer', async () => {
+          const url = `${baseUrl}/${inventoryTransferId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the inventory transfer does not exist', async () => {
+          const url = `${baseUrl}/non-existent`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${inventoryTransferId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(PUT) ${baseUrl}/:id`, () => {
+        it('should update the requested inventory transfer', async () => {
+          const url = `${baseUrl}/${inventoryTransferId}`
+
+          const data: UpdateInventoryTransferDto = {
+            date: new Date(),
+          }
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${inventoryTransferId}`
+
+          const data: UpdateInventoryTransferDto = {
+            date: new Date(),
+          }
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(DELETE) ${baseUrl}/:id`, () => {
+        it('should archive the requested inventory transfer', async () => {
+          const url = `${baseUrl}/${inventoryTransferId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the inventory transfer does not exist', async () => {
+          const url = `${baseUrl}/non-existent`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${inventoryTransferId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(PUT) ${baseUrl}/restore/:id`, () => {
+        it('should restore the requested inventory transfer', async () => {
+          const url = `${baseUrl}/restore/${inventoryTransferId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the inventory transfer does not exist', async () => {
+          const url = `${baseUrl}/restore/non-existent`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/restore/${inventoryTransferId}`
 
           await spec()
             .put(url)

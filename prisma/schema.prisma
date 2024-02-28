@@ -58,8 +58,12 @@ model Warehouse {
   productVariants VariantToWarehouse[]
   goodsReceipts   GoodsReceipt[]
 
-  isArchived          Boolean               @default(false)
-  InventoryAdjustment InventoryAdjustment[]
+  inventoryAdjustments InventoryAdjustment[]
+
+  outgoingTransfers InventoryTransfer[] @relation("sourceWarehouse")
+  incomingTransfers InventoryTransfer[] @relation("destinationWarehouse")
+
+  isArchived Boolean @default(false)
 }
 
 model VariantToWarehouse {
@@ -72,7 +76,7 @@ model VariantToWarehouse {
   warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
   warehouseId String?
 
-  warehouseQuantity    Int
+  warehouseQuantity    Int                            @default(0)
   inventoryAdjustments InventoryAdjustmentToVariant[]
 
   @@index([variantId, warehouseId])
@@ -220,7 +224,8 @@ model Variant {
   price   Decimal  @db.Decimal(8, 2)
   sale    Decimal? @db.Decimal(8, 2)
 
-  isArchived Boolean @default(false)
+  isArchived            Boolean                 @default(false)
+  InventoryTransferItem InventoryTransferItem[]
 
   @@index([productId, barcode])
 }
@@ -345,4 +350,43 @@ model InventoryAdjustmentToVariant {
   adjustment            InventoryAdjustment? @relation(fields: [inventoryAdjustmentId], references: [id])
   inventoryAdjustmentId String?
   quantityChange        Int
+}
+
+model InventoryTransfer {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name                   String
+  date                   DateTime
+  reason                 InventoryTransferReason? @relation(fields: [reasonId], references: [id])
+  reasonId               String?
+  sourceWarehouse        Warehouse?               @relation("sourceWarehouse", fields: [sourceWarehouseId], references: [id])
+  sourceWarehouseId      String?
+  destinationWarehouse   Warehouse?               @relation("destinationWarehouse", fields: [destinationWarehouseId], references: [id])
+  destinationWarehouseId String?
+  transferItems          InventoryTransferItem[]
+
+  isArchived Boolean @default(false)
+}
+
+model InventoryTransferReason {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name      String
+  transfers InventoryTransfer[]
+}
+
+model InventoryTransferItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inventoryTransfer   InventoryTransfer? @relation(fields: [inventoryTransferId], references: [id])
+  inventoryTransferId String?
+  variant             Variant?           @relation(fields: [variantId], references: [id])
+  variantId           String?
+  quantity            Int
 }
