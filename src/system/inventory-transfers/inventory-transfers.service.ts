@@ -48,12 +48,56 @@ export class InventoryTransfersService {
   }
 
   private async getFullInventoryTransfer(id: string) {
+    const transfer = await this.db.inventoryTransfer.findFirst({
+      where: {
+        id,
+      },
+      select: {
+        sourceWarehouseId: true,
+      },
+    })
+
+    const sourceWarehouse = await this.db.warehouse.findUnique({
+      where: {
+        id: transfer?.sourceWarehouseId ?? undefined,
+      },
+      select: {
+        id: true,
+      },
+    })
+
     const inventoryTransfer = await this.db.inventoryTransfer.findUnique({
       where: {
         id,
       },
       include: {
-        transferItems: true,
+        transferItems: {
+          include: {
+            variant: {
+              select: {
+                product: {
+                  select: {
+                    title: true,
+                  },
+                },
+                size: true,
+                warehouseStockEntries: sourceWarehouse
+                  ? {
+                      where: {
+                        warehouse: {
+                          id: sourceWarehouse?.id,
+                        },
+                      },
+                      select: {
+                        warehouseQuantity: true,
+                      },
+                      take: 1,
+                    }
+                  : undefined,
+              },
+            },
+          },
+        },
       },
     })
 
@@ -444,13 +488,14 @@ export class InventoryTransfersService {
       }),
     ) as InventoryTransferItemWithDestinationWarehouseDto[]
 
-    const newTransferItems = updateInventoryTransferDto.transferItems?.map(
-      ({ quantity, variantId }) => ({
-        quantity,
-        variantId,
-        destinationWarehouseId: destinationWarehouseId,
-      }),
-    )
+    const newTransferItems =
+      updateInventoryTransferDto.transferItems?.map(
+        ({ quantity, variantId }) => ({
+          quantity,
+          variantId,
+          destinationWarehouseId: destinationWarehouseId,
+        }),
+      ) ?? []
 
     const compareArraysRes = newTransferItems
       ? compareArrays(
@@ -475,6 +520,63 @@ export class InventoryTransfersService {
     )
 
     await this.db.$transaction(async (tx) => {
+      if (compareArraysRes?.updated) {
+        await Promise.all(
+          compareArraysRes.updated
+            .filter(
+              (obj) =>
+                obj.destinationWarehouseId ===
+                inventoryTransfer.destinationWarehouseId,
+            )
+            .map(async ({ quantity, variantId }) => {
+              const vtw = await tx.variantToWarehouse.findFirst({
+                where: {
+                  warehouseId: inventoryTransfer.destinationWarehouseId,
+                  variantId,
+                },
+              })
+
+              if (vtw) {
+                const quantityDiff = quantity - vtw.warehouseQuantity
+                console.log({ quantityDiff, vtw })
+
+                await Promise.all([
+                  tx.variantToWarehouse.update({
+                    where: {
+                      id: vtw.id,
+                    },
+                    data: {
+                      warehouseQuantity: {
+                        increment: quantityDiff,
+                      },
+                    },
+                  }),
+                  tx.variantToWarehouse.updateMany({
+                    where: {
+                      variantId,
+                      warehouseId: inventoryTransfer.sourceWarehouseId,
+                    },
+                    data: {
+                      warehouseQuantity: {
+                        decrement: quantityDiff,
+                      },
+                    },
+                  }),
+                  tx.inventoryTransferItem.updateMany({
+                    where: {
+                      inventoryTransferId: id,
+                      variantId,
+                    },
+                    data: {
+                      quantity,
+                    },
+                  }),
+                ])
+              }
+            }),
+        )
+      }
+
       await Promise.all([
         tx.inventoryTransfer.update({
           where: {

@@ -183,6 +183,9 @@ export class VariantsService {
           warehouseId,
         },
       },
+      product: {
+        isArchived: false,
+      },
     }
 
     const items = await this.db.variant.findMany({
