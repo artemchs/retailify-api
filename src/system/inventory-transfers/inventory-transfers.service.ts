@@ -48,14 +48,7 @@ export class InventoryTransfersService {
   }
 
   private async getFullInventoryTransfer(id: string) {
-    const transfer = await this.db.inventoryTransfer.findFirst({
-      where: {
-        id,
-      },
-      select: {
-        sourceWarehouseId: true,
-      },
-    })
+    const transfer = await this.getInventoryTransfer(id)
 
     const sourceWarehouse = await this.db.warehouse.findUnique({
       where: {

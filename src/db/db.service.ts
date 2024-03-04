@@ -54,6 +54,7 @@ export class DbService
         this.inventoryTransferItem.deleteMany(),
         this.inventoryTransferReason.deleteMany(),
         this.inventoryTransfer.deleteMany(),
+        this.productTag.deleteMany(),
       ])
     }
   }

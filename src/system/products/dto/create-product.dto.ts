@@ -36,6 +36,12 @@ export class ProductCharacteristicValuesDto {
   id: string
 }
 
+export class ProductTagDto {
+  @IsNotEmpty()
+  @IsString()
+  id: string
+}
+
 export class ProductVariantDto {
   @IsNotEmpty()
   @IsString()
@@ -88,6 +94,11 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => ProductVariantDto)
   variants?: ProductVariantDto[]
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ProductTagDto)
+  tags?: ProductTagDto[]
 
   @IsNotEmpty()
   @IsNumber()

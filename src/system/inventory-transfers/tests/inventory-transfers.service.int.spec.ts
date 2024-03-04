@@ -411,6 +411,12 @@ describe('InventoryTransfersService', () => {
             id,
             date: new Date(),
             name: id,
+            sourceWarehouse: {
+              create: {
+                address: 'test',
+                name: 'test',
+              },
+            },
           },
         })
       })

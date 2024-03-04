@@ -40,6 +40,8 @@ import { CreateInventoryTransferReasonDto } from 'src/system/inventory-transfers
 import { UpdateInventoryTransferReasonDto } from 'src/system/inventory-transfers/dto/update-inventory-transfer-reason.dto'
 import { CreateInventoryTransferDto } from 'src/system/inventory-transfers/dto/create-inventory-transfer.dto'
 import { UpdateInventoryTransferDto } from 'src/system/inventory-transfers/dto/update-inventory-transfer.dto'
+import { CreateProductTagDto } from 'src/system/product-tags/dto/create-product-tag.dto'
+import { UpdateProductTagDto } from 'src/system/product-tags/dto/update-product-tag.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -129,6 +131,7 @@ describe('App', () => {
     let inventoryTransferId: string | undefined
     const sourceWarehouseId = 'Source Warehouse'
     const destinationWarehouseId = 'Destination Warehouse'
+    let productTagId: string | undefined
 
     describe('Auth', () => {
       describe('(POST) /system/auth/sign-up', () => {
@@ -1150,6 +1153,7 @@ describe('App', () => {
             .withBody(data)
             .expectStatus(201)
         })
+
         it('should respond with a `403` status code if the user is not an admin', async () => {
           await spec()
             .post(baseUrl)
@@ -1896,6 +1900,148 @@ describe('App', () => {
       })
     })
 
+    describe('ProductTags', () => {
+      const baseUrl = '/system/product-tags'
+
+      describe(`(POST) ${baseUrl}`, () => {
+        afterAll(async () => {
+          const createdTag = await db.productTag.findFirst()
+          productTagId = createdTag?.id
+        })
+
+        const data: CreateProductTagDto = {
+          name: 'Test Tag 1',
+        }
+
+        it('should create a new tag', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(201)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}`, () => {
+        it('should list tags', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}/:id`, () => {
+        it('should find the requested tag', async () => {
+          const url = `${baseUrl}/${productTagId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the tag does not exist', async () => {
+          const url = `${baseUrl}/non-existent`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${productTagId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(PUT) ${baseUrl}/:id`, () => {
+        const data: UpdateProductTagDto = {
+          name: 'Updated Test Tag 1',
+        }
+
+        it('should update the requested tag', async () => {
+          const url = `${baseUrl}/${productTagId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${productTagId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(DELETE) ${baseUrl}/:id`, () => {
+        const id = 'Test Tag 2'
+
+        beforeAll(async () => {
+          await db.productTag.create({
+            data: {
+              id,
+              name: id,
+            },
+          })
+        })
+
+        it('should respond with a `404` status code if the tag does not exist', async () => {
+          const url = `${baseUrl}/non-existent`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${id}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+
+        it('should remove the requested tag', async () => {
+          const url = `${baseUrl}/${id}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+      })
+    })
+
     describe('Products', () => {
       const baseUrl = '/system/products'
 
@@ -1947,6 +2093,11 @@ describe('App', () => {
               ],
               categoryId,
               brandId,
+              tags: [
+                {
+                  id: productTagId,
+                },
+              ],
             })
             .expectStatus(201)
         })

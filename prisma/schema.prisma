@@ -170,9 +170,20 @@ model Product {
   packagingHeight Decimal @db.Decimal(8, 2)
   packagingWeight Decimal @db.Decimal(8, 2)
 
+  tags ProductTag[]
+
   isArchived Boolean @default(false)
 
   @@index([title, isArchived])
+}
+
+model ProductTag {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name     String
+  products Product[]
 }
 
 enum ProductSeason {

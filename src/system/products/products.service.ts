@@ -151,6 +151,15 @@ export class ProductsService {
             name: true,
           },
         },
+        tags: {
+          select: {
+            id: true,
+            name: true,
+          },
+          orderBy: {
+            name: 'asc',
+          },
+        },
         colors: {
           select: {
             colorId: true,
@@ -272,6 +281,11 @@ export class ProductsService {
               })),
             }
           : undefined,
+        tags: createProductDto.tags
+          ? {
+              connect: createProductDto.tags,
+            }
+          : undefined,
         sku,
       },
     })
@@ -358,6 +372,15 @@ export class ProductsService {
             select: {
               id: true,
               name: true,
+            },
+          },
+          tags: {
+            select: {
+              id: true,
+              name: true,
+            },
+            orderBy: {
+              name: 'asc',
             },
           },
           colors: {
@@ -625,6 +648,11 @@ export class ProductsService {
           colors: undefined,
           media: undefined,
           characteristicValues: undefined,
+          tags: updateProductDto.tags
+            ? {
+                set: updateProductDto.tags,
+              }
+            : undefined,
         },
       }),
       this.updateProductMedia(id, product.media, updateProductDto.media),

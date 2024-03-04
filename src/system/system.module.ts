@@ -17,6 +17,7 @@ import { CategoryGroupsModule } from './category-groups/category-groups.module'
 import { CategoriesModule } from './categories/categories.module'
 import { InventoryAdjustmentsModule } from './inventory-adjustments/inventory-adjustments.module'
 import { InventoryTransfersModule } from './inventory-transfers/inventory-transfers.module'
+import { ProductTagsModule } from './product-tags/product-tags.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { InventoryTransfersModule } from './inventory-transfers/inventory-transf
     CategoriesModule,
     InventoryAdjustmentsModule,
     InventoryTransfersModule,
+    ProductTagsModule,
   ],
   providers: [
     {
