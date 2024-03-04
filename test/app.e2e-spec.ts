@@ -42,6 +42,8 @@ import { CreateInventoryTransferDto } from 'src/system/inventory-transfers/dto/c
 import { UpdateInventoryTransferDto } from 'src/system/inventory-transfers/dto/update-inventory-transfer.dto'
 import { CreateProductTagDto } from 'src/system/product-tags/dto/create-product-tag.dto'
 import { UpdateProductTagDto } from 'src/system/product-tags/dto/update-product-tag.dto'
+import { CreatePointsOfSaleDto } from 'src/system/points-of-sale/dto/create-points-of-sale.dto'
+import { UpdatePointsOfSaleDto } from 'src/system/points-of-sale/dto/update-points-of-sale.dto'
 
 describe('App', () => {
   let app: INestApplication
@@ -113,6 +115,7 @@ describe('App', () => {
   })
 
   describe('System', () => {
+    let employeeId: string | undefined
     let supplierId: string | undefined
     let warehouseId: string | undefined
     let goodsReceiptId: string | undefined
@@ -132,6 +135,7 @@ describe('App', () => {
     const sourceWarehouseId = 'Source Warehouse'
     const destinationWarehouseId = 'Destination Warehouse'
     let productTagId: string | undefined
+    let posId: string | undefined
 
     describe('Auth', () => {
       describe('(POST) /system/auth/sign-up', () => {
@@ -335,8 +339,6 @@ describe('App', () => {
     })
 
     describe('Employees', () => {
-      let employeeId: string | undefined
-
       describe('(POST) /system/employees/', () => {
         const body: CreateDto = {
           password: 'NewStrongPassword12345!@#$%^',
@@ -469,8 +471,25 @@ describe('App', () => {
       })
 
       describe('(DELETE) /system/employees/:id', () => {
+        beforeAll(async () => {
+          await db.systemUser.create({
+            data: {
+              id: 'employee1',
+              email: 'employee1',
+              fullName: 'employee1',
+              hash: '12345',
+            },
+          })
+
+          await db.allowedSystemUserEmail.create({
+            data: {
+              email: 'employee1',
+            },
+          })
+        })
+
         it('should successfully remove an employee', async () => {
-          const url = `/system/employees/${employeeId}`
+          const url = `/system/employees/employee1`
 
           await spec()
             .delete(url)
@@ -486,7 +505,7 @@ describe('App', () => {
         })
 
         it('should respond with a `403` status code if the user is not an admin', async () => {
-          const url = `/system/employees/${employeeId}`
+          const url = `/system/employees/employee1`
 
           await spec()
             .delete(url)
@@ -1684,7 +1703,7 @@ describe('App', () => {
         })
       })
 
-      describe(`(DELETE) ${baseUrl}/restore/:groupId`, () => {
+      describe(`(PUT) ${baseUrl}/restore/:groupId`, () => {
         it('should restore the requested category group', async () => {
           const url = `${baseUrl}/restore/${categoryGroupId}`
 
@@ -2991,6 +3010,175 @@ describe('App', () => {
 
         it('should respond with a `403` status code if the user is not an admin', async () => {
           const url = `${baseUrl}/restore/${inventoryTransferId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+    })
+
+    describe('Points of Sale', () => {
+      const baseUrl = '/system/points-of-sale'
+
+      describe(`(POST) ${baseUrl}`, () => {
+        afterAll(async () => {
+          const createdPOS = await db.pointOfSale.findFirst()
+          posId = createdPOS?.id
+        })
+
+        const data: CreatePointsOfSaleDto = {
+          name: 'POS 1',
+          address: 'Address 1',
+          cashiers: [],
+        }
+
+        it('should create a new POS', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody({
+              ...data,
+              cashiers: [
+                {
+                  id: employeeId,
+                },
+              ],
+            })
+            .expectStatus(201)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          await spec()
+            .post(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}`, () => {
+        it('should list points of sale', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code for a non-admin user', async () => {
+          await spec()
+            .get(baseUrl)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(GET) ${baseUrl}/:id`, () => {
+        it('should find the requested POS', async () => {
+          const url = `${baseUrl}/${posId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the POS does not exist', async () => {
+          const url = `${baseUrl}/non-existent`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${posId}`
+
+          await spec()
+            .get(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(PUT) ${baseUrl}/:id`, () => {
+        const data: UpdatePointsOfSaleDto = {
+          name: 'Updated POS 1',
+        }
+
+        it('should update the requested POS', async () => {
+          const url = `${baseUrl}/${posId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .withBody(data)
+            .expectStatus(200)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${posId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .withBody(data)
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(DELETE) ${baseUrl}/:id`, () => {
+        it('should archive the requested POS', async () => {
+          const url = `${baseUrl}/${posId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the POS does not exist', async () => {
+          const url = `${baseUrl}/non-existent`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/${posId}`
+
+          await spec()
+            .delete(url)
+            .withHeaders('Authorization', 'Bearer $S{accessToken}')
+            .expectStatus(403)
+        })
+      })
+
+      describe(`(PUT) ${baseUrl}/restore/:id`, () => {
+        it('should restore the requested POS', async () => {
+          const url = `${baseUrl}/restore/${posId}`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(200)
+        })
+
+        it('should respond with a `404` status code if the POS does not exist', async () => {
+          const url = `${baseUrl}/restore/non-existent`
+
+          await spec()
+            .put(url)
+            .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
+            .expectStatus(404)
+        })
+
+        it('should respond with a `403` status code if the user is not an admin', async () => {
+          const url = `${baseUrl}/restore/${posId}`
 
           await spec()
             .put(url)
