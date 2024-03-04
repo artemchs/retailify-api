@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { CreateProductTagDto } from './dto/create-product-tag.dto'
 import { UpdateProductTagDto } from './dto/update-product-tag.dto'
 import { DbService } from '../../db/db.service'
@@ -81,22 +77,6 @@ export class ProductTagsService {
 
   async remove(id: string) {
     await this.getProductTag(id)
-
-    const productsCount = await this.db.product.count({
-      where: {
-        tags: {
-          some: {
-            id,
-          },
-        },
-      },
-    })
-
-    if (productsCount >= 1) {
-      throw new BadRequestException(
-        `Невозможно удалить тег, так как ${productsCount} товар(ов) привязаны к нему.`,
-      )
-    }
 
     await this.db.productTag.delete({
       where: {

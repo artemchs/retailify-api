@@ -3,7 +3,7 @@ import { ProductTagsService } from '../product-tags.service'
 import { Test } from '@nestjs/testing'
 import { AppModule } from 'src/app.module'
 import { CreateProductTagDto } from '../dto/create-product-tag.dto'
-import { BadRequestException, NotFoundException } from '@nestjs/common'
+import { NotFoundException } from '@nestjs/common'
 import { UpdateProductTagDto } from '../dto/update-product-tag.dto'
 
 describe('ProductTagsService', () => {
@@ -140,30 +140,6 @@ describe('ProductTagsService', () => {
       const brandsCount = await db.productTag.count()
 
       expect(brandsCount).toBe(0)
-    })
-
-    it('should fail if the tag is connected to products', async () => {
-      await db.product.create({
-        data: {
-          id: 'Test Product 1',
-          title: 'Test Product 1',
-          description: 'Test Product 1',
-          packagingHeight: 10,
-          packagingLength: 10,
-          packagingWeight: 10,
-          packagingWidth: 10,
-          gender: 'UNISEX',
-          season: 'ALL_SEASON',
-          sku: '1',
-          tags: {
-            connect: {
-              id,
-            },
-          },
-        },
-      })
-
-      await expect(service.remove(id)).rejects.toThrow(BadRequestException)
     })
 
     it('should fail if the tag does not exist', async () => {
