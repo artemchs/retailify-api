@@ -3032,6 +3032,7 @@ describe('App', () => {
           name: 'POS 1',
           address: 'Address 1',
           cashiers: [],
+          warehouseId: '',
         }
 
         it('should create a new POS', async () => {
@@ -3045,6 +3046,7 @@ describe('App', () => {
                   id: employeeId,
                 },
               ],
+              warehouseId,
             })
             .expectStatus(201)
         })

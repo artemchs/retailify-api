@@ -6,6 +6,7 @@ export class FindAllPointsOfSaleDto {
   categoryIds?: string[]
   categoryGroupIds?: string[]
   cashierIds?: string[]
+  warehouseIds?: string[]
   orderBy?: {
     createdAt?: 'asc' | 'desc'
     updatedAt?: 'asc' | 'desc'

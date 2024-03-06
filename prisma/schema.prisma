@@ -57,12 +57,15 @@ model Warehouse {
   name            String
   address         String
   productVariants VariantToWarehouse[]
-  goodsReceipts   GoodsReceipt[]
+
+  goodsReceipts GoodsReceipt[]
 
   inventoryAdjustments InventoryAdjustment[]
 
   outgoingTransfers InventoryTransfer[] @relation("sourceWarehouse")
   incomingTransfers InventoryTransfer[] @relation("destinationWarehouse")
+
+  pointsOfSale PointOfSale[]
 
   isArchived Boolean @default(false)
 }
@@ -411,9 +414,11 @@ model PointOfSale {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name     String
-  address  String
-  cashiers SystemUser[]
+  name        String
+  address     String
+  warehouse   Warehouse?   @relation(fields: [warehouseId], references: [id])
+  warehouseId String?
+  cashiers    SystemUser[]
 
   productTags    ProductTag[]
   categoryGroups CategoryGroup[]

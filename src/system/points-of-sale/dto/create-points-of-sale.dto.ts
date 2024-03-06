@@ -22,6 +22,10 @@ export class CreatePointsOfSaleDto {
   address: string
 
   @IsNotEmpty()
+  @IsString()
+  warehouseId: string
+
+  @IsNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => IdDto)
   cashiers: IdDto[]

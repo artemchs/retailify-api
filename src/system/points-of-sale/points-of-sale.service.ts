@@ -60,6 +60,12 @@ export class PointsOfSaleService {
             name: true,
           },
         },
+        warehouse: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     })
 
@@ -106,12 +112,18 @@ export class PointsOfSaleService {
     productTagIds,
     query,
     cashierIds,
+    warehouseIds,
   }: FindAllPointsOfSaleDto) {
     const { skip, take } = getPaginationData({ page, rowsPerPage })
 
     const where: Prisma.PointOfSaleWhereInput = {
       OR: buildContainsArray({ fields: ['name', 'address'], query }),
       isArchived: checkIsArchived(isArchived),
+      warehouseId: warehouseIds
+        ? {
+            in: warehouseIds,
+          }
+        : undefined,
       productTags: productTagIds
         ? {
             some: {
@@ -156,6 +168,38 @@ export class PointsOfSaleService {
         take,
         skip,
         orderBy: buildOrderByArray({ orderBy }),
+        include: {
+          cashiers: {
+            select: {
+              id: true,
+              fullName: true,
+            },
+          },
+          productTags: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          categories: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          categoryGroups: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          warehouse: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
       }),
       this.db.pointOfSale.count({
         where,

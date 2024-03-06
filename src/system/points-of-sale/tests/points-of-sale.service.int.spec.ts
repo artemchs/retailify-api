@@ -31,6 +31,13 @@ describe('PointsOfSaleService', () => {
         hash: '12345',
       },
     })
+    await db.warehouse.create({
+      data: {
+        id: 'Test Warehouse 1',
+        address: 'Test Warehouse 1',
+        name: 'Test Warehouse 1',
+      },
+    })
   })
 
   afterEach(async () => await db.reset())
@@ -43,6 +50,7 @@ describe('PointsOfSaleService', () => {
     const data: CreatePointsOfSaleDto = {
       name: 'Test POS 1',
       address: 'Test Address',
+      warehouseId: 'Test Warehouse 1',
       cashiers: [
         {
           id: 'Cashier 1',
