@@ -16,10 +16,10 @@ export class UpdateDto {
   @IsNotEmpty({ message: 'Адрес електронной почты не должен быть пустым.' })
   email: string
 
-  @IsEnum(['CASHIER', 'ECOMMERCE_MANAGER'], {
+  @IsEnum(['CASHIER', 'ECOMMERCE_MANAGER', 'ADMIN'], {
     message:
-      'Пожалуйста, выберите допустимую роль: Кассир или Ecommerce менеджер.',
+      'Пожалуйста, выберите допустимую роль: Админ, Кассир или Ecommerce менеджер.',
   })
   @IsNotEmpty({ message: 'Роль не должна быть пустой.' })
-  role: 'CASHIER' | 'ECOMMERCE_MANAGER'
+  role: 'CASHIER' | 'ECOMMERCE_MANAGER' | 'ADMIN'
 }

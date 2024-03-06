@@ -30,6 +30,46 @@ export class PointsOfSaleService {
     return pos
   }
 
+  private async getFullPos(id: string) {
+    const pos = await this.db.pointOfSale.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        cashiers: {
+          select: {
+            id: true,
+            fullName: true,
+          },
+        },
+        productTags: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        categories: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        categoryGroups: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    })
+
+    if (!pos) {
+      throw new NotFoundException('Торговая точка не найдена.')
+    }
+
+    return pos
+  }
+
   async create(createPointsOfSaleDto: CreatePointsOfSaleDto) {
     await this.db.pointOfSale.create({
       data: {
@@ -132,7 +172,7 @@ export class PointsOfSaleService {
   }
 
   async findOne(id: string) {
-    const pos = await this.getPos(id)
+    const pos = await this.getFullPos(id)
 
     return pos
   }
@@ -146,26 +186,30 @@ export class PointsOfSaleService {
       },
       data: {
         ...updatePointsOfSaleDto,
-        cashiers: updatePointsOfSaleDto.cashiers
-          ? {
-              set: updatePointsOfSaleDto.cashiers,
-            }
-          : undefined,
-        productTags: updatePointsOfSaleDto.productTags
-          ? {
-              set: updatePointsOfSaleDto.productTags,
-            }
-          : undefined,
-        categories: updatePointsOfSaleDto.categories
-          ? {
-              set: updatePointsOfSaleDto.categories,
-            }
-          : undefined,
-        categoryGroups: updatePointsOfSaleDto.categoryGroups
-          ? {
-              set: updatePointsOfSaleDto.categoryGroups,
-            }
-          : undefined,
+        cashiers: {
+          set: updatePointsOfSaleDto.cashiers,
+        },
+        productTags: {
+          set:
+            updatePointsOfSaleDto.productTags &&
+            updatePointsOfSaleDto.productTags.length >= 1
+              ? updatePointsOfSaleDto.productTags
+              : [],
+        },
+        categories: {
+          set:
+            updatePointsOfSaleDto.categories &&
+            updatePointsOfSaleDto.categories.length >= 1
+              ? updatePointsOfSaleDto.categories
+              : [],
+        },
+        categoryGroups: {
+          set:
+            updatePointsOfSaleDto.categoryGroups &&
+            updatePointsOfSaleDto.categoryGroups.length >= 1
+              ? updatePointsOfSaleDto.categoryGroups
+              : [],
+        },
       },
     })
   }

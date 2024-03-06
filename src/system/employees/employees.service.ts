@@ -47,7 +47,6 @@ export class EmployeesService {
 
     const where: Prisma.SystemUserWhereInput = {
       role: {
-        not: 'ADMIN',
         in: roles ? roles : undefined,
       },
       OR: buildContainsArray({
@@ -83,6 +82,40 @@ export class EmployeesService {
         totalPages,
         totalItems,
       },
+    }
+  }
+
+  async findAllInfiniteList({
+    cursor,
+    query,
+  }: {
+    cursor?: string
+    query?: string
+  }) {
+    const limit = 10
+
+    const where: Prisma.SystemUserWhereInput = {
+      OR: buildContainsArray({ fields: ['fullName', 'email'], query }),
+    }
+
+    const items = await this.db.systemUser.findMany({
+      take: limit + 1,
+      where,
+      cursor: cursor ? { id: cursor } : undefined,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    let nextCursor: typeof cursor | undefined = undefined
+    if (items.length > limit) {
+      const nextItem = items.pop()
+      nextCursor = nextItem!.id
+    }
+
+    return {
+      items,
+      nextCursor,
     }
   }
 

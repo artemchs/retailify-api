@@ -23,6 +23,11 @@ export class EmployeesController {
     return this.employeesService.findAll(query)
   }
 
+  @Get('infinite-list')
+  findAllInfiniteList(@Query() query: { query?: string; cursor?: string }) {
+    return this.employeesService.findAllInfiniteList(query)
+  }
+
   @Post()
   create(@Body() body: CreateDto) {
     return this.employeesService.create(body)
