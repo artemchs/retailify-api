@@ -22,6 +22,7 @@ model SystemUser {
   rtHash            String?
   role              SystemUserRole @default(CASHIER)
   pointsOfSale      PointOfSale[]
+  shifts            CashierShift[]
 }
 
 model AllowedSystemUserEmail {
@@ -424,5 +425,24 @@ model PointOfSale {
   categoryGroups CategoryGroup[]
   categories     Category[]
 
+  cashierShifts CashierShift[]
+
   isArchived Boolean @default(false)
+}
+
+model CashierShift {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  closedAt  DateTime?
+  updatedAt DateTime  @updatedAt
+
+  name          String
+  cashier       SystemUser?  @relation(fields: [cashierId], references: [id])
+  cashierId     String?
+  pointOfSale   PointOfSale? @relation(fields: [pointOfSaleId], references: [id])
+  pointOfSaleId String?
+
+  startingCashBalance Decimal @db.Decimal(8, 2)
+
+  isOpened Boolean @default(false)
 }
