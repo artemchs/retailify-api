@@ -10,6 +10,7 @@ export class FindAllShiftDto {
     from?: string
     to?: string
   }
+  cashierIds?: string[]
   orderBy?: {
     createdAt?: 'asc' | 'desc'
     updatedAt?: 'asc' | 'desc'

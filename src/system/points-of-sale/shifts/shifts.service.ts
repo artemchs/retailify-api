@@ -88,7 +88,15 @@ export class ShiftsService {
 
   async findAll(
     posId: string,
-    { page, rowsPerPage, closedAt, createdAt, orderBy, query }: FindAllShiftDto,
+    {
+      page,
+      rowsPerPage,
+      closedAt,
+      createdAt,
+      orderBy,
+      query,
+      cashierIds,
+    }: FindAllShiftDto,
   ) {
     const { skip, take } = getPaginationData({ page, rowsPerPage })
 
@@ -105,6 +113,11 @@ export class ShiftsService {
         ? {
             gte: closedAt.from ?? undefined,
             lte: closedAt.to ?? undefined,
+          }
+        : undefined,
+      cashierId: cashierIds
+        ? {
+            in: cashierIds,
           }
         : undefined,
     }

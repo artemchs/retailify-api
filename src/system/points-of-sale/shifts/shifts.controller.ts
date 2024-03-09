@@ -33,7 +33,7 @@ export class ShiftsController {
     return this.shiftsService.update(id, updateShiftDto)
   }
 
-  @Put(':id')
+  @Put(':id/close')
   close(
     @Param('id') id: string,
     @GetCurrentUserAccessToken('sub') userId: string,
