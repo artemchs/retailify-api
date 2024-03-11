@@ -3,11 +3,12 @@ export class FindAllVariantDto {
   rowsPerPage: number
   query?: string
   productIds?: string[]
+  warehouseIds?: string[]
+  posId?: string
   orderBy?: {
     createdAt?: 'asc' | 'desc'
     updatedAt?: 'asc' | 'desc'
     size?: 'asc' | 'desc'
-    sku?: 'asc' | 'desc'
     price?: 'asc' | 'desc'
     sale?: 'asc' | 'desc'
     totalReceivedQuantity?: 'asc' | 'desc'

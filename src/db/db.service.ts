@@ -57,6 +57,7 @@ export class DbService
         this.productTag.deleteMany(),
         this.pointOfSale.deleteMany(),
         this.cashierShift.deleteMany(),
+        this.customer.deleteMany(),
       ])
     }
   }

@@ -57,4 +57,9 @@ export class UsersController {
     await this.usersService.updatePassword(body.password, userId)
     setRefreshTokenCookie(response, '')
   }
+
+  @Get('my-points-of-sale')
+  findMyPointsOfSale(@GetCurrentUserAccessToken('sub') userId: string) {
+    return this.usersService.findMyPointsOfSale(userId)
+  }
 }

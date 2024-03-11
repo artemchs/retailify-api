@@ -148,4 +148,36 @@ export class UsersService {
       },
     })
   }
+
+  async findMyPointsOfSale(userId: string) {
+    const pointsOfSale = await this.db.pointOfSale.findMany({
+      where: {
+        cashiers: {
+          some: {
+            id: userId,
+          },
+        },
+      },
+      include: {
+        cashierShifts: {
+          take: 1,
+          where: {
+            cashierId: userId,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          select: {
+            id: true,
+            isOpened: true,
+          },
+        },
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    })
+
+    return pointsOfSale
+  }
 }

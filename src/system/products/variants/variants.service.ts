@@ -22,6 +22,14 @@ export class VariantsService {
       where: {
         id,
       },
+      include: {
+        product: {
+          select: {
+            title: true,
+            sku: true,
+          },
+        },
+      },
     })
 
     if (!variant) {
@@ -63,18 +71,88 @@ export class VariantsService {
     orderBy,
     query,
     productIds,
+    warehouseIds,
+    posId,
   }: FindAllVariantDto) {
     const { skip, take } = getPaginationData({ page, rowsPerPage })
 
     const where: Prisma.VariantWhereInput = {
       isArchived: checkIsArchived(isArchived),
-      OR: buildContainsArray({ fields: ['size'], query }),
+      product: {
+        isArchived: false,
+      },
+      OR: [
+        {
+          product: {
+            title: {
+              contains: query,
+            },
+          },
+        },
+        {
+          product: {
+            sku: {
+              contains: query,
+            },
+          },
+        },
+        {
+          size: {
+            contains: query,
+          },
+        },
+        {
+          barcode: {
+            contains: query,
+          },
+        },
+      ],
       productId:
         productIds && productIds.length >= 1
           ? {
               in: productIds,
             }
           : undefined,
+      warehouseStockEntries: warehouseIds
+        ? {
+            some: {
+              warehouseId: {
+                in: warehouseIds,
+              },
+            },
+          }
+        : undefined,
+    }
+
+    const include: Prisma.VariantInclude = {
+      product: {
+        include: {
+          media: true,
+        },
+      },
+    }
+
+    if (posId) {
+      const pos = await this.db.pointOfSale.findUnique({
+        where: {
+          id: posId,
+        },
+      })
+
+      if (!pos) {
+        throw new NotFoundException('Точка продажи не найдена.')
+      }
+
+      where.warehouseStockEntries = {
+        some: {
+          warehouseId: pos.warehouseId,
+        },
+      }
+      include.warehouseStockEntries = {
+        where: {
+          warehouseId: pos.warehouseId,
+        },
+      }
     }
 
     const [items, totalItems] = await Promise.all([
@@ -83,6 +161,7 @@ export class VariantsService {
         take,
         skip,
         orderBy: buildOrderByArray({ orderBy }),
+        include,
       }),
       this.db.variant.count({
         where,

@@ -19,6 +19,7 @@ import { InventoryAdjustmentsModule } from './inventory-adjustments/inventory-ad
 import { InventoryTransfersModule } from './inventory-transfers/inventory-transfers.module'
 import { ProductTagsModule } from './product-tags/product-tags.module'
 import { PointsOfSaleModule } from './points-of-sale/points-of-sale.module'
+import { CustomersModule } from './customers/customers.module'
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { PointsOfSaleModule } from './points-of-sale/points-of-sale.module'
     InventoryTransfersModule,
     ProductTagsModule,
     PointsOfSaleModule,
+    CustomersModule,
   ],
   providers: [
     {

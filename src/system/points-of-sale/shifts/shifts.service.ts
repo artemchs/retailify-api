@@ -75,7 +75,7 @@ export class ShiftsService {
       }),
     ])
 
-    await this.db.cashierShift.create({
+    return await this.db.cashierShift.create({
       data: {
         ...createShiftDto,
         isOpened: true,
