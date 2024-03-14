@@ -83,6 +83,7 @@ model VariantToWarehouse {
 
   warehouseQuantity    Int                            @default(0)
   inventoryAdjustments InventoryAdjustmentToVariant[]
+  CustomerOrderItem    CustomerOrderItem[]
 
   @@index([variantId, warehouseId])
 }
@@ -452,9 +453,65 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  firstName String
-  lastName  String
-  email     String @unique
+  firstName   String
+  lastName    String
+  email       String @unique
+  phoneNumber String // Phone numbers are stored in international formats
 
   isEmailVerified Boolean @default(false)
+  Order           Order[]
+}
+
+model Order {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId String?
+
+  items         CustomerOrderItem[]
+  paymentMethod OrderPaymentMethod
+  cardAmount    Decimal?            @db.Decimal(8, 2)
+  cashAmount    Decimal?            @db.Decimal(8, 2)
+
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  transactionId String?      @unique
+}
+
+enum OrderPaymentMethod {
+  CARD
+  CASH
+  MIXED
+}
+
+model CustomerOrderItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order   Order?  @relation(fields: [orderId], references: [id])
+  orderId String?
+
+  vtw      VariantToWarehouse? @relation(fields: [vtwId], references: [id])
+  vtwId    String?
+  quantity Int
+}
+
+model Transaction {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amount Decimal         @db.Decimal(8, 2)
+  type   TransactionType
+
+  order Order?
+}
+
+enum TransactionType {
+  ORDER_PAYMENT
+  SUPPLIER_PAYMENT
+  SALARY_PAYMENT
+  // Add more types as needed
 }

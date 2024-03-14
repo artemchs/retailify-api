@@ -33,6 +33,7 @@ describe('CustomersService', () => {
       email: 'john@doe.com',
       firstName: 'John',
       lastName: 'Doe',
+      phoneNumber: '012 345 6789',
     }
 
     it('should create a new customer', async () => {
@@ -60,16 +61,19 @@ describe('CustomersService', () => {
             firstName: 'John',
             lastName: 'Doe',
             email: '1',
+            phoneNumber: '+380 12 123 1234',
           },
           {
             firstName: 'John',
             lastName: 'Doe',
             email: '2',
+            phoneNumber: '+380 12 123 1234',
           },
           {
             firstName: 'John',
             lastName: 'Doe',
             email: '3',
+            phoneNumber: '+380 12 123 1234',
           },
         ],
       })
@@ -97,16 +101,19 @@ describe('CustomersService', () => {
             firstName: 'John',
             lastName: 'Doe',
             email: '1',
+            phoneNumber: '+380 12 123 1234',
           },
           {
             firstName: 'John',
             lastName: 'Doe',
             email: '2',
+            phoneNumber: '+380 12 123 1234',
           },
           {
             firstName: 'John',
             lastName: 'Doe',
             email: '3',
+            phoneNumber: '+380 12 123 1234',
           },
         ],
       })
@@ -147,6 +154,7 @@ describe('CustomersService', () => {
           email: id,
           firstName: id,
           lastName: id,
+          phoneNumber: '+380 12 123 1234',
         },
       })
     })
@@ -184,6 +192,7 @@ describe('CustomersService', () => {
           email: id,
           firstName: id,
           lastName: id,
+          phoneNumber: '+380 12 123 1234',
         },
       })
     })

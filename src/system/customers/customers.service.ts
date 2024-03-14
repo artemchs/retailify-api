@@ -14,6 +14,7 @@ import {
   getPaginationData,
 } from '../common/utils/db-helpers'
 import { FindAllCustomerDto } from './dto/findAll-customer.dto'
+import parsePhoneNumber from 'libphonenumber-js'
 
 @Injectable()
 export class CustomersService {
@@ -50,8 +51,17 @@ export class CustomersService {
   async create(createCustomerDto: CreateCustomerDto) {
     await this.checkIfEmailIsTaken(createCustomerDto.email)
 
+    const phoneNumber =
+      parsePhoneNumber(
+        createCustomerDto.phoneNumber,
+        'UA',
+      )?.formatInternational() ?? createCustomerDto.phoneNumber
+
     await this.db.customer.create({
-      data: createCustomerDto,
+      data: {
+        ...createCustomerDto,
+        phoneNumber,
+      },
     })
   }
 
@@ -130,17 +140,30 @@ export class CustomersService {
   }
 
   async update(id: string, updateCustomerDto: UpdateCustomerDto) {
-    await this.getCustomer(id)
+    const customer = await this.getCustomer(id)
 
-    if (updateCustomerDto.email) {
+    if (updateCustomerDto.email && updateCustomerDto.email !== customer.email) {
       await this.checkIfEmailIsTaken(updateCustomerDto.email)
+    }
+
+    let phoneNumber: string | undefined
+
+    if (updateCustomerDto.phoneNumber) {
+      phoneNumber =
+        parsePhoneNumber(
+          updateCustomerDto.phoneNumber,
+          'UA',
+        )?.formatInternational() ?? updateCustomerDto.phoneNumber
     }
 
     await this.db.customer.update({
       where: {
         id,
       },
-      data: updateCustomerDto,
+      data: {
+        ...updateCustomerDto,
+        phoneNumber,
+      },
     })
   }
 
