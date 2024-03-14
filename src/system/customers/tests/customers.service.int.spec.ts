@@ -33,7 +33,7 @@ describe('CustomersService', () => {
       email: 'john@doe.com',
       firstName: 'John',
       lastName: 'Doe',
-      phoneNumber: '012 345 6789',
+      phoneNumber: '+380 123456789',
     }
 
     it('should create a new customer', async () => {
@@ -44,9 +44,23 @@ describe('CustomersService', () => {
       expect(customersCount).toBe(1)
     })
 
-    it('should fail if the username is already taken', async () => {
+    it('should fail if the email is already taken', async () => {
       await db.customer.create({
-        data,
+        data: {
+          ...data,
+          phoneNumber: 'different phone number',
+        },
+      })
+
+      await expect(service.create(data)).rejects.toThrow(BadRequestException)
+    })
+
+    it('should fail if the phone number is already taken', async () => {
+      await db.customer.create({
+        data: {
+          ...data,
+          email: 'different email',
+        },
       })
 
       await expect(service.create(data)).rejects.toThrow(BadRequestException)
@@ -61,19 +75,19 @@ describe('CustomersService', () => {
             firstName: 'John',
             lastName: 'Doe',
             email: '1',
-            phoneNumber: '+380 12 123 1234',
+            phoneNumber: 'phone1',
           },
           {
             firstName: 'John',
             lastName: 'Doe',
             email: '2',
-            phoneNumber: '+380 12 123 1234',
+            phoneNumber: 'phone2',
           },
           {
             firstName: 'John',
             lastName: 'Doe',
             email: '3',
-            phoneNumber: '+380 12 123 1234',
+            phoneNumber: 'phone3',
           },
         ],
       })
@@ -101,19 +115,19 @@ describe('CustomersService', () => {
             firstName: 'John',
             lastName: 'Doe',
             email: '1',
-            phoneNumber: '+380 12 123 1234',
+            phoneNumber: 'phone1',
           },
           {
             firstName: 'John',
             lastName: 'Doe',
             email: '2',
-            phoneNumber: '+380 12 123 1234',
+            phoneNumber: 'phone2',
           },
           {
             firstName: 'John',
             lastName: 'Doe',
             email: '3',
-            phoneNumber: '+380 12 123 1234',
+            phoneNumber: 'phone3',
           },
         ],
       })
@@ -154,7 +168,7 @@ describe('CustomersService', () => {
           email: id,
           firstName: id,
           lastName: id,
-          phoneNumber: '+380 12 123 1234',
+          phoneNumber: '+380 123456789',
         },
       })
     })

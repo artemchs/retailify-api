@@ -455,8 +455,8 @@ model Customer {
 
   firstName   String
   lastName    String
-  email       String @unique
-  phoneNumber String // Phone numbers are stored in international formats
+  email       String?
+  phoneNumber String  @unique // Phone numbers are stored in international formats
 
   isEmailVerified Boolean @default(false)
   Order           Order[]

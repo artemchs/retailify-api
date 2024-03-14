@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, IsPhoneNumber, IsString } from 'class-validator'
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+} from 'class-validator'
 
 export class CreateCustomerDto {
   @IsNotEmpty()
@@ -9,15 +15,13 @@ export class CreateCustomerDto {
   @IsString()
   lastName: string
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsEmail()
   email: string
 
+  @IsNotEmpty()
   @IsPhoneNumber('UA', {
     message: 'Пожалуйста, введите корректный номер телефона.',
-  })
-  @IsNotEmpty({
-    message: 'Номер телефона не должен быть пустым.',
   })
   phoneNumber: string
 }

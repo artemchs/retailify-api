@@ -34,28 +34,47 @@ export class CustomersService {
     return customer
   }
 
-  private async checkIfEmailIsTaken(email: string) {
-    const customerWithExistingEmail = await this.db.customer.findUnique({
+  private async checkIfEmailIsTaken(email?: string) {
+    if (email) {
+      const customerWithExistingEmail = await this.db.customer.findFirst({
+        where: {
+          email: email,
+        },
+      })
+
+      if (customerWithExistingEmail) {
+        throw new BadRequestException(
+          'Покупатель с таким адресом электронной почты уже зарегистрирован.',
+        )
+      }
+    }
+  }
+
+  private async checkIfPhoneNumberIsTaken(phoneNumber: string) {
+    const customerWithExistingNumber = await this.db.customer.findFirst({
       where: {
-        email: email,
+        phoneNumber,
       },
     })
 
-    if (customerWithExistingEmail) {
+    if (customerWithExistingNumber) {
       throw new BadRequestException(
-        'Покупатель с таким адресом электронной почты уже зарегистрирован.',
+        'Покупатель с таким номером телефона уже зарегистрирован.',
       )
     }
+  }
+
+  private formatPhoneNumber(phoneNumber: string) {
+    return (
+      parsePhoneNumber(phoneNumber, 'UA')?.formatInternational() ?? phoneNumber
+    )
   }
 
   async create(createCustomerDto: CreateCustomerDto) {
     await this.checkIfEmailIsTaken(createCustomerDto.email)
 
-    const phoneNumber =
-      parsePhoneNumber(
-        createCustomerDto.phoneNumber,
-        'UA',
-      )?.formatInternational() ?? createCustomerDto.phoneNumber
+    const phoneNumber = this.formatPhoneNumber(createCustomerDto.phoneNumber)
+    await this.checkIfPhoneNumberIsTaken(phoneNumber)
 
     await this.db.customer.create({
       data: {
@@ -149,11 +168,11 @@ export class CustomersService {
     let phoneNumber: string | undefined
 
     if (updateCustomerDto.phoneNumber) {
-      phoneNumber =
-        parsePhoneNumber(
-          updateCustomerDto.phoneNumber,
-          'UA',
-        )?.formatInternational() ?? updateCustomerDto.phoneNumber
+      phoneNumber = this.formatPhoneNumber(updateCustomerDto.phoneNumber)
+
+      if (phoneNumber !== customer.phoneNumber) {
+        await this.checkIfPhoneNumberIsTaken(phoneNumber)
+      }
     }
 
     await this.db.customer.update({
