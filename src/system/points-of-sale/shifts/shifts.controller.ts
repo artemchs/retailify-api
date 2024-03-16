@@ -5,6 +5,7 @@ import { GetCurrentUserAccessToken } from '../../../system/common/decorators'
 import { FindAllShiftDto } from './dto/findAll-shifts.dto'
 import { UpdateShiftDto } from './dto/update-shift.dto'
 import { CashRegisterTransactionDto } from './dto/cash-register-transaction.dto'
+import { Cron, CronExpression } from '@nestjs/schedule'
 
 @Controller('system/points-of-sale/:posId/shifts')
 export class ShiftsController {
@@ -40,6 +41,13 @@ export class ShiftsController {
     @GetCurrentUserAccessToken('sub') userId: string,
   ) {
     return this.shiftsService.close(id, userId)
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_11PM, {
+    timeZone: 'Europe/Kyiv',
+  })
+  closeAllShifts() {
+    return this.shiftsService.closeAllShifts()
   }
 
   @Post(':id/deposit')

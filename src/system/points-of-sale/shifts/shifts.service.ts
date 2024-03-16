@@ -291,4 +291,18 @@ export class ShiftsService {
       },
     })
   }
+
+  async closeAllShifts() {
+    await this.db.cashierShift.updateMany({
+      where: {
+        isOpened: true,
+      },
+      data: {
+        closedAt: new Date(),
+        isOpened: false,
+      },
+    })
+
+    console.log('All opened cashier shifts have been successfully closed.')
+  }
 }
