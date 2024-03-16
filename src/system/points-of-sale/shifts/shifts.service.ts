@@ -82,6 +82,16 @@ export class ShiftsService {
       )
     }
 
+    const pos = await this.db.pointOfSale.findUnique({
+      where: {
+        id: shift.pointOfSaleId ?? undefined,
+      },
+    })
+
+    if (!pos) {
+      throw new NotFoundException('Касса не найдена.')
+    }
+
     await Promise.all([
       this.db.transaction.create({
         data: {
@@ -93,7 +103,7 @@ export class ShiftsService {
       }),
       this.db.pointOfSale.update({
         where: {
-          id: shift.pointOfSaleId ?? undefined,
+          id: pos.id,
         },
         data: {
           balance: {
@@ -120,6 +130,22 @@ export class ShiftsService {
       )
     }
 
+    const pos = await this.db.pointOfSale.findUnique({
+      where: {
+        id: shift.pointOfSaleId ?? undefined,
+      },
+    })
+
+    if (!pos) {
+      throw new NotFoundException('Касса не найдена.')
+    }
+
+    if (pos && withdrawalDto.amount > Number(pos.balance)) {
+      throw new BadRequestException(
+        'Недостаточно средств на кассе для выполнения операции.',
+      )
+    }
+
     await Promise.all([
       this.db.transaction.create({
         data: {
@@ -131,7 +157,7 @@ export class ShiftsService {
       }),
       this.db.pointOfSale.update({
         where: {
-          id: shift.pointOfSaleId ?? undefined,
+          id: pos.id,
         },
         data: {
           balance: {

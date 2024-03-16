@@ -21,6 +21,38 @@ export class PointsOfSaleService {
       where: {
         id,
       },
+      include: {
+        cashiers: {
+          select: {
+            id: true,
+            fullName: true,
+          },
+        },
+        productTags: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        categories: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        categoryGroups: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        warehouse: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     })
 
     if (!pos) {

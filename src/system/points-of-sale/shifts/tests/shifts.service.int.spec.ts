@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing'
 import { AppModule } from 'src/app.module'
 import { FindAllShiftDto } from '../dto/findAll-shifts.dto'
 import { CreateShiftDto } from '../dto/create-shift.dto'
-import { NotFoundException } from '@nestjs/common'
+import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { UpdateShiftDto } from '../dto/update-shift.dto'
 
 describe('CashierShiftsService', () => {
@@ -297,6 +297,14 @@ describe('CashierShiftsService', () => {
           pointOfSaleId: posId,
         },
       })
+      await db.pointOfSale.update({
+        where: {
+          id: posId,
+        },
+        data: {
+          balance: 100,
+        },
+      })
     })
 
     it('should create a new debit transaction', async () => {
@@ -318,13 +326,19 @@ describe('CashierShiftsService', () => {
         },
       })
 
-      expect(Number(pos?.balance)).toBe(-100)
+      expect(Number(pos?.balance)).toBe(0)
     })
 
     it('should fail if the shift does not exist', async () => {
-      await expect(service.close('non-existent', userId)).rejects.toThrow(
-        NotFoundException,
-      )
+      await expect(
+        service.withdrawal('non-existent', userId, { amount: 100 }),
+      ).rejects.toThrow(NotFoundException)
+    })
+
+    it('should fail if the amount to be withdrawed is bigger than the pos balance', async () => {
+      await expect(
+        service.withdrawal(id, userId, { amount: 500 }),
+      ).rejects.toThrow(BadRequestException)
     })
   })
 })

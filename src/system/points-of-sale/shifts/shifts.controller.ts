@@ -50,4 +50,13 @@ export class ShiftsController {
   ) {
     return this.shiftsService.deposit(id, userId, depositDto)
   }
+
+  @Post(':id/withdrawal')
+  withdrawal(
+    @Body() withdrawalDto: CashRegisterTransactionDto,
+    @Param('id') id: string,
+    @GetCurrentUserAccessToken('sub') userId: string,
+  ) {
+    return this.shiftsService.withdrawal(id, userId, withdrawalDto)
+  }
 }
