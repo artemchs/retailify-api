@@ -89,7 +89,7 @@ export class CustomersService {
 
     const where: Prisma.CustomerWhereInput = {
       OR: buildContainsArray({
-        fields: ['firstName', 'lastName', 'email'],
+        fields: ['firstName', 'lastName', 'email', 'phoneNumber'],
         query,
       }),
     }
@@ -126,7 +126,7 @@ export class CustomersService {
 
     const where: Prisma.CustomerWhereInput = {
       OR: buildContainsArray({
-        fields: ['firstName', 'lastName', 'email'],
+        fields: ['firstName', 'lastName', 'email', 'phoneNumber'],
         query,
       }),
     }

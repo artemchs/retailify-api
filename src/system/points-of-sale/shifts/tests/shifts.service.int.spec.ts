@@ -239,4 +239,92 @@ describe('CashierShiftsService', () => {
       )
     })
   })
+
+  describe('deposit', () => {
+    const id = 'Test Shift 1'
+
+    beforeEach(async () => {
+      await db.cashierShift.create({
+        data: {
+          id,
+          name: id,
+          cashierId: userId,
+          startingCashBalance: 0,
+          pointOfSaleId: posId,
+        },
+      })
+    })
+
+    it('should create a new credit transaction', async () => {
+      await service.deposit(id, userId, { amount: 100 })
+
+      const transaction = await db.transaction.findFirst()
+
+      expect(Number(transaction?.amount)).toBe(100)
+      expect(transaction?.direction).toBe('CREDIT')
+      expect(transaction?.type).toBe('CASH_REGISTER_DEPOSIT')
+    })
+
+    it('should increment the POS balance', async () => {
+      await service.deposit(id, userId, { amount: 100 })
+
+      const pos = await db.pointOfSale.findUnique({
+        where: {
+          id: posId,
+        },
+      })
+
+      expect(Number(pos?.balance)).toBe(100)
+    })
+
+    it('should fail if the shift does not exist', async () => {
+      await expect(service.close('non-existent', userId)).rejects.toThrow(
+        NotFoundException,
+      )
+    })
+  })
+
+  describe('withdrawal', () => {
+    const id = 'Test Shift 1'
+
+    beforeEach(async () => {
+      await db.cashierShift.create({
+        data: {
+          id,
+          name: id,
+          cashierId: userId,
+          startingCashBalance: 100,
+          pointOfSaleId: posId,
+        },
+      })
+    })
+
+    it('should create a new debit transaction', async () => {
+      await service.withdrawal(id, userId, { amount: 100 })
+
+      const transaction = await db.transaction.findFirst()
+
+      expect(Number(transaction?.amount)).toBe(100)
+      expect(transaction?.direction).toBe('DEBIT')
+      expect(transaction?.type).toBe('CASH_REGISTER_WITHDRAWAL')
+    })
+
+    it('should decrement the POS balance', async () => {
+      await service.withdrawal(id, userId, { amount: 100 })
+
+      const pos = await db.pointOfSale.findUnique({
+        where: {
+          id: posId,
+        },
+      })
+
+      expect(Number(pos?.balance)).toBe(-100)
+    })
+
+    it('should fail if the shift does not exist', async () => {
+      await expect(service.close('non-existent', userId)).rejects.toThrow(
+        NotFoundException,
+      )
+    })
+  })
 })

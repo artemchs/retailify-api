@@ -1,9 +1,9 @@
 import {
   IsEmail,
   IsNotEmpty,
-  IsOptional,
   IsPhoneNumber,
   IsString,
+  ValidateIf,
 } from 'class-validator'
 
 export class CreateCustomerDto {
@@ -15,9 +15,9 @@ export class CreateCustomerDto {
   @IsString()
   lastName: string
 
-  @IsOptional()
+  @ValidateIf((o) => o.email)
   @IsEmail()
-  email: string
+  email?: string
 
   @IsNotEmpty()
   @IsPhoneNumber('UA', {

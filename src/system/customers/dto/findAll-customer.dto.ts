@@ -8,5 +8,6 @@ export class FindAllCustomerDto {
     firstName?: 'asc' | 'desc'
     lastName?: 'asc' | 'desc'
     email?: 'asc' | 'desc'
+    phoneNumber?: 'asc' | 'desc'
   }
 }

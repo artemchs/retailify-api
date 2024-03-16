@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -16,6 +17,7 @@ import {
 } from '../../../system/common/utils/db-helpers'
 import { Prisma } from '@prisma/client'
 import { UpdateShiftDto } from './dto/update-shift.dto'
+import { CashRegisterTransactionDto } from './dto/cash-register-transaction.dto'
 
 @Roles(Role.Admin, Role.Cashier)
 @Injectable()
@@ -64,6 +66,82 @@ export class ShiftsService {
     return shift
   }
 
+  async deposit(
+    id: string,
+    userId: string,
+    depositDto: CashRegisterTransactionDto,
+  ) {
+    const [shift, user] = await Promise.all([
+      this.getShift(id),
+      this.getUser(userId),
+    ])
+
+    if (user.id !== shift.cashierId && user.role !== 'ADMIN') {
+      throw new ForbiddenException(
+        'Извините, вы не можете осуществить внесение средств в эту смену на данной кассе.',
+      )
+    }
+
+    await Promise.all([
+      this.db.transaction.create({
+        data: {
+          amount: depositDto.amount,
+          type: 'CASH_REGISTER_DEPOSIT',
+          shiftId: shift.id,
+          direction: 'CREDIT',
+        },
+      }),
+      this.db.pointOfSale.update({
+        where: {
+          id: shift.pointOfSaleId ?? undefined,
+        },
+        data: {
+          balance: {
+            increment: depositDto.amount,
+          },
+        },
+      }),
+    ])
+  }
+
+  async withdrawal(
+    id: string,
+    userId: string,
+    withdrawalDto: CashRegisterTransactionDto,
+  ) {
+    const [shift, user] = await Promise.all([
+      this.getShift(id),
+      this.getUser(userId),
+    ])
+
+    if (user.id !== shift.cashierId && user.role !== 'ADMIN') {
+      throw new ForbiddenException(
+        'Извините, но вы не можете провести изъятие средств в этой смене на данной кассе.',
+      )
+    }
+
+    await Promise.all([
+      this.db.transaction.create({
+        data: {
+          amount: withdrawalDto.amount,
+          type: 'CASH_REGISTER_WITHDRAWAL',
+          shiftId: shift.id,
+          direction: 'DEBIT',
+        },
+      }),
+      this.db.pointOfSale.update({
+        where: {
+          id: shift.pointOfSaleId ?? undefined,
+        },
+        data: {
+          balance: {
+            decrement: withdrawalDto.amount,
+          },
+        },
+      }),
+    ])
+  }
+
   async create(userId: string, posId: string, createShiftDto: CreateShiftDto) {
     const [user, pos, count] = await Promise.all([
       this.getUser(userId),
@@ -75,7 +153,7 @@ export class ShiftsService {
       }),
     ])
 
-    return await this.db.cashierShift.create({
+    const cashierShift = await this.db.cashierShift.create({
       data: {
         ...createShiftDto,
         isOpened: true,
@@ -84,6 +162,12 @@ export class ShiftsService {
         name: `Смена #${count + 1}`,
       },
     })
+
+    this.deposit(cashierShift.id, userId, {
+      amount: createShiftDto.startingCashBalance,
+    })
+
+    return cashierShift
   }
 
   async findAll(

@@ -4,6 +4,7 @@ import { CreateShiftDto } from './dto/create-shift.dto'
 import { GetCurrentUserAccessToken } from '../../../system/common/decorators'
 import { FindAllShiftDto } from './dto/findAll-shifts.dto'
 import { UpdateShiftDto } from './dto/update-shift.dto'
+import { CashRegisterTransactionDto } from './dto/cash-register-transaction.dto'
 
 @Controller('system/points-of-sale/:posId/shifts')
 export class ShiftsController {
@@ -39,5 +40,14 @@ export class ShiftsController {
     @GetCurrentUserAccessToken('sub') userId: string,
   ) {
     return this.shiftsService.close(id, userId)
+  }
+
+  @Post(':id/deposit')
+  deposit(
+    @Body() depositDto: CashRegisterTransactionDto,
+    @Param('id') id: string,
+    @GetCurrentUserAccessToken('sub') userId: string,
+  ) {
+    return this.shiftsService.deposit(id, userId, depositDto)
   }
 }
