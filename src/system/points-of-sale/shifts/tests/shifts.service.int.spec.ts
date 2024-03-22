@@ -80,7 +80,7 @@ describe('CashierShiftsService', () => {
     })
 
     it('should fail if the user does not exist', async () => {
-      await expect(service.create('non-existent', posId, data)).rejects.toThrow(
+      await expect(service.create('asdfasdf', posId, data)).rejects.toThrow(
         NotFoundException,
       )
     })

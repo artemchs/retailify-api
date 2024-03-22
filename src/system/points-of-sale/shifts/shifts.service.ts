@@ -82,11 +82,13 @@ export class ShiftsService {
       )
     }
 
-    const pos = await this.db.pointOfSale.findUnique({
-      where: {
-        id: shift.pointOfSaleId ?? undefined,
-      },
-    })
+    const pos = shift.pointOfSaleId
+      ? await this.db.pointOfSale.findUnique({
+          where: {
+            id: shift.pointOfSaleId,
+          },
+        })
+      : undefined
 
     if (!pos) {
       throw new NotFoundException('Касса не найдена.')

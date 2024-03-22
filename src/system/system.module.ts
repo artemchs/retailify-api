@@ -20,6 +20,7 @@ import { InventoryTransfersModule } from './inventory-transfers/inventory-transf
 import { ProductTagsModule } from './product-tags/product-tags.module'
 import { PointsOfSaleModule } from './points-of-sale/points-of-sale.module'
 import { CustomersModule } from './customers/customers.module'
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { CustomersModule } from './customers/customers.module'
     ProductTagsModule,
     PointsOfSaleModule,
     CustomersModule,
+    OrdersModule,
   ],
   providers: [
     {

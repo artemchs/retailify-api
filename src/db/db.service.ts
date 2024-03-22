@@ -31,6 +31,7 @@ export class DbService
     if (environment === 'test') {
       return this.$transaction([
         this.productToColor.deleteMany(), // this one has to be deleted before colors and products
+
         this.systemUser.deleteMany(),
         this.allowedSystemUserEmail.deleteMany(),
         this.supplier.deleteMany(),
@@ -57,8 +58,12 @@ export class DbService
         this.productTag.deleteMany(),
         this.pointOfSale.deleteMany(),
         this.transaction.deleteMany(),
-        this.cashierShift.deleteMany(),
         this.customer.deleteMany(),
+        this.order.deleteMany(),
+        this.cashierShift.deleteMany(),
+        this.customerOrderItem.deleteMany(),
+        this.orderInvoice.deleteMany(),
+        this.transaction.deleteMany(),
       ])
     }
   }
