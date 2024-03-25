@@ -15,6 +15,5 @@ export class FindAllOrderDto {
     createdAt?: 'asc' | 'desc'
     updatedAt?: 'asc' | 'desc'
     name?: 'asc' | 'desc'
-    date?: 'asc' | 'desc'
   }
 }

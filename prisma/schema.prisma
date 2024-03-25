@@ -449,6 +449,7 @@ model CashierShift {
   isOpened     Boolean       @default(false)
   transactions Transaction[]
   orders       Order[]
+  refunds      Refund[]
 }
 
 model Customer {
@@ -482,7 +483,7 @@ model Order {
   orderInvoiceId String?             @unique
 
   customBulkDiscount Decimal? @db.Decimal(8, 2)
-  itemDiscountTotal  Decimal? @db.Decimal(8, 2)
+  refunds            Refund[]
 }
 
 model CustomerOrderItem {
@@ -497,7 +498,9 @@ model CustomerOrderItem {
   vtwId    String?
   quantity Int
 
-  customDiscount Decimal? @db.Decimal(8, 2)
+  pricePerItemWithDiscount Decimal      @db.Decimal(8, 2)
+  customDiscount           Decimal?     @db.Decimal(8, 2)
+  refundItems              RefundItem[]
 }
 
 model OrderInvoice {
@@ -533,6 +536,8 @@ model Transaction {
 
   orderInvoice   OrderInvoice? @relation(fields: [orderInvoiceId], references: [id])
   orderInvoiceId String?
+  refund         Refund?       @relation(fields: [refundId], references: [id])
+  refundId       String?
 }
 
 enum TransactionDirection {
@@ -542,9 +547,43 @@ enum TransactionDirection {
 
 enum TransactionType {
   ORDER_PAYMENT
+  ORDER_REFUND
   SUPPLIER_PAYMENT
   SALARY_PAYMENT
   CASH_REGISTER_DEPOSIT
   CASH_REGISTER_WITHDRAWAL
   // Add more types as needed
+}
+
+model Refund {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name    String
+  shift   CashierShift? @relation(fields: [shiftId], references: [id])
+  shiftId String?
+
+  order   Order?  @relation(fields: [orderId], references: [id])
+  orderId String?
+
+  amount Decimal @db.Decimal(8, 2)
+
+  refundItems  RefundItem[]
+  transactions Transaction[]
+}
+
+model RefundItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItem   CustomerOrderItem? @relation(fields: [orderItemId], references: [id])
+  orderItemId String?
+  quantity    Int
+
+  refund   Refund? @relation(fields: [refundId], references: [id])
+  refundId String?
+
+  amount Decimal @db.Decimal(8, 2)
 }

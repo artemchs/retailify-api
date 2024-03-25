@@ -64,6 +64,8 @@ export class DbService
         this.customerOrderItem.deleteMany(),
         this.orderInvoice.deleteMany(),
         this.transaction.deleteMany(),
+        this.refund.deleteMany(),
+        this.refundItem.deleteMany(),
       ])
     }
   }

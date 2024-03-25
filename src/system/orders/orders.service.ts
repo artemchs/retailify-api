@@ -7,8 +7,8 @@ import { CreateOrderDto } from './dto/create-order.dto'
 import { UpdateOrderDto } from './dto/update-order.dto'
 import { DbService } from '../../db/db.service'
 import getDiscountedPrice from '../common/utils/getDiscountedPrice'
-import { Prisma, PrismaClient } from '@prisma/client'
-import { DefaultArgs } from '@prisma/client/runtime/library'
+import { $Enums, Prisma, PrismaClient } from '@prisma/client'
+import { Decimal, DefaultArgs } from '@prisma/client/runtime/library'
 import { FindAllOrderDto } from './dto/findAll-order.dto'
 import {
   buildContainsArray,
@@ -16,6 +16,7 @@ import {
   calculateTotalPages,
   getPaginationData,
 } from '../common/utils/db-helpers'
+import { OrderRefundDto } from './dto/refund-order.dto'
 
 type PrismaTx = Omit<
   PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
@@ -27,84 +28,80 @@ export class OrdersService {
   constructor(private db: DbService) {}
 
   private async getCustomer(id?: string) {
-    if (id) {
-      const customer = await this.db.customer.findUnique({
-        where: {
-          id,
-        },
-      })
+    const customer = await this.db.customer.findUnique({
+      where: {
+        id,
+      },
+    })
 
-      if (!customer) {
-        throw new NotFoundException('Клиент не найден.')
-      }
-
-      return customer
+    if (!customer) {
+      throw new NotFoundException('Клиент не найден.')
     }
+
+    return customer
   }
 
   private async getShift(id?: string) {
-    if (id) {
-      const shift = await this.db.cashierShift.findUnique({
-        where: {
-          id,
-        },
-        include: {
-          pointOfSale: true,
-        },
-      })
+    const shift = await this.db.cashierShift.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        pointOfSale: true,
+      },
+    })
 
-      if (!shift) {
-        throw new NotFoundException('Смена не найдена.')
-      }
-
-      return shift
+    if (!shift) {
+      throw new NotFoundException('Смена не найдена.')
     }
+
+    return shift
   }
 
   private async getOrder(id?: string) {
-    if (id) {
-      const order = await this.db.order.findUnique({
-        where: {
-          id,
-        },
-        include: {
-          customer: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-          invoice: {
-            select: {
-              paymentMethod: true,
-            },
-          },
-          shift: {
-            select: {
-              cashier: {
-                select: {
-                  id: true,
-                  fullName: true,
-                },
-              },
-              pointOfSale: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
+    const order = await this.db.order.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
           },
         },
-      })
+        invoice: {
+          select: {
+            paymentMethod: true,
+            totalCardAmount: true,
+            totalCashAmount: true,
+          },
+        },
+        shift: {
+          select: {
+            cashier: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
+            pointOfSale: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    })
 
-      if (!order) {
-        throw new NotFoundException('Заказ не найден.')
-      }
-
-      return order
+    if (!order) {
+      throw new NotFoundException('Заказ не найден.')
     }
+
+    return order
   }
 
   private async caluclateOrder(
@@ -120,12 +117,12 @@ export class OrdersService {
     warehouseId: string,
   ) {
     if (items && items.length >= 1) {
-      let totalDiscoutOfAllItems = 0
       let totalWithoutBulkDiscount = 0
       const orderItems: {
         vtwId: string
         quantity: number
         customDiscount?: number
+        pricePerItemWithDiscount: number
       }[] = []
 
       await this.db.$transaction(
@@ -176,9 +173,6 @@ export class OrdersService {
                       : undefined
 
                     if (priceWithCustomSale) {
-                      totalDiscoutOfAllItems +=
-                        priceWithSale - priceWithCustomSale
-
                       customDiscount = priceWithSale - priceWithCustomSale
                     }
 
@@ -189,6 +183,8 @@ export class OrdersService {
                       quantity,
                       vtwId: vtw.id,
                       customDiscount,
+                      pricePerItemWithDiscount:
+                        priceWithCustomSale ?? priceWithSale,
                     })
                   }
                 }
@@ -215,7 +211,6 @@ export class OrdersService {
       ) {
         return {
           items: orderItems,
-          totalDiscoutOfAllItems,
           total: totalWithBulkDiscount ?? totalWithoutBulkDiscount,
           cashTotal: totalCashAmount,
           cardTotal: totalCardAmount,
@@ -228,7 +223,6 @@ export class OrdersService {
       return {
         items: orderItems,
         total: totalWithBulkDiscount ?? totalWithoutBulkDiscount,
-        totalDiscoutOfAllItems,
         cashTotal:
           paymentMethod === 'CASH'
             ? totalWithBulkDiscount ?? totalWithoutBulkDiscount
@@ -244,8 +238,9 @@ export class OrdersService {
     }
   }
 
-  private async decrementProductQuantities(
+  private async updateProductQuantities(
     tx: PrismaTx,
+    action: 'increment' | 'decrement',
     items?: {
       vtwId: string
       quantity: number
@@ -260,17 +255,17 @@ export class OrdersService {
             },
             data: {
               warehouseQuantity: {
-                decrement: quantity,
+                [action]: quantity,
               },
               variant: {
                 update: {
                   totalWarehouseQuantity: {
-                    decrement: quantity,
+                    [action]: quantity,
                   },
                   product: {
                     update: {
                       totalWarehouseQuantity: {
-                        decrement: quantity,
+                        [action]: quantity,
                       },
                     },
                   },
@@ -304,18 +299,12 @@ export class OrdersService {
     )
 
     if (calculatedOrder) {
-      const {
-        cashTotal,
-        total,
-        totalDiscoutOfAllItems,
-        cardTotal,
-        customBulkDiscount,
-        items,
-      } = calculatedOrder
+      const { cashTotal, total, cardTotal, customBulkDiscount, items } =
+        calculatedOrder
 
       await this.db.$transaction(async (tx) => {
         await Promise.all([
-          this.decrementProductQuantities(tx, items),
+          this.updateProductQuantities(tx, 'decrement', items),
           tx.orderInvoice.create({
             data: {
               paymentMethod: createOrderDto.paymentMethod,
@@ -324,7 +313,6 @@ export class OrdersService {
                   name: `Продажа #${count + 1}`,
                   shiftId,
                   customerId: createOrderDto.customerId,
-                  itemDiscountTotal: totalDiscoutOfAllItems,
                   customBulkDiscount,
                   items: {
                     createMany: {
@@ -489,5 +477,117 @@ export class OrdersService {
     const order = await this.getOrder(id)
 
     return order
+  }
+
+  private async calculateRefund(
+    tx: PrismaTx,
+    refundOrderDto: OrderRefundDto,
+    orderId: string,
+    invoice: {
+      totalCashAmount: Prisma.Decimal
+      totalCardAmount: Prisma.Decimal
+      paymentMethod: $Enums.OrderPaymentMethod
+    } | null,
+    customBulkDiscount: Decimal | null,
+  ) {
+    const totalWithBulkDiscount = invoice
+      ? Number(invoice.totalCardAmount) + Number(invoice.totalCashAmount)
+      : 0
+
+    const refundItems: {
+      quantity: number
+      amount: number
+      orderItemId: string
+    }[] = []
+
+    await Promise.all(
+      refundOrderDto.items.map(async ({ id, quantity }) => {
+        const orderItem = await tx.customerOrderItem.findUnique({
+          where: {
+            id,
+          },
+        })
+
+        if (!orderItem) {
+          console.log({
+            orderItemNotFound: id,
+            orderId,
+            date: new Date(),
+          })
+          throw new NotFoundException('Товар не найден.')
+        }
+
+        const price = Number(orderItem.pricePerItemWithDiscount) * quantity
+        const percentOfOrderTotalWithoutDiscount =
+          price / totalWithBulkDiscount +
+          (customBulkDiscount ? Number(customBulkDiscount) : 0)
+        const refundAmountForOrderItem =
+          percentOfOrderTotalWithoutDiscount * totalWithBulkDiscount +
+          (customBulkDiscount ? Number(customBulkDiscount) : 0)
+
+        refundItems.push({
+          amount: refundAmountForOrderItem,
+          orderItemId: id,
+          quantity,
+        })
+      }),
+    )
+
+    const refundTotal =
+      refundItems.length >= 1
+        ? refundItems
+            .map(({ amount }) => amount)
+            .reduce((prev, curr) => prev + curr)
+        : 0
+
+    return {
+      refundItems,
+      refundTotal,
+    }
+  }
+
+  async refund(refundOrderDto: OrderRefundDto, shiftId: string) {
+    const [count, shift, order] = await Promise.all([
+      this.db.refund.count(),
+      this.getShift(shiftId),
+      this.getOrder(refundOrderDto.orderId),
+    ])
+
+    if (!shift?.isOpened) {
+      throw new BadRequestException('Смена закрыта.')
+    }
+
+    await this.db.$transaction(async (tx) => {
+      const { refundItems, refundTotal } = await this.calculateRefund(
+        tx,
+        refundOrderDto,
+        order.id,
+        order.invoice,
+        order.customBulkDiscount,
+      )
+
+      await tx.refund.create({
+        data: {
+          name: `Возврат #${count + 1}`,
+          orderId: refundOrderDto.orderId,
+          shiftId: shift.id,
+          refundItems: {
+            createMany: {
+              data: refundItems,
+            },
+          },
+          amount: refundTotal,
+          transactions: {
+            create: {
+              amount: refundTotal * -1,
+              direction: 'DEBIT',
+              type: 'ORDER_REFUND',
+              shiftId,
+              orderInvoiceId: order.orderInvoiceId,
+            },
+          },
+        },
+      })
+    })
   }
 }
