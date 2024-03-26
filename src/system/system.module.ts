@@ -21,6 +21,7 @@ import { ProductTagsModule } from './product-tags/product-tags.module'
 import { PointsOfSaleModule } from './points-of-sale/points-of-sale.module'
 import { CustomersModule } from './customers/customers.module'
 import { OrdersModule } from './orders/orders.module';
+import { RefundsModule } from './refunds/refunds.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { OrdersModule } from './orders/orders.module';
     PointsOfSaleModule,
     CustomersModule,
     OrdersModule,
+    RefundsModule,
   ],
   providers: [
     {

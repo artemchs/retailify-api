@@ -1,7 +1,10 @@
 import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common'
 import { OrdersService } from './orders.service'
 import { CreateOrderDto } from './dto/create-order.dto'
-import { FindAllOrderDto } from './dto/findAll-order.dto'
+import {
+  FindAllOrderDto,
+  FindAllOrderInfiniteListDto,
+} from './dto/findAll-order.dto'
 
 @Controller('system/orders')
 export class OrdersController {
@@ -18,6 +21,11 @@ export class OrdersController {
   @Get()
   findAll(@Query() query: FindAllOrderDto) {
     return this.ordersService.findAll(query)
+  }
+
+  @Get('infinite-list')
+  findAllInfiniteList(@Query() query: FindAllOrderInfiniteListDto) {
+    return this.ordersService.findAllInfiniteList(query)
   }
 
   @Get(':id')

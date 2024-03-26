@@ -5,7 +5,6 @@ import { AppModule } from 'src/app.module'
 import { CreateOrderDto } from '../dto/create-order.dto'
 import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { FindAllOrderDto } from '../dto/findAll-order.dto'
-import { OrderRefundDto } from '../dto/refund-order.dto'
 
 describe('OrdersService', () => {
   let service: OrdersService
@@ -566,87 +565,6 @@ describe('OrdersService', () => {
 
     it('should fail if the item does not exist', async () => {
       await expect(service.findOne('non-existent')).rejects.toThrow(
-        NotFoundException,
-      )
-    })
-  })
-
-  describe('refund', () => {
-    const id = 'Order'
-
-    beforeEach(async () => {
-      await db.order.create({
-        data: {
-          id,
-          name: 'asdf',
-          shiftId,
-          items: {
-            create: {
-              id: 'Order Item 1',
-              vtwId: 'Vtw 1',
-              quantity: 1,
-              pricePerItemWithDiscount: 100,
-            },
-          },
-        },
-      })
-
-      await db.orderInvoice.create({
-        data: {
-          paymentMethod: 'CARD',
-          totalCardAmount: 100,
-          totalCashAmount: 0,
-          order: {
-            connect: {
-              id,
-            },
-          },
-        },
-      })
-    })
-
-    const data: OrderRefundDto = {
-      orderId: id,
-      items: [
-        {
-          id: 'Order Item 1',
-          quantity: 1,
-        },
-      ],
-    }
-
-    it('should create a refund', async () => {
-      await service.refund(data, shiftId)
-
-      const refundsCount = await db.refund.count()
-
-      expect(refundsCount).toBe(1)
-    })
-
-    it('should create a transaction for the total amount of the refunded goods', async () => {
-      await service.refund(data, shiftId)
-
-      const transactionsCount = await db.transaction.count()
-      const transaction = await db.transaction.findFirst()
-
-      expect(transactionsCount).toBe(1)
-      expect(Number(transaction?.amount)).toBe(-100)
-    })
-
-    it('should fail if the order does not exist', async () => {
-      await expect(
-        service.refund(
-          {
-            ...data,
-            orderId: 'non-existent',
-          },
-          shiftId,
-        ),
-      ).rejects.toThrow(NotFoundException)
-    })
-
-    it('should fail if the shift does not exist', async () => {
-      await expect(service.refund(data, 'non-existent')).rejects.toThrow(
         NotFoundException,
       )
     })

@@ -1,4 +1,4 @@
-export class FindAllOrderDto {
+export class FindAllRefundDto {
   page: number
   rowsPerPage: number
   query?: string
@@ -10,6 +10,10 @@ export class FindAllOrderDto {
     from?: string
     to?: string
   }
+  orderDate?: {
+    from?: string
+    to?: string
+  }
   paymentMethods?: ('CARD' | 'CASH' | 'MIXED')[]
   orderBy?: {
     createdAt?: 'asc' | 'desc'
@@ -18,7 +22,7 @@ export class FindAllOrderDto {
   }
 }
 
-export class FindAllOrderInfiniteListDto {
+export class FindAllRefundInfiniteListDto {
   query?: string
   cursor?: string
   cashierIds?: string[]
@@ -26,6 +30,10 @@ export class FindAllOrderInfiniteListDto {
   customerIds?: string[]
   posIds?: string[]
   date?: {
+    from?: string
+    to?: string
+  }
+  orderDate?: {
     from?: string
     to?: string
   }
