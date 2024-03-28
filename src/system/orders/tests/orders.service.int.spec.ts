@@ -394,6 +394,35 @@ describe('OrdersService', () => {
       expect(Number(transaction?.amount)).toBe(50)
     })
 
+    it('should correctly process an order with many items', async () => {
+      await service.create(
+        {
+          ...data,
+          items: [
+            {
+              id: 'Variant 1',
+              quantity: 1,
+            },
+            {
+              id: 'Variant 2',
+              quantity: 1,
+            },
+            {
+              id: 'Variant 3',
+              quantity: 1,
+            },
+          ],
+        },
+        shiftId,
+      )
+
+      const orderInvoice = await db.orderInvoice.findFirst()
+      const transaction = await db.transaction.findFirst()
+
+      expect(Number(orderInvoice?.totalCardAmount)).toBe(290)
+      expect(Number(transaction?.amount)).toBe(290)
+    })
+
     it('should fail if the shift does not exist', async () => {
       await expect(service.create(data, 'non-existent')).rejects.toThrow(
         NotFoundException,

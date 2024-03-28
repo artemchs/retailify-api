@@ -66,6 +66,40 @@ export class RefundsService {
       where: {
         id,
       },
+      include: {
+        shift: {
+          select: {
+            cashier: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
+            pointOfSale: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        order: {
+          select: {
+            invoice: {
+              select: {
+                paymentMethod: true,
+              },
+            },
+            customer: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
     })
 
     if (!refund) {

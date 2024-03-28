@@ -30,17 +30,19 @@ export class OrdersService {
   constructor(private db: DbService) {}
 
   private async getCustomer(id?: string) {
-    const customer = await this.db.customer.findUnique({
-      where: {
-        id,
-      },
-    })
+    if (id) {
+      const customer = await this.db.customer.findUnique({
+        where: {
+          id,
+        },
+      })
 
-    if (!customer) {
-      throw new NotFoundException('Клиент не найден.')
+      if (!customer) {
+        throw new NotFoundException('Клиент не найден.')
+      }
+
+      return customer
     }
-
-    return customer
   }
 
   private async getShift(id?: string) {
@@ -71,6 +73,7 @@ export class OrdersService {
             id: true,
             firstName: true,
             lastName: true,
+            phoneNumber: true,
           },
         },
         invoice: {
@@ -94,6 +97,28 @@ export class OrdersService {
                 name: true,
               },
             },
+          },
+        },
+        items: {
+          select: {
+            vtw: {
+              select: {
+                variant: {
+                  select: {
+                    product: {
+                      select: {
+                        title: true,
+                      },
+                    },
+                    size: true,
+                  },
+                },
+              },
+            },
+            id: true,
+            quantity: true,
+            customDiscount: true,
+            pricePerItemWithDiscount: true,
           },
         },
       },
@@ -184,7 +209,7 @@ export class OrdersService {
                       customDiscount = priceWithSale - priceWithCustomSale
                     }
 
-                    totalWithoutBulkDiscount =
+                    totalWithoutBulkDiscount +=
                       (priceWithCustomSale ?? priceWithSale) * quantity
 
                     orderItems.push({
@@ -320,7 +345,9 @@ export class OrdersService {
                 create: {
                   name: `Продажа #${count + 1}`,
                   shiftId,
-                  customerId: createOrderDto.customerId,
+                  customerId: createOrderDto.customerId
+                    ? createOrderDto.customerId
+                    : undefined,
                   customBulkDiscount,
                   items: {
                     createMany: {
@@ -435,6 +462,38 @@ export class OrdersService {
       orderBy: {
         createdAt: 'desc',
       },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        invoice: {
+          select: {
+            paymentMethod: true,
+            totalCardAmount: true,
+            totalCashAmount: true,
+          },
+        },
+        shift: {
+          select: {
+            cashier: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
+            pointOfSale: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
     })
 
     let nextCursor: typeof cursor | undefined = undefined
@@ -530,6 +589,8 @@ export class OrdersService {
           invoice: {
             select: {
               paymentMethod: true,
+              totalCardAmount: true,
+              totalCashAmount: true,
             },
           },
           shift: {
