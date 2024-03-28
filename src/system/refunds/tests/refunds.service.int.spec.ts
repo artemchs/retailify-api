@@ -240,6 +240,30 @@ describe('RefundsService', () => {
       expect(Number(transaction?.amount)).toBe(-100)
     })
 
+    it('should increment quantities of the refunded items', async () => {
+      await service.create(data, shiftId)
+
+      const vtw = await db.variantToWarehouse.findUnique({
+        where: {
+          id: 'Vtw 1',
+        },
+      })
+      const variant = await db.variant.findUnique({
+        where: {
+          id: 'Variant 1',
+        },
+      })
+      const product = await db.product.findUnique({
+        where: {
+          id: 'Test Product 1',
+        },
+      })
+
+      expect(vtw?.warehouseQuantity).toBe(11)
+      expect(variant?.totalWarehouseQuantity).toBe(11)
+      expect(product?.totalWarehouseQuantity).toBe(11)
+    })
+
     it('should fail if the order does not exist', async () => {
       await expect(
         service.create(

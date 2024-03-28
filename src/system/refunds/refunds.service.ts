@@ -420,6 +420,47 @@ export class RefundsService {
         order.customBulkDiscount,
       )
 
+      await Promise.all(
+        refundItems.map(async ({ orderItemId, quantity }) => {
+          const orderItem = await tx.customerOrderItem.findUnique({
+            where: {
+              id: orderItemId,
+            },
+          })
+
+          if (!orderItem) {
+            throw new NotFoundException('Товар не найден.')
+          }
+
+          if (orderItem.vtwId) {
+            await tx.variantToWarehouse.update({
+              where: {
+                id: orderItem.vtwId,
+              },
+              data: {
+                warehouseQuantity: {
+                  increment: quantity,
+                },
+                variant: {
+                  update: {
+                    totalWarehouseQuantity: {
+                      increment: quantity,
+                    },
+                    product: {
+                      update: {
+                        totalWarehouseQuantity: {
+                          increment: quantity,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            })
+          }
+        }),
+      )
+
       await tx.refund.create({
         data: {
           name: `Возврат #${count + 1}`,
