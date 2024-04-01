@@ -191,7 +191,7 @@ export class ShiftsService {
       },
     })
 
-    this.deposit(cashierShift.id, userId, {
+    await this.deposit(cashierShift.id, userId, {
       amount: createShiftDto.startingCashBalance,
     })
 
