@@ -65,6 +65,10 @@ export class CreateProductDto {
   @IsEnum(ProductGender)
   gender: ProductGender
 
+  @IsOptional()
+  @IsString()
+  supplierSku?: string
+
   @IsNotEmpty()
   @IsEnum(ProductSeason)
   season: ProductSeason

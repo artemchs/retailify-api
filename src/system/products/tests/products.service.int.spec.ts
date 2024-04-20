@@ -71,6 +71,7 @@ describe('ProductsService', () => {
     const data: CreateProductDto = {
       title: 'Test Product 1',
       description: 'Test Product 1',
+      supplierSku: 'asdfasdfasdfasdf',
       colors: [
         {
           id: 'color_1',
@@ -134,6 +135,8 @@ describe('ProductsService', () => {
         },
       })
 
+      expect(product?.supplierSku).toBeDefined()
+      expect(product?.supplierSku).not.toBeNull()
       expect(product?.sku).toBeDefined()
       expect(product?.sku).not.toBeNull()
       expect(product?.sku).toBe('TETECOSFU241')
