@@ -53,6 +53,19 @@ export class VariantsService {
     return warehouse
   }
 
+  private generateRandomNumber() {
+    const min = 1 // Minimum 12-digit number is 1
+    const max = 999999999999 // Maximum 12-digit number
+
+    // Generate a random number between min and max (inclusive)
+    const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min
+
+    // Convert the number to a string and pad with leading zeros
+    const paddedNumber = randomNumber.toString().padStart(12, '0')
+
+    return paddedNumber
+  }
+
   async create(productId: string, createVariantDto: CreateVariantDto) {
     await this.db.variant.create({
       data: {
@@ -60,6 +73,7 @@ export class VariantsService {
         totalReceivedQuantity: 0,
         totalWarehouseQuantity: 0,
         productId,
+        barcode: this.generateRandomNumber(),
       },
     })
   }

@@ -81,6 +81,7 @@ describe('VariantsService', () => {
             size: 'XL',
             totalReceivedQuantity: 1,
             totalWarehouseQuantity: 1,
+            barcode: 'asdf',
           },
           {
             productId,
@@ -88,6 +89,7 @@ describe('VariantsService', () => {
             size: 'XL',
             totalReceivedQuantity: 2,
             totalWarehouseQuantity: 2,
+            barcode: 'asdf1',
           },
           {
             productId,
@@ -95,6 +97,7 @@ describe('VariantsService', () => {
             size: 'XL',
             totalReceivedQuantity: 3,
             totalWarehouseQuantity: 3,
+            barcode: 'asdf2',
           },
           {
             productId,
@@ -103,6 +106,7 @@ describe('VariantsService', () => {
             totalReceivedQuantity: 4,
             totalWarehouseQuantity: 4,
             isArchived: true,
+            barcode: 'asdf3',
           },
         ],
       })
@@ -141,6 +145,7 @@ describe('VariantsService', () => {
           size: 'XL',
           totalReceivedQuantity: 0,
           totalWarehouseQuantity: 0,
+          barcode: 'asdf1',
         },
       })
     })
@@ -170,6 +175,7 @@ describe('VariantsService', () => {
           size: 'XL',
           totalReceivedQuantity: 0,
           totalWarehouseQuantity: 0,
+          barcode: 'asdf1',
         },
       })
     })
@@ -209,6 +215,7 @@ describe('VariantsService', () => {
           size: 'XL',
           totalReceivedQuantity: 0,
           totalWarehouseQuantity: 0,
+          barcode: 'asdf1',
         },
       })
     })
@@ -246,6 +253,7 @@ describe('VariantsService', () => {
           size: 'XL',
           totalReceivedQuantity: 0,
           totalWarehouseQuantity: 0,
+          barcode: 'asdf1',
         },
       })
     })

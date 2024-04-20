@@ -156,6 +156,7 @@ model Product {
 
   title                String
   sku                  String                @unique
+  supplierSku          String?
   description          String?               @db.Text
   media                ProductMedia[]
   colors               ProductToColor[]
@@ -238,7 +239,7 @@ model Variant {
   totalWarehouseQuantity Int
 
   size    String
-  barcode String   @unique @default(uuid())
+  barcode String   @unique
   price   Decimal  @db.Decimal(8, 2)
   sale    Decimal? @db.Decimal(8, 2)
 

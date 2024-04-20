@@ -231,6 +231,19 @@ export class ProductsService {
     return product
   }
 
+  private generateRandomNumber() {
+    const min = 1 // Minimum 12-digit number is 1
+    const max = 999999999999 // Maximum 12-digit number
+
+    // Generate a random number between min and max (inclusive)
+    const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min
+
+    // Convert the number to a string and pad with leading zeros
+    const paddedNumber = randomNumber.toString().padStart(12, '0')
+
+    return paddedNumber
+  }
+
   async create(createProductDto: CreateProductDto) {
     const sku = await this.generateSku({
       brandId: createProductDto.brandId,
@@ -254,6 +267,7 @@ export class ProductsService {
                     totalReceivedQuantity: 0,
                     totalWarehouseQuantity: 0,
                     isArchived: false,
+                    barcode: this.generateRandomNumber(),
                   }),
                 ),
               },
@@ -583,6 +597,7 @@ export class ProductsService {
               totalReceivedQuantity: 0,
               totalWarehouseQuantity: 0,
               productId,
+              barcode: this.generateRandomNumber(),
             })),
           }),
           Promise.all(

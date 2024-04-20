@@ -221,6 +221,7 @@ describe('InventoryTransfersService', () => {
                 warehouseQuantity: 10,
               },
             },
+            barcode: 'asdf',
           },
         }),
         db.variant.create({
@@ -236,6 +237,7 @@ describe('InventoryTransfersService', () => {
                 warehouseQuantity: 10,
               },
             },
+            barcode: 'asd1',
           },
         }),
       ])

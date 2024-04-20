@@ -110,6 +110,7 @@ describe('OrdersService', () => {
                   warehouseQuantity: 10,
                 },
               },
+              barcode: 'asdf',
             },
           },
         },
@@ -141,6 +142,7 @@ describe('OrdersService', () => {
                   warehouseQuantity: 10,
                 },
               },
+              barcode: 'asd1',
             },
           },
         },
@@ -160,6 +162,7 @@ describe('OrdersService', () => {
           variants: {
             create: {
               id: 'Variant 3',
+              barcode: 'asdfasdf',
               price: 100,
               size: 'XL',
               totalReceivedQuantity: 10,

@@ -22,8 +22,6 @@ import { PointsOfSaleModule } from './points-of-sale/points-of-sale.module'
 import { CustomersModule } from './customers/customers.module'
 import { OrdersModule } from './orders/orders.module'
 import { RefundsModule } from './refunds/refunds.module'
-import { FiscalApiService } from './fiscal-api/fiscal-api.service'
-import { FiscalApiModule } from './fiscal-api/fiscal-api.module'
 
 @Module({
   imports: [
@@ -48,7 +46,6 @@ import { FiscalApiModule } from './fiscal-api/fiscal-api.module'
     CustomersModule,
     OrdersModule,
     RefundsModule,
-    FiscalApiModule,
   ],
   providers: [
     {

@@ -90,6 +90,7 @@ describe('GoodsReceiptsService', () => {
             totalReceivedQuantity: 0,
             totalWarehouseQuantity: 0,
             productId: 'Test Product 1',
+            barcode: 'asdf',
           },
           {
             id: 'Test Variant 2',
@@ -98,6 +99,7 @@ describe('GoodsReceiptsService', () => {
             totalReceivedQuantity: 10,
             totalWarehouseQuantity: 10,
             productId: 'Test Product 1',
+            barcode: 'asdf1',
           },
         ],
       }),

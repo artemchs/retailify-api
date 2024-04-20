@@ -74,6 +74,7 @@ describe('InventoryAdjustmentsService', () => {
                 warehouseId: 'Test Warehouse 1',
               },
             },
+            barcode: 'asdf',
           },
         },
       },
