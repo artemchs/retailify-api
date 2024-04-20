@@ -17,20 +17,10 @@ import {
   checkIsArchived,
   getPaginationData,
 } from '../common/utils/db-helpers'
-import { Prisma, ProductGender, ProductSeason } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { compareArrays } from '../common/utils/compare-arrays'
 import { FindAllInfiniteListProductDto } from './dto/findAllInfiniteList-product.dto'
-import { slugify } from 'transliteration'
 import { BatchEditProductDto } from './dto/batch-edit-product.dto'
-
-type GenerateSkuProps = {
-  brandId: string
-  categoryId: string
-  firstColorId: string
-  season: ProductSeason
-  gender: ProductGender
-  oldYearCode?: string
-}
 
 @Injectable()
 export class ProductsService {
@@ -51,86 +41,10 @@ export class ProductsService {
     return count
   }
 
-  private async generateSku({
-    brandId,
-    categoryId,
-    gender,
-    season,
-    firstColorId,
-    oldYearCode,
-  }: GenerateSkuProps) {
-    let seasonCode = ''
-    const genderCode = gender[0].toUpperCase()
-    let brandCode = ''
-    let categoryCode = ''
-    let firstColorCode = ''
-    const yearCode =
-      oldYearCode ?? new Date().getFullYear().toString().slice(-2)
+  private async generateSku() {
+    const productsCount = await this.db.product.count()
 
-    const [brand, category, color] = await Promise.all([
-      this.db.brand.findUnique({
-        where: {
-          id: brandId,
-        },
-        select: {
-          name: true,
-        },
-      }),
-      this.db.category.findUnique({
-        where: {
-          id: categoryId,
-        },
-        select: {
-          name: true,
-        },
-      }),
-      this.db.color.findUnique({
-        where: {
-          id: firstColorId,
-        },
-        select: {
-          name: true,
-        },
-      }),
-    ])
-
-    if (season.split('_').length > 1) {
-      const a = season.split('_')[0][0].toUpperCase()
-      const b = season.split('_')[1][0].toUpperCase()
-      seasonCode = a + b
-    } else {
-      seasonCode = season[0] + season[1]
-    }
-
-    if (brand?.name) {
-      brandCode = slugify(brand?.name, {
-        uppercase: true,
-      })
-        .slice(0, 2)
-        .padEnd(2, '_')
-    }
-
-    if (category?.name) {
-      categoryCode = slugify(category.name, {
-        uppercase: true,
-      })
-        .slice(0, 2)
-        .padEnd(2, '_')
-    }
-
-    if (color?.name) {
-      firstColorCode = slugify(color.name, {
-        uppercase: true,
-      })
-        .slice(0, 2)
-        .padEnd(2, '_')
-    }
-
-    const sku = `${brandCode}${categoryCode}${firstColorCode}${seasonCode}${genderCode}${yearCode}`
-
-    const count = await this.countProductWithSameSku(sku)
-
-    return `${sku}${count + 1}`
+    return (productsCount + 1).toString().padStart(5, '0')
   }
 
   private async getProduct(id: string) {
@@ -245,13 +159,7 @@ export class ProductsService {
   }
 
   async create(createProductDto: CreateProductDto) {
-    const sku = await this.generateSku({
-      brandId: createProductDto.brandId,
-      categoryId: createProductDto.categoryId,
-      gender: createProductDto.gender,
-      season: createProductDto.season,
-      firstColorId: createProductDto.colors[0].id,
-    })
+    const sku = await this.generateSku()
 
     await this.db.product.create({
       data: {
@@ -622,21 +530,6 @@ export class ProductsService {
 
   async update(id: string, updateProductDto: UpdateProductDto) {
     const product = await this.getFullProduct(id)
-    let sku: string | undefined
-    if (product.brandId && product.categoryId) {
-      sku = await this.generateSku({
-        brandId: updateProductDto.brandId ?? product.brandId,
-        categoryId: updateProductDto.categoryId ?? product.categoryId,
-        firstColorId:
-          updateProductDto.colors?.[0].id ?? product.colors[0].colorId,
-        gender: updateProductDto.gender ?? product.gender,
-        season: updateProductDto.season ?? product.season,
-        oldYearCode: new Date(product.createdAt)
-          .getFullYear()
-          .toString()
-          .slice(-2),
-      })
-    }
 
     const existingVariants: ProductVariantDto[] = []
     const newVariants: ProductVariantDto[] = []
@@ -659,7 +552,6 @@ export class ProductsService {
         data: {
           ...updateProductDto,
           variants: undefined,
-          sku,
           colors: undefined,
           media: undefined,
           characteristicValues: undefined,

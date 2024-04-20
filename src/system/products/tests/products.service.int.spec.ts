@@ -139,7 +139,7 @@ describe('ProductsService', () => {
       expect(product?.supplierSku).not.toBeNull()
       expect(product?.sku).toBeDefined()
       expect(product?.sku).not.toBeNull()
-      expect(product?.sku).toBe('TETECOSFU241')
+      expect(product?.sku).toBe('00001')
     })
 
     it('should correctly increment sku unique field', async () => {
