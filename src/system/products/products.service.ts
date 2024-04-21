@@ -161,23 +161,23 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto) {
     const sku = await this.generateSku()
 
+    const characteristics = createProductDto.characteristics
+    createProductDto.characteristics = undefined
+
     await this.db.product.create({
       data: {
         ...createProductDto,
         variants: createProductDto.variants
           ? {
               createMany: {
-                data: createProductDto.variants?.map(
-                  ({ price, size, sale }) => ({
-                    price,
-                    size,
-                    sale,
-                    totalReceivedQuantity: 0,
-                    totalWarehouseQuantity: 0,
-                    isArchived: false,
-                    barcode: this.generateRandomNumber(),
-                  }),
-                ),
+                data: createProductDto.variants?.map(({ price, size }) => ({
+                  price,
+                  size,
+                  totalReceivedQuantity: 0,
+                  totalWarehouseQuantity: 0,
+                  isArchived: false,
+                  barcode: this.generateRandomNumber(),
+                })),
               },
             }
           : undefined,
@@ -196,11 +196,13 @@ export class ProductsService {
               },
             }
           : undefined,
-        characteristicValues: createProductDto.characteristicValues
+        characteristicValues: characteristics
           ? {
-              connect: createProductDto.characteristicValues?.map(({ id }) => ({
-                id,
-              })),
+              connect: characteristics
+                .flatMap((obj) => obj.values)
+                .map(({ id }) => ({
+                  id,
+                })),
             }
           : undefined,
         tags: createProductDto.tags
@@ -501,7 +503,6 @@ export class ProductsService {
             data: newVariants.map((v) => ({
               size: v.size,
               price: v.price,
-              sale: v.sale,
               totalReceivedQuantity: 0,
               totalWarehouseQuantity: 0,
               productId,
@@ -518,7 +519,6 @@ export class ProductsService {
                 data: {
                   size: v.size,
                   price: v.price,
-                  sale: v.sale,
                 },
               }),
             ),
@@ -533,6 +533,9 @@ export class ProductsService {
 
     const existingVariants: ProductVariantDto[] = []
     const newVariants: ProductVariantDto[] = []
+
+    const characteristics = updateProductDto.characteristics
+    updateProductDto.characteristics = undefined
 
     if (updateProductDto.variants) {
       for (const variant of updateProductDto.variants) {
@@ -574,7 +577,7 @@ export class ProductsService {
       this.updateProductCharacteristicValues(
         id,
         product.characteristicValues,
-        updateProductDto.characteristicValues,
+        characteristics?.flatMap((obj) => obj.values),
       ),
       this.updateProductVariants(id, existingVariants, newVariants),
     ])

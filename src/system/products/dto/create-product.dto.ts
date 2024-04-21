@@ -52,12 +52,24 @@ export class ProductVariantDto {
   price: number
 
   @IsOptional()
-  @IsNumber()
-  sale?: number
-
-  @IsOptional()
   @IsString()
   id?: string
+}
+
+export class ProductCharacteristicValueDto {
+  @IsNotEmpty()
+  @IsString()
+  id: string
+}
+
+export class ProductCharacteristicDto {
+  @IsNotEmpty()
+  @IsString()
+  id: string
+
+  @ValidateNested({ each: true })
+  @Type(() => ProductCharacteristicValueDto)
+  values: ProductCharacteristicValueDto[]
 }
 
 export class CreateProductDto {
@@ -91,8 +103,13 @@ export class CreateProductDto {
 
   @IsOptional()
   @ValidateNested({ each: true })
-  @Type(() => ProductCharacteristicValuesDto)
-  characteristicValues?: ProductCharacteristicValuesDto[]
+  @Type(() => ProductCharacteristicDto)
+  characteristics?: ProductCharacteristicDto[]
+
+  // @IsOptional()
+  // @ValidateNested({ each: true })
+  // @Type(() => ProductCharacteristicValuesDto)
+  // characteristicValues?: ProductCharacteristicValuesDto[]
 
   @IsOptional()
   @ValidateNested({ each: true })

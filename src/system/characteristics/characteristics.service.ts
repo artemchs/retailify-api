@@ -43,7 +43,7 @@ export class CharacteristicsService {
   }
 
   async create(createCharacteristicDto: CreateCharacteristicDto) {
-    await this.db.characteristic.create({
+    return await this.db.characteristic.create({
       data: createCharacteristicDto,
     })
   }
@@ -116,7 +116,7 @@ export class CharacteristicsService {
   async update(id: string, updateCharacteristicDto: UpdateCharacteristicDto) {
     await this.getCharacteristic(id)
 
-    await this.db.characteristic.update({
+    return await this.db.characteristic.update({
       where: {
         id,
       },

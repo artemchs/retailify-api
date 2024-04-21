@@ -804,7 +804,7 @@ describe('ProductsService', () => {
     })
 
     it('should handle the case when the user de-selects a characteristic value', async () => {
-      await service.update(id, { ...data, characteristicValues: [] })
+      await service.update(id, { ...data, characteristics: [] })
 
       const product = await db.product.findUnique({
         where: {
@@ -830,12 +830,25 @@ describe('ProductsService', () => {
 
       await service.update(id, {
         ...data,
-        characteristicValues: [
+        // characteristicValues: [
+        //   {
+        //     id: 'Test Value 1',
+        //   },
+        //   {
+        //     id: 'Test Value 2',
+        //   },
+        // ],
+        characteristics: [
           {
-            id: 'Test Value 1',
-          },
-          {
-            id: 'Test Value 2',
+            id: 'asdfasdf',
+            values: [
+              {
+                id: 'Test Value 1',
+              },
+              {
+                id: 'Test Value 2',
+              },
+            ],
           },
         ],
       })
