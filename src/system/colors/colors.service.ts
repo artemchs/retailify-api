@@ -9,8 +9,6 @@ import { DbService } from '../../db/db.service'
 import { FindAllColorDto } from './dto/findAll-color.dto'
 import { Prisma } from '@prisma/client'
 import { buildContainsArray } from '../common/utils/db-helpers'
-import { slugify } from 'transliteration'
-import { replaceCharacters } from '../common/utils/replace-characters'
 
 @Injectable()
 export class ColorsService {
@@ -38,7 +36,7 @@ export class ColorsService {
   }
 
   async create(createColorDto: CreateColorDto) {
-    await this.db.color.create({
+    return await this.db.color.create({
       data: createColorDto,
     })
   }
@@ -77,62 +75,15 @@ export class ColorsService {
     return color
   }
 
-  private async updateProductSkus(
-    colorId: string,
-    oldName: string,
-    newName?: string,
-  ) {
-    if (newName && oldName !== newName) {
-      const colorCode = slugify(newName, {
-        uppercase: true,
-      })
-        .slice(0, 2)
-        .padEnd(2, '_')
-
-      await this.db.$transaction(async (tx) => {
-        const products = await tx.product.findMany({
-          where: {
-            colors: {
-              some: {
-                colorId,
-                index: 0,
-              },
-            },
-          },
-          select: {
-            id: true,
-            sku: true,
-          },
-        })
-
-        await Promise.all(
-          products.map(({ id, sku }) =>
-            tx.product.update({
-              where: {
-                id,
-              },
-              data: {
-                sku: replaceCharacters(sku, 4, 5, colorCode),
-              },
-            }),
-          ),
-        )
-      })
-    }
-  }
-
   async update(id: string, updateColorDto: UpdateColorDto) {
-    const color = await this.getColor(id)
+    await this.getColor(id)
 
-    await Promise.all([
-      this.db.color.update({
-        where: {
-          id,
-        },
-        data: updateColorDto,
-      }),
-      this.updateProductSkus(color.id, color.name, updateColorDto.name),
-    ])
+    return await this.db.color.update({
+      where: {
+        id,
+      },
+      data: updateColorDto,
+    })
   }
 
   async remove(id: string) {

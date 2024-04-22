@@ -9,8 +9,6 @@ import { DbService } from '../../db/db.service'
 import { FindAllBrandDto } from './dto/findAll-brand.dto'
 import { Prisma } from '@prisma/client'
 import { buildContainsArray } from '../common/utils/db-helpers'
-import { slugify } from 'transliteration'
-import { replaceCharacters } from '../common/utils/replace-characters'
 
 @Injectable()
 export class BrandsService {
@@ -31,7 +29,7 @@ export class BrandsService {
   }
 
   async create(createBrandDto: CreateBrandDto) {
-    await this.db.brand.create({
+    return await this.db.brand.create({
       data: createBrandDto,
     })
   }
@@ -70,57 +68,15 @@ export class BrandsService {
     return brand
   }
 
-  private async updateProductSkus(
-    brandId: string,
-    oldName: string,
-    newName?: string,
-  ) {
-    if (newName && oldName !== newName) {
-      const brandCode = slugify(newName, {
-        uppercase: true,
-      })
-        .slice(0, 2)
-        .padEnd(2, '_')
-
-      await this.db.$transaction(async (tx) => {
-        const products = await tx.product.findMany({
-          where: {
-            brandId,
-          },
-          select: {
-            id: true,
-            sku: true,
-          },
-        })
-
-        await Promise.all(
-          products.map(({ id, sku }) =>
-            tx.product.update({
-              where: {
-                id,
-              },
-              data: {
-                sku: replaceCharacters(sku, 0, 1, brandCode),
-              },
-            }),
-          ),
-        )
-      })
-    }
-  }
-
   async update(id: string, updateBrandDto: UpdateBrandDto) {
-    const brand = await this.getBrand(id)
+    await this.getBrand(id)
 
-    await Promise.all([
-      this.db.brand.update({
-        where: {
-          id,
-        },
-        data: updateBrandDto,
-      }),
-      this.updateProductSkus(brand.id, brand.name, updateBrandDto.name),
-    ])
+    return await this.db.brand.update({
+      where: {
+        id,
+      },
+      data: updateBrandDto,
+    })
   }
 
   async remove(id: string) {
