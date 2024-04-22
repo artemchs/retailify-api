@@ -102,6 +102,13 @@ export class ProductsService {
           select: {
             id: true,
             characteristicId: true,
+            value: true,
+            characteristic: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         variants: {
@@ -558,11 +565,9 @@ export class ProductsService {
           colors: undefined,
           media: undefined,
           characteristicValues: undefined,
-          tags: updateProductDto.tags
-            ? {
-                set: updateProductDto.tags,
-              }
-            : undefined,
+          tags: {
+            set: updateProductDto.tags ?? [],
+          },
         },
       }),
       this.updateProductMedia(id, product.media, updateProductDto.media),
