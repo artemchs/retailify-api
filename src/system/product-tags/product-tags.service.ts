@@ -25,7 +25,7 @@ export class ProductTagsService {
   }
 
   async create(createProductTagDto: CreateProductTagDto) {
-    await this.db.productTag.create({
+    return await this.db.productTag.create({
       data: createProductTagDto,
     })
   }
@@ -67,7 +67,7 @@ export class ProductTagsService {
   async update(id: string, updateProductTagDto: UpdateProductTagDto) {
     await this.getProductTag(id)
 
-    await this.db.productTag.update({
+    return await this.db.productTag.update({
       where: {
         id,
       },
