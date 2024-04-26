@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { CreateWarehouseDto } from './dto/create-warehouse.dto'
 import { DbService } from '../../db/db.service'
 import { FindAllWarehouseDto } from './dto/findAll-warehouse.dto'
@@ -144,11 +148,61 @@ export class WarehousesService {
   async restore(id: string) {
     await this.getWarehouse(id)
 
+    const variantsWithPositiveQuantity = await this.db.variant.count({
+      where: {
+        warehouseStockEntries: {
+          some: {
+            warehouseQuantity: {
+              gt: 0,
+            },
+            warehouseId: id,
+          },
+        },
+      },
+    })
+
+    const variantsWithNegativeQuantity = await this.db.variant.count({
+      where: {
+        warehouseStockEntries: {
+          some: {
+            warehouseQuantity: {
+              lt: 0,
+            },
+            warehouseId: id,
+          },
+        },
+      },
+    })
+
+    if (variantsWithPositiveQuantity !== 0) {
+      throw new BadRequestException(
+        `Найдено ${variantsWithPositiveQuantity} вариантов товара с количеством больше чем 0. Рекомендуеться провести перемещение между складами или инвентаризацию.`,
+      )
+    }
+
+    if (variantsWithNegativeQuantity !== 0) {
+      throw new BadRequestException(
+        `Найдено ${variantsWithPositiveQuantity} вариантов товара с количеством меньше чем 0. Рекомендуеться провести перемещение между складами или инвентаризацию.`,
+      )
+    }
+
     await this.db.warehouse.update({
       where: {
         id,
       },
       data: {
+        isArchived: false,
+      },
+    })
+  }
+
+  async getAll() {
+    return await this.db.warehouse.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+      where: {
         isArchived: false,
       },
     })

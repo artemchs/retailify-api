@@ -31,6 +31,11 @@ export class WarehousesController {
     return this.warehousesService.findAll(query)
   }
 
+  @Get('get-all')
+  getAll() {
+    return this.warehousesService.getAll()
+  }
+
   @Get('infinite-list')
   findAllInfiniteList(@Query() query: FindAllInfiniteListWarehouseDto) {
     return this.warehousesService.findAllInfiniteList(query)

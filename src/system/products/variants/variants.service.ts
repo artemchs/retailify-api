@@ -140,8 +140,25 @@ export class VariantsService {
 
     const include: Prisma.VariantInclude = {
       product: {
-        include: {
-          media: true,
+        select: {
+          id: true,
+          title: true,
+          sku: true,
+          media: {
+            select: {
+              id: true,
+              index: true,
+            },
+            orderBy: {
+              index: 'asc',
+            },
+          },
+        },
+      },
+      warehouseStockEntries: {
+        select: {
+          warehouseId: true,
+          warehouseQuantity: true,
         },
       },
     }
@@ -174,7 +191,11 @@ export class VariantsService {
         where,
         take,
         skip,
-        orderBy: buildOrderByArray({ orderBy }),
+        orderBy: {
+          product: {
+            sku: 'desc',
+          },
+        },
         include,
       }),
       this.db.variant.count({

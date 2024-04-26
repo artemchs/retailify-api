@@ -22,6 +22,7 @@ import { PointsOfSaleModule } from './points-of-sale/points-of-sale.module'
 import { CustomersModule } from './customers/customers.module'
 import { OrdersModule } from './orders/orders.module'
 import { RefundsModule } from './refunds/refunds.module'
+import { VariantAdditionalAttributesModule } from './variant-additional-attributes/variant-additional-attributes.module'
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { RefundsModule } from './refunds/refunds.module'
     CustomersModule,
     OrdersModule,
     RefundsModule,
+    VariantAdditionalAttributesModule,
   ],
   providers: [
     {

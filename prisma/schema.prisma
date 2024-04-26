@@ -238,15 +238,40 @@ model Variant {
   totalReceivedQuantity  Int
   totalWarehouseQuantity Int
 
-  size    String
-  barcode String   @unique
-  price   Decimal  @db.Decimal(8, 2)
-  sale    Decimal? @db.Decimal(8, 2)
+  size                 String
+  additionalAttributes VariantAdditionalAttribute[]
+  barcode              String                       @unique
+  price                Decimal                      @db.Decimal(8, 2)
+  sale                 Decimal?                     @db.Decimal(8, 2)
 
   isArchived            Boolean                 @default(false)
   InventoryTransferItem InventoryTransferItem[]
 
   @@index([productId, barcode])
+}
+
+model AdditionalAttribute {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name                       String                       @unique
+  variantAdditionalAttribute VariantAdditionalAttribute[]
+}
+
+model VariantAdditionalAttribute {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variant               Variant?             @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variantId             String?
+  additionalAttribute   AdditionalAttribute? @relation(fields: [additionalAttributeId], references: [id], onDelete: Cascade)
+  additionalAttributeId String?
+
+  value String
+
+  @@unique([variantId, additionalAttributeId])
 }
 
 model Color {
