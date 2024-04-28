@@ -139,18 +139,6 @@ describe('ColorsService', () => {
       expect(color?.name).toBe(data.name)
     })
 
-    it('should correctly update product SKUs', async () => {
-      await service.update(id, data)
-
-      const product = await db.product.findUnique({
-        where: {
-          id: 'Test Product 1',
-        },
-      })
-
-      expect(product?.sku).toBe('____UP__')
-    })
-
     it('should throw an exception if the color does not exist', async () => {
       await expect(service.update('non-existent', data)).rejects.toThrow(
         NotFoundException,

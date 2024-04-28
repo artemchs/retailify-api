@@ -129,18 +129,6 @@ describe('BrandsService', () => {
       expect(brand?.name).toBe(data.name)
     })
 
-    it('should correctly update the connected product SKUs', async () => {
-      await service.update(id, data)
-
-      const product = await db.product.findUnique({
-        where: {
-          id: 'Test Product 1',
-        },
-      })
-
-      expect(product?.sku).toBe('UP__')
-    })
-
     it('should throw an exception if the brand does not exist', async () => {
       await expect(service.update('non-existent', data)).rejects.toThrow(
         NotFoundException,

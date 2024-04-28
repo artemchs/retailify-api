@@ -165,29 +165,51 @@ export class ProductsService {
     return paddedNumber
   }
 
+  private async createProductVariants(
+    { variants }: CreateProductDto,
+    productId: string,
+  ) {
+    if (variants) {
+      await this.db.$transaction(async (ts) => {
+        await Promise.all(
+          variants.map(({ price, size, additionalAttributes }) => {
+            return ts.variant.create({
+              data: {
+                price,
+                size,
+                totalReceivedQuantity: 0,
+                totalWarehouseQuantity: 0,
+                isArchived: false,
+                barcode: this.generateRandomNumber(),
+                additionalAttributes: additionalAttributes
+                  ? {
+                      createMany: {
+                        data: additionalAttributes.map(({ id, value }) => ({
+                          additionalAttributeId: id,
+                          value,
+                        })),
+                      },
+                    }
+                  : undefined,
+                productId,
+              },
+            })
+          }),
+        )
+      })
+    }
+  }
+
   async create(createProductDto: CreateProductDto) {
     const sku = await this.generateSku()
 
     const characteristics = createProductDto.characteristics
     createProductDto.characteristics = undefined
 
-    await this.db.product.create({
+    const product = await this.db.product.create({
       data: {
         ...createProductDto,
-        variants: createProductDto.variants
-          ? {
-              createMany: {
-                data: createProductDto.variants?.map(({ price, size }) => ({
-                  price,
-                  size,
-                  totalReceivedQuantity: 0,
-                  totalWarehouseQuantity: 0,
-                  isArchived: false,
-                  barcode: this.generateRandomNumber(),
-                })),
-              },
-            }
-          : undefined,
+        variants: undefined,
         colors: {
           createMany: {
             data: createProductDto.colors.map(({ id, index }) => ({
@@ -220,6 +242,8 @@ export class ProductsService {
         sku,
       },
     })
+
+    await this.createProductVariants(createProductDto, product.id)
   }
 
   async findAllInfiniteList({ cursor, query }: FindAllInfiniteListProductDto) {
@@ -514,11 +538,43 @@ export class ProductsService {
               totalWarehouseQuantity: 0,
               productId,
               barcode: this.generateRandomNumber(),
+              additionalAttributes: v.additionalAttributes
+                ? {
+                    createMany: {
+                      data: v.additionalAttributes.map(({ id, value }) => ({
+                        additionalAttributeId: id,
+                        value,
+                      })),
+                    },
+                  }
+                : undefined,
             })),
           }),
           Promise.all(
-            existingVariants.map((v) =>
-              tx.variant.update({
+            existingVariants.map(async (v) => {
+              const oldAttributes =
+                await tx.variantAdditionalAttribute.findMany({
+                  where: {
+                    variantId: v.id,
+                  },
+                  select: {
+                    value: true,
+                    additionalAttributeId: true,
+                  },
+                })
+              const newAttributes = v.additionalAttributes ?? []
+
+              const { newItems, deleted, updated } = compareArrays(
+                oldAttributes.map(({ additionalAttributeId, value }) => ({
+                  id: additionalAttributeId,
+                  value,
+                })),
+                newAttributes,
+                'id',
+                'value',
+              )
+
+              return tx.variant.update({
                 where: {
                   id: v.id,
                   productId,
@@ -526,9 +582,30 @@ export class ProductsService {
                 data: {
                   size: v.size,
                   price: v.price,
+                  additionalAttributes:
+                    newItems || deleted || updated
+                      ? {
+                          deleteMany: [...deleted, ...updated]
+                            ? [...deleted, ...updated].map(({ id }) => ({
+                                additionalAttributeId: id,
+                                variantId: v.id,
+                              }))
+                            : undefined,
+                          createMany: [...newItems, ...updated]
+                            ? {
+                                data: [...newItems, ...updated].map(
+                                  ({ id, value }) => ({
+                                    additionalAttributeId: id,
+                                    value,
+                                  }),
+                                ),
+                              }
+                            : undefined,
+                        }
+                      : undefined,
                 },
-              }),
-            ),
+              })
+            }),
           ),
         ])
       })

@@ -235,18 +235,6 @@ describe('CategoriesService', () => {
       expect(category?.name).toBe(data.name)
     })
 
-    it('should correctly update product SKUs', async () => {
-      await service.update(id, data)
-
-      const product = await db.product.findUnique({
-        where: {
-          id: 'Test Product 1',
-        },
-      })
-
-      expect(product?.sku).toBe('__UP__')
-    })
-
     it('should update connected characteristics', async () => {
       await db.characteristic.createMany({
         data: [

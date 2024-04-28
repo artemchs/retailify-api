@@ -179,6 +179,35 @@ describe('ProductsService', () => {
       expect(product).toBeDefined()
       expect(product?.variants.length).toBe(2)
     })
+
+    it('should correctly connect with variant attributes', async () => {
+      await db.additionalAttribute.create({
+        data: {
+          id: 'attribute',
+          name: 'asdf',
+        },
+      })
+
+      await service.create({
+        ...data,
+        variants: [
+          {
+            price: 10.99,
+            size: 'SM',
+            additionalAttributes: [
+              {
+                id: 'attribute',
+                value: 'a;sdjasdf',
+              },
+            ],
+          },
+        ],
+      })
+
+      const variantAttributeCount = await db.variantAdditionalAttribute.count()
+
+      expect(variantAttributeCount).toBe(1)
+    })
   })
 
   describe('findAll', () => {
@@ -926,6 +955,62 @@ describe('ProductsService', () => {
 
       expect(products).toBe(1)
       expect(updatedVariant?.size).toBe('XL')
+    })
+
+    it('should update an existing additional attribute', async () => {
+      await db.product.update({
+        where: {
+          id: 'Test Product 1',
+        },
+        data: {
+          variants: {
+            create: {
+              id: 'Test Variant 1',
+              price: 10.99,
+              size: 'SM',
+              totalReceivedQuantity: 0,
+              totalWarehouseQuantity: 0,
+              barcode: 'asdf',
+              additionalAttributes: {
+                create: {
+                  value: '1',
+                  additionalAttribute: {
+                    create: {
+                      id: 'attribute',
+                      name: 'asdf',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+
+      await service.update(id, {
+        ...data,
+        variants: [
+          {
+            id: 'Test Variant 1',
+            price: 10.99,
+            size: 'XL',
+            additionalAttributes: [
+              {
+                id: 'attribute',
+                value: 'updatedValue',
+              },
+            ],
+          },
+        ],
+      })
+
+      const variantAdditionalAttribute =
+        await db.variantAdditionalAttribute.findFirst()
+
+      expect(variantAdditionalAttribute?.value).toBe('updatedValue')
+      expect(variantAdditionalAttribute?.additionalAttributeId).toBe(
+        'attribute',
+      )
     })
 
     it('should fail if the product does not exist', async () => {

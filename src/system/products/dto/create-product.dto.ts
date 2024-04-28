@@ -54,6 +54,20 @@ export class ProductVariantDto {
   @IsOptional()
   @IsString()
   id?: string
+
+  @ValidateNested({ each: true })
+  @Type(() => ProductVariantAdditionalAttributeDto)
+  additionalAttributes?: ProductVariantAdditionalAttributeDto[]
+}
+
+export class ProductVariantAdditionalAttributeDto {
+  @IsNotEmpty()
+  @IsString()
+  id: string
+
+  @IsNotEmpty()
+  @IsString()
+  value: string
 }
 
 export class ProductCharacteristicValueDto {
