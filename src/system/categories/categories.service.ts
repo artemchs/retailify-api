@@ -110,7 +110,7 @@ export class CategoriesService {
       )
     }
 
-    await this.db.category.create({
+    return await this.db.category.create({
       data: {
         name: createCategoryDto.name,
         productName: createCategoryDto.productName,

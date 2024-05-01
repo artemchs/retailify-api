@@ -152,17 +152,17 @@ export class InventoryTransfersService {
       transferItems.length >= 1
     ) {
       await Promise.all(
-        transferItems.map(async ({ quantity, variantId }) => {
+        transferItems.map(async ({ quantity, id }) => {
           const destinationVtw = await tx.variantToWarehouse.findFirst({
             where: {
-              variantId,
+              variantId: id,
               warehouseId: destinationWarehouseId,
             },
           })
 
           await tx.variantToWarehouse.updateMany({
             where: {
-              variantId,
+              variantId: id,
               warehouseId: sourceWarehouseId,
             },
             data: {
@@ -186,7 +186,7 @@ export class InventoryTransfersService {
           } else {
             await tx.variantToWarehouse.create({
               data: {
-                variantId,
+                variantId: id,
                 warehouseId: destinationWarehouseId,
                 warehouseQuantity: quantity,
               },
@@ -216,7 +216,12 @@ export class InventoryTransfersService {
             name: `Накладная перемещения #${count + 1}`,
             transferItems: {
               createMany: {
-                data: createInventoryTransferDto.transferItems,
+                data: createInventoryTransferDto.transferItems.map(
+                  ({ id, quantity }) => ({
+                    variantId: id,
+                    quantity,
+                  }),
+                ),
               },
             },
           },
@@ -331,10 +336,10 @@ export class InventoryTransfersService {
       oldDestinationWarehouseId !== newDestinationWarehouseId
     ) {
       await Promise.all(
-        transferItems.map(async ({ quantity, variantId }) => {
+        transferItems.map(async ({ quantity, id }) => {
           const oldDestinationVtw = await tx.variantToWarehouse.findFirst({
             where: {
-              variantId,
+              variantId: id,
               warehouseId: oldDestinationWarehouseId,
             },
           })
@@ -342,7 +347,7 @@ export class InventoryTransfersService {
           if (oldDestinationVtw) {
             const newDestinationVtw = await tx.variantToWarehouse.findFirst({
               where: {
-                variantId,
+                variantId: id,
                 warehouseId: newDestinationWarehouseId,
               },
             })
@@ -373,7 +378,7 @@ export class InventoryTransfersService {
               await tx.variantToWarehouse.create({
                 data: {
                   warehouseQuantity: quantity,
-                  variantId,
+                  variantId: id,
                   warehouseId: newDestinationWarehouseId,
                 },
               })
@@ -397,18 +402,18 @@ export class InventoryTransfersService {
       oldDestinationWarehouseId
     ) {
       await Promise.all(
-        transferItems.map(async ({ quantity, variantId }) => {
+        transferItems.map(async ({ quantity, id }) => {
           const [oldSourceVtw, oldDestinationVtw] = await Promise.all([
             tx.variantToWarehouse.findFirst({
               where: {
                 warehouseId: oldSourceWarehouseId,
-                variantId,
+                variantId: id,
               },
             }),
             tx.variantToWarehouse.findFirst({
               where: {
                 warehouseId: oldDestinationWarehouseId,
-                variantId,
+                variantId: id,
               },
             }),
           ])
@@ -428,7 +433,7 @@ export class InventoryTransfersService {
             await tx.variantToWarehouse.create({
               data: {
                 warehouseQuantity: quantity,
-                variantId,
+                variantId: id,
                 warehouseId: oldSourceWarehouseId,
               },
             })
@@ -476,41 +481,42 @@ export class InventoryTransfersService {
     const oldTransferItems = inventoryTransfer.transferItems.map(
       ({ quantity, variantId }) => ({
         quantity,
-        variantId,
+        id: variantId,
         destinationWarehouseId: inventoryTransfer.destinationWarehouseId,
       }),
     ) as InventoryTransferItemWithDestinationWarehouseDto[]
 
     const newTransferItems =
-      updateInventoryTransferDto.transferItems?.map(
-        ({ quantity, variantId }) => ({
-          quantity,
-          variantId,
-          destinationWarehouseId: destinationWarehouseId,
-        }),
-      ) ?? []
+      updateInventoryTransferDto.transferItems?.map(({ quantity, id }) => ({
+        quantity,
+        id,
+        destinationWarehouseId: destinationWarehouseId,
+      })) ?? []
 
     const compareArraysRes = newTransferItems
       ? compareArrays(
           oldTransferItems,
           newTransferItems,
-          'variantId',
+          'id',
           'quantity',
           'destinationWarehouseId',
         )
       : undefined
 
-    const newItems = compareArraysRes?.newItems.map(
-      ({ quantity, variantId }) => ({ quantity, variantId }),
-    )
+    const newItems = compareArraysRes?.newItems.map(({ quantity, id }) => ({
+      quantity,
+      id,
+    }))
 
-    const updatedItems = compareArraysRes?.updated.map(
-      ({ quantity, variantId }) => ({ quantity, variantId }),
-    )
+    const updatedItems = compareArraysRes?.updated.map(({ quantity, id }) => ({
+      quantity,
+      id,
+    }))
 
-    const removedItems = compareArraysRes?.deleted.map(
-      ({ quantity, variantId }) => ({ quantity, variantId }),
-    )
+    const removedItems = compareArraysRes?.deleted.map(({ quantity, id }) => ({
+      quantity,
+      id,
+    }))
 
     await this.db.$transaction(async (tx) => {
       if (compareArraysRes?.updated) {
@@ -521,11 +527,11 @@ export class InventoryTransfersService {
                 obj.destinationWarehouseId ===
                 inventoryTransfer.destinationWarehouseId,
             )
-            .map(async ({ quantity, variantId }) => {
+            .map(async ({ quantity, id }) => {
               const vtw = await tx.variantToWarehouse.findFirst({
                 where: {
                   warehouseId: inventoryTransfer.destinationWarehouseId,
-                  variantId,
+                  variantId: id,
                 },
               })
 
@@ -546,7 +552,7 @@ export class InventoryTransfersService {
                   }),
                   tx.variantToWarehouse.updateMany({
                     where: {
-                      variantId,
+                      variantId: id,
                       warehouseId: inventoryTransfer.sourceWarehouseId,
                     },
                     data: {
@@ -558,7 +564,7 @@ export class InventoryTransfersService {
                   tx.inventoryTransferItem.updateMany({
                     where: {
                       inventoryTransferId: id,
-                      variantId,
+                      variantId: id,
                     },
                     data: {
                       quantity,
@@ -581,10 +587,18 @@ export class InventoryTransfersService {
               ? {
                   createMany: newItems
                     ? {
-                        data: newItems,
+                        data: newItems.map(({ id, quantity }) => ({
+                          variantId: id,
+                          quantity,
+                        })),
                       }
                     : undefined,
-                  deleteMany: removedItems ? removedItems : undefined,
+                  deleteMany: removedItems
+                    ? removedItems.map(({ id, quantity }) => ({
+                        variantId: id,
+                        quantity,
+                      }))
+                    : undefined,
                 }
               : undefined,
           },
@@ -618,8 +632,8 @@ export class InventoryTransfersService {
     const inventoryTransfer = await this.getFullInventoryTransfer(id)
 
     const vtws = inventoryTransfer.transferItems
-      .map(({ quantity, variantId }) => ({ quantity, variantId }))
-      .filter((obj) => obj.variantId) as InventoryTransferItemDto[]
+      .map(({ quantity, variantId }) => ({ quantity, id: variantId }))
+      .filter((obj) => obj.id) as InventoryTransferItemDto[]
 
     await this.db.$transaction(async (tx) => {
       await Promise.all([
@@ -654,18 +668,18 @@ export class InventoryTransfersService {
       oldDestinationWarehouseId
     ) {
       await Promise.all(
-        transferItems.map(async ({ quantity, variantId }) => {
+        transferItems.map(async ({ quantity, id }) => {
           const [oldSourceVtw, oldDestinationVtw] = await Promise.all([
             tx.variantToWarehouse.findFirst({
               where: {
                 warehouseId: oldSourceWarehouseId,
-                variantId,
+                variantId: id,
               },
             }),
             tx.variantToWarehouse.findFirst({
               where: {
                 warehouseId: oldDestinationWarehouseId,
-                variantId,
+                variantId: id,
               },
             }),
           ])
@@ -685,7 +699,7 @@ export class InventoryTransfersService {
             await tx.variantToWarehouse.create({
               data: {
                 warehouseQuantity: quantity,
-                variantId,
+                variantId: id,
                 warehouseId: oldDestinationVtw,
               },
             })
@@ -711,8 +725,8 @@ export class InventoryTransfersService {
     const inventoryTransfer = await this.getFullInventoryTransfer(id)
 
     const vtws = inventoryTransfer.transferItems
-      .map(({ quantity, variantId }) => ({ quantity, variantId }))
-      .filter((obj) => obj.variantId) as InventoryTransferItemDto[]
+      .map(({ quantity, variantId }) => ({ quantity, id: variantId }))
+      .filter((obj) => obj.id) as InventoryTransferItemDto[]
 
     await this.db.$transaction(async (tx) => {
       await Promise.all([

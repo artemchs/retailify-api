@@ -29,19 +29,7 @@ export class ProductsService {
     private storage: StorageService,
   ) {}
 
-  private async countProductWithSameSku(sku: string) {
-    const count = await this.db.product.count({
-      where: {
-        sku: {
-          startsWith: sku,
-        },
-      },
-    })
-
-    return count
-  }
-
-  private async generateSku() {
+  async generateSku() {
     const productsCount = await this.db.product.count()
 
     return (productsCount + 1).toString().padStart(5, '0')
@@ -118,6 +106,17 @@ export class ProductsService {
             price: true,
             sale: true,
             isArchived: true,
+            additionalAttributes: {
+              select: {
+                value: true,
+                additionalAttribute: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
           },
           orderBy: {
             size: 'asc',
@@ -381,6 +380,17 @@ export class ProductsService {
                   warehouseQuantity: true,
                 },
               },
+              additionalAttributes: {
+                select: {
+                  value: true,
+                  additionalAttribute: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                },
+              },
             },
             orderBy: {
               size: 'asc',
@@ -501,23 +511,21 @@ export class ProductsService {
     oldIds: ProductCharacteristicValuesDto[],
     newIds?: ProductCharacteristicValuesDto[],
   ) {
-    if (newIds) {
-      const { deleted, newItems } = compareArrays(oldIds, newIds, 'id')
+    const { deleted, newItems } = compareArrays(oldIds, newIds ?? [], 'id')
 
-      return this.db.product.update({
-        where: {
-          id: productId,
+    return this.db.product.update({
+      where: {
+        id: productId,
+      },
+      data: {
+        characteristicValues: {
+          disconnect: deleted,
+          connect: newItems.map(({ id }) => ({
+            id,
+          })),
         },
-        data: {
-          characteristicValues: {
-            disconnect: deleted,
-            connect: newItems.map(({ id }) => ({
-              id,
-            })),
-          },
-        },
-      })
-    }
+      },
+    })
   }
 
   private async updateProductVariants(

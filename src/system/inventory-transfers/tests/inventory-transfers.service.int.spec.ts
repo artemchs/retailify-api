@@ -266,7 +266,7 @@ describe('InventoryTransfersService', () => {
           ...data,
           transferItems: [
             {
-              variantId: variantId1,
+              id: variantId1,
               quantity: 8,
             },
           ],
@@ -471,7 +471,7 @@ describe('InventoryTransfersService', () => {
         const data: UpdateInventoryTransferDto = {
           transferItems: [
             {
-              variantId: variantId1,
+              id: variantId1,
               quantity: 8,
             },
           ],
@@ -544,7 +544,7 @@ describe('InventoryTransfersService', () => {
           transferItems: [
             {
               quantity: 5,
-              variantId: variantId1,
+              id: variantId1,
             },
           ],
         }

@@ -10,7 +10,7 @@ import {
 export class InventoryTransferItemDto {
   @IsNotEmpty()
   @IsString()
-  variantId: string
+  id: string
 
   @IsNotEmpty()
   @IsNumber()

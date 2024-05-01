@@ -32,6 +32,11 @@ export class ProductsController {
     return this.productsService.findAll(query)
   }
 
+  @Get('generate-sku')
+  generateSku() {
+    return this.productsService.generateSku()
+  }
+
   @Get('infinite-list')
   findAllInfiniteList(@Query() query: FindAllInfiniteListProductDto) {
     return this.productsService.findAllInfiniteList(query)
