@@ -157,6 +157,7 @@ export class VariantsService {
       },
       warehouseStockEntries: {
         select: {
+          id: true,
           warehouseId: true,
           warehouseQuantity: true,
         },
