@@ -8,11 +8,14 @@ export class FindAllVariantDto {
   orderBy?: {
     createdAt?: 'asc' | 'desc'
     updatedAt?: 'asc' | 'desc'
-    size?: 'asc' | 'desc'
+    barcode?: 'asc' | 'desc'
+    sku?: 'asc' | 'desc'
+    supplierSku?: 'asc' | 'desc'
     price?: 'asc' | 'desc'
     sale?: 'asc' | 'desc'
     totalReceivedQuantity?: 'asc' | 'desc'
     totalWarehouseQuantity?: 'asc' | 'desc'
+    size?: 'asc' | 'desc'
   }
   isArchived?: number // 0 or 1
 }

@@ -111,6 +111,13 @@ export class VariantsService {
           },
         },
         {
+          product: {
+            supplierSku: {
+              contains: query,
+            },
+          },
+        },
+        {
           size: {
             contains: query,
           },
@@ -144,6 +151,7 @@ export class VariantsService {
           id: true,
           title: true,
           sku: true,
+          supplierSku: true,
           media: {
             select: {
               id: true,
@@ -192,11 +200,55 @@ export class VariantsService {
         where,
         take,
         skip,
-        orderBy: {
-          product: {
-            sku: 'desc',
+        // orderBy: {
+        //   createdAt: orderBy?.createdAt,
+        //   barcode: orderBy?.barcode,
+        //   product:
+        //     orderBy?.sku || orderBy?.supplierSku
+        //       ? {
+        //           sku: orderBy.sku,
+        //           supplierSku: orderBy.supplierSku,
+        //         }
+        //       : undefined,
+        //   price: orderBy?.price,
+        //   sale: orderBy?.sale,
+        //   totalReceivedQuantity: orderBy?.totalReceivedQuantity,
+        //   totalWarehouseQuantity: orderBy?.totalWarehouseQuantity,
+        //   size: orderBy?.size,
+        // },
+        orderBy: [
+          {
+            createdAt: orderBy?.createdAt,
           },
-        },
+          {
+            barcode: orderBy?.barcode,
+          },
+          {
+            product: {
+              sku: orderBy?.sku,
+            },
+          },
+          {
+            product: {
+              supplierSku: orderBy?.supplierSku,
+            },
+          },
+          {
+            price: orderBy?.price,
+          },
+          {
+            sale: orderBy?.sale,
+          },
+          {
+            totalReceivedQuantity: orderBy?.totalReceivedQuantity,
+          },
+          {
+            totalWarehouseQuantity: orderBy?.totalWarehouseQuantity,
+          },
+          {
+            size: orderBy?.size,
+          },
+        ],
         include,
       }),
       this.db.variant.count({
