@@ -52,7 +52,6 @@ export class GoodsReceiptsService {
           select: {
             accountsPayable: true,
             paymentOption: true,
-            paymentTerm: true,
           },
         },
         supplier: {
@@ -313,7 +312,6 @@ export class GoodsReceiptsService {
           supplierInvoice: {
             create: {
               paymentOption: createGoodsReceiptDto.paymentOption,
-              paymentTerm: createGoodsReceiptDto.paymentTerm,
               accountsPayable: createGoodsReceiptDto.variants
                 .map(
                   ({ receivedQuantity, supplierPrice }) =>
@@ -358,7 +356,6 @@ export class GoodsReceiptsService {
     goodsReceiptDate,
     isArchived,
     paymentOptions,
-    paymentTerms,
     supplierIds,
     warehouseIds,
   }: FindAllGoodsReceiptDto) {
@@ -377,11 +374,6 @@ export class GoodsReceiptsService {
         paymentOption: paymentOptions
           ? {
               in: paymentOptions,
-            }
-          : undefined,
-        paymentTerm: paymentTerms
-          ? {
-              in: paymentTerms,
             }
           : undefined,
       },
@@ -408,7 +400,6 @@ export class GoodsReceiptsService {
             select: {
               accountsPayable: true,
               paymentOption: true,
-              paymentTerm: true,
             },
           },
           supplier: {
@@ -519,7 +510,6 @@ export class GoodsReceiptsService {
           supplierInvoice: {
             update: {
               paymentOption: updateGoodsReceiptDto.paymentOption,
-              paymentTerm: updateGoodsReceiptDto.paymentTerm,
               accountsPayable: updateGoodsReceiptDto.variants
                 ?.map(
                   ({ receivedQuantity, supplierPrice }) =>

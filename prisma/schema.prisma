@@ -130,17 +130,10 @@ model SupplierInvoice {
   goodsReceipt   GoodsReceipt? @relation(fields: [goodsReceiptId], references: [id])
   goodsReceiptId String?       @unique
 
-  paymentTerm     SupplierInvoicePaymentTerm
   paymentOption   SupplierInvoicePaymentOption
   accountsPayable Decimal                      @db.Decimal(12, 2)
 
   @@index([goodsReceiptId])
-}
-
-enum SupplierInvoicePaymentTerm {
-  ON_DELIVERY
-  IN_ADVANCE
-  ON_REALIZATION
 }
 
 enum SupplierInvoicePaymentOption {

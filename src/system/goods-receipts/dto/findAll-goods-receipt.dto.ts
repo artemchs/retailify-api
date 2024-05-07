@@ -1,7 +1,4 @@
-import {
-  SupplierInvoicePaymentOption,
-  SupplierInvoicePaymentTerm,
-} from '@prisma/client'
+import { SupplierInvoicePaymentOption } from '@prisma/client'
 
 export class FindAllGoodsReceiptDto {
   page: number
@@ -10,7 +7,6 @@ export class FindAllGoodsReceiptDto {
   warehouseIds?: string[]
   supplierIds?: string[]
   paymentOptions?: SupplierInvoicePaymentOption[]
-  paymentTerms?: SupplierInvoicePaymentTerm[]
   goodsReceiptDate?: {
     from?: string
     to?: string

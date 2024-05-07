@@ -1,7 +1,4 @@
-import {
-  SupplierInvoicePaymentOption,
-  SupplierInvoicePaymentTerm,
-} from '@prisma/client'
+import { SupplierInvoicePaymentOption } from '@prisma/client'
 import { Transform, Type } from 'class-transformer'
 import {
   IsDate,
@@ -45,12 +42,6 @@ export class CreateGoodsReceiptDto {
   @Transform(({ value }) => new Date(value))
   @IsDate()
   goodsReceiptDate: Date
-
-  @IsNotEmpty({ message: 'Условия оплаты не должны быть пустыми' })
-  @IsEnum(SupplierInvoicePaymentTerm, {
-    message: 'Условия оплаты должны быть выбраны из списка',
-  })
-  paymentTerm: SupplierInvoicePaymentTerm
 
   @IsNotEmpty({ message: 'Опция оплаты не должна быть пустой' })
   @IsEnum(SupplierInvoicePaymentOption, {

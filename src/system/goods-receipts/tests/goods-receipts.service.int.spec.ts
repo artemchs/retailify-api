@@ -124,7 +124,6 @@ describe('GoodsReceiptsService', () => {
     const data: CreateGoodsReceiptDto = {
       goodsReceiptDate: new Date(),
       paymentOption: 'PRIVATE_FUNDS',
-      paymentTerm: 'IN_ADVANCE',
       supplierId: 'test-supplier',
       warehouseId: 'Test Warehouse 1',
       variants: [],
@@ -288,7 +287,6 @@ describe('GoodsReceiptsService', () => {
       expect(supplierInvoicesCount).toBe(1)
       expect(Number(supplierInvoice?.accountsPayable)).toBe(550)
       expect(supplierInvoice?.paymentOption).toBe('PRIVATE_FUNDS')
-      expect(supplierInvoice?.paymentTerm).toBe('IN_ADVANCE')
     })
 
     it('should throw an exception if the supplier does not exist', async () => {
@@ -434,7 +432,6 @@ describe('GoodsReceiptsService', () => {
               create: {
                 accountsPayable: 100,
                 paymentOption: 'CASH_REGISTER',
-                paymentTerm: 'ON_DELIVERY',
               },
             },
             productVariants: {
@@ -479,7 +476,6 @@ describe('GoodsReceiptsService', () => {
     const data: UpdateGoodsReceiptDto = {
       goodsReceiptDate: new Date(2024),
       paymentOption: 'CASH_REGISTER',
-      paymentTerm: 'ON_DELIVERY',
       warehouseId: 'Test Warehouse 1',
       supplierId: 'test-supplier',
     }
@@ -659,7 +655,6 @@ describe('GoodsReceiptsService', () => {
               create: {
                 accountsPayable: 100,
                 paymentOption: 'CASH_REGISTER',
-                paymentTerm: 'ON_DELIVERY',
               },
             },
             productVariants: {
@@ -757,7 +752,6 @@ describe('GoodsReceiptsService', () => {
               create: {
                 accountsPayable: 100,
                 paymentOption: 'CASH_REGISTER',
-                paymentTerm: 'ON_DELIVERY',
               },
             },
             productVariants: {
