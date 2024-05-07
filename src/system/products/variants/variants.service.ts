@@ -5,7 +5,6 @@ import { DbService } from '../../../db/db.service'
 import { FindAllVariantDto } from './dto/findAll-variant.dto'
 import {
   buildContainsArray,
-  buildOrderByArray,
   calculateTotalPages,
   checkIsArchived,
   getPaginationData,

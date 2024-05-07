@@ -47,10 +47,6 @@ export class ProductVariantDto {
   @IsString()
   size: string
 
-  @IsNotEmpty()
-  @IsNumber()
-  price: number
-
   @IsOptional()
   @IsString()
   id?: string

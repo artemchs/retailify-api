@@ -157,11 +157,9 @@ describe('ProductsService', () => {
         ...data,
         variants: [
           {
-            price: 10.99,
             size: 'SM',
           },
           {
-            price: 10.99,
             size: 'XL',
           },
         ],
@@ -192,7 +190,6 @@ describe('ProductsService', () => {
         ...data,
         variants: [
           {
-            price: 10.99,
             size: 'SM',
             additionalAttributes: [
               {
@@ -901,7 +898,6 @@ describe('ProductsService', () => {
         ...data,
         variants: [
           {
-            price: 10.99,
             size: 'SM',
           },
         ],
@@ -940,7 +936,6 @@ describe('ProductsService', () => {
         variants: [
           {
             id: 'Test Variant 1',
-            price: 10.99,
             size: 'XL',
           },
         ],
@@ -992,7 +987,6 @@ describe('ProductsService', () => {
         variants: [
           {
             id: 'Test Variant 1',
-            price: 10.99,
             size: 'XL',
             additionalAttributes: [
               {

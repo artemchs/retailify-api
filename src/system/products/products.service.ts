@@ -171,10 +171,10 @@ export class ProductsService {
     if (variants) {
       await this.db.$transaction(async (ts) => {
         await Promise.all(
-          variants.map(({ price, size, additionalAttributes }) => {
+          variants.map(({ size, additionalAttributes }) => {
             return ts.variant.create({
               data: {
-                price,
+                price: 0,
                 size,
                 totalReceivedQuantity: 0,
                 totalWarehouseQuantity: 0,
@@ -541,7 +541,7 @@ export class ProductsService {
           tx.variant.createMany({
             data: newVariants.map((v) => ({
               size: v.size,
-              price: v.price,
+              price: 0,
               totalReceivedQuantity: 0,
               totalWarehouseQuantity: 0,
               productId,
@@ -589,7 +589,6 @@ export class ProductsService {
                 },
                 data: {
                   size: v.size,
-                  price: v.price,
                   additionalAttributes:
                     newItems || deleted || updated
                       ? {
