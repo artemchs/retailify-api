@@ -75,9 +75,11 @@ export class GoodsReceiptsService {
                   select: {
                     id: true,
                     title: true,
+                    sku: true,
                   },
                 },
                 size: true,
+                price: true,
               },
             },
             receivedQuantity: true,
@@ -290,6 +292,28 @@ export class GoodsReceiptsService {
     return variants
   }
 
+  private async updateVariantSellingPrices(variants?: GoodsReceiptVariant[]) {
+    if (variants) {
+      const variantsToUpdate = variants.filter((obj) => !!obj.sellingPrice)
+
+      await this.db.$transaction(
+        async (tx) =>
+          await Promise.all(
+            variantsToUpdate.map(({ variantId, sellingPrice }) =>
+              tx.variant.update({
+                where: {
+                  id: variantId,
+                },
+                data: {
+                  price: sellingPrice,
+                },
+              }),
+            ),
+          ),
+      )
+    }
+  }
+
   async create(createGoodsReceiptDto: CreateGoodsReceiptDto) {
     const [goodsReceiptsCount] = await Promise.all([
       this.db.goodsReceipt.count(),
@@ -342,10 +366,13 @@ export class GoodsReceiptsService {
       }),
     ])
 
-    await this.incrementQuantity(
-      createGoodsReceiptDto.variants,
-      createGoodsReceiptDto.warehouseId,
-    )
+    await Promise.all([
+      this.updateVariantSellingPrices(createGoodsReceiptDto.variants),
+      this.incrementQuantity(
+        createGoodsReceiptDto.variants,
+        createGoodsReceiptDto.warehouseId,
+      ),
+    ])
   }
 
   async findAll({
@@ -540,6 +567,8 @@ export class GoodsReceiptsService {
         })),
       }),
     ])
+
+    await this.updateVariantSellingPrices(updateGoodsReceiptDto.variants)
   }
 
   private async updateVariantQuantities(

@@ -289,6 +289,28 @@ describe('GoodsReceiptsService', () => {
       expect(supplierInvoice?.paymentOption).toBe('PRIVATE_FUNDS')
     })
 
+    it('should correctly update selling prices of variants', async () => {
+      await service.create({
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 1',
+            receivedQuantity: 10,
+            supplierPrice: 50,
+            sellingPrice: 12345,
+          },
+        ],
+      })
+
+      const variant = await db.variant.findUnique({
+        where: {
+          id: 'Test Variant 1',
+        },
+      })
+
+      expect(Number(variant?.price)).toBe(12345)
+    })
+
     it('should throw an exception if the supplier does not exist', async () => {
       await expect(
         service.create({ ...data, supplierId: 'non-existent' }),
@@ -634,6 +656,28 @@ describe('GoodsReceiptsService', () => {
       expect(product?.totalReceivedQuantity).toBe(10)
       expect(product?.totalWarehouseQuantity).toBe(10)
       expect(Number(supplierInvoice?.accountsPayable)).toBe(50)
+    })
+
+    it('should correctly update selling prices of variants', async () => {
+      await service.update(id, {
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 1',
+            receivedQuantity: 10,
+            supplierPrice: 50,
+            sellingPrice: 12345,
+          },
+        ],
+      })
+
+      const variant = await db.variant.findUnique({
+        where: {
+          id: 'Test Variant 1',
+        },
+      })
+
+      expect(Number(variant?.price)).toBe(12345)
     })
 
     it('should fail if the goods receipt does not exist', async () => {

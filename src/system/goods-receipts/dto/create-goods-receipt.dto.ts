@@ -27,6 +27,10 @@ export class GoodsReceiptVariant {
     { message: 'Количество должно быть числом' },
   )
   receivedQuantity: number
+
+  @IsNotEmpty()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  sellingPrice?: number
 }
 
 export class CreateGoodsReceiptDto {
