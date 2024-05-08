@@ -10,12 +10,13 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common'
-import { GetCurrentUserAccessToken } from '../common/decorators'
+import { GetCurrentUserAccessToken, Roles } from '../common/decorators'
 import { UsersService } from './users.service'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { UpdateMeDto, UpdatePasswordDto } from './dto'
 import { Response } from 'express'
 import { setRefreshTokenCookie } from '../common/utils/set-refresh-token'
+import { Role } from '../common/enums'
 
 @Controller('system/users')
 export class UsersController {
@@ -48,6 +49,7 @@ export class UsersController {
     return this.usersService.updateMe(body, userId, file?.buffer)
   }
 
+  @Roles(Role.Admin)
   @Put('/me/password')
   async updatePassword(
     @Body() body: UpdatePasswordDto,
