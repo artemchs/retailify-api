@@ -86,6 +86,7 @@ export class VariantsService {
     productIds,
     warehouseIds,
     posId,
+    excludeIds,
   }: FindAllVariantDto) {
     const { skip, take } = getPaginationData({ page, rowsPerPage })
 
@@ -94,6 +95,11 @@ export class VariantsService {
       product: {
         isArchived: false,
       },
+      id: excludeIds
+        ? {
+            notIn: excludeIds,
+          }
+        : undefined,
       OR: [
         {
           product: {

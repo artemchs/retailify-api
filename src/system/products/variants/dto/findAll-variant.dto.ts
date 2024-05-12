@@ -5,6 +5,7 @@ export class FindAllVariantDto {
   productIds?: string[]
   warehouseIds?: string[]
   posId?: string
+  excludeIds?: string[]
   orderBy?: {
     createdAt?: 'asc' | 'desc'
     updatedAt?: 'asc' | 'desc'
