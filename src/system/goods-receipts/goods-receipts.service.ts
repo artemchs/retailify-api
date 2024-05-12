@@ -76,6 +76,14 @@ export class GoodsReceiptsService {
                     id: true,
                     title: true,
                     sku: true,
+                    media: {
+                      select: {
+                        id: true,
+                      },
+                      orderBy: {
+                        index: 'asc',
+                      },
+                    },
                   },
                 },
                 size: true,

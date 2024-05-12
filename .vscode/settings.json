@@ -1,8 +1,8 @@
 {
-  "editor.fontSize": 16,
-  "editor.fontFamily": "JetBrains Mono",
+  "editor.fontSize": 14,
+  "editor.fontFamily": "'Monaspace Neon Var', monospace",
   "files.autoSave": "afterDelay",
-  "editor.tabSize": 2,
+  "editor.tabSize": 4,
   "[javascript]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -10,5 +10,6 @@
   "[typescript]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "window.zoomLevel": 1
 }
