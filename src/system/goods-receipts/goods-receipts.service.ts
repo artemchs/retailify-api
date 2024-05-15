@@ -322,6 +322,23 @@ export class GoodsReceiptsService {
     }
   }
 
+  private async updateSupplierTotalOutstandingBalance(
+    totalAmount: number,
+    amountPaid: number,
+    supplierId: string,
+  ) {
+    await this.db.supplier.update({
+      where: {
+        id: supplierId,
+      },
+      data: {
+        totalOutstandingBalance: {
+          increment: totalAmount - amountPaid,
+        },
+      },
+    })
+  }
+
   async create(createGoodsReceiptDto: CreateGoodsReceiptDto) {
     const [goodsReceiptsCount] = await Promise.all([
       this.db.goodsReceipt.count(),
@@ -333,6 +350,16 @@ export class GoodsReceiptsService {
       createGoodsReceiptDto.warehouseId,
       createGoodsReceiptDto.variants,
     )
+
+    const totalAmount =
+      createGoodsReceiptDto.variants.length > 0
+        ? createGoodsReceiptDto.variants
+            .map(
+              ({ receivedQuantity, supplierPrice }) =>
+                receivedQuantity * supplierPrice,
+            )
+            .reduce((prev, curr) => prev + curr, 0)
+        : 0
 
     await this.db.$transaction([
       this.db.goodsReceipt.create({
@@ -350,6 +377,9 @@ export class GoodsReceiptsService {
                     receivedQuantity * supplierPrice,
                 )
                 .reduce((accumulator, current) => accumulator + current, 0),
+              amountPaid: createGoodsReceiptDto.amountPaid,
+              outstandingBalance:
+                totalAmount - createGoodsReceiptDto.amountPaid,
             },
           },
           productVariants: {
@@ -379,6 +409,11 @@ export class GoodsReceiptsService {
       this.incrementQuantity(
         createGoodsReceiptDto.variants,
         createGoodsReceiptDto.warehouseId,
+      ),
+      this.updateSupplierTotalOutstandingBalance(
+        totalAmount,
+        createGoodsReceiptDto.amountPaid,
+        createGoodsReceiptDto.supplierId,
       ),
     ])
   }
@@ -483,6 +518,26 @@ export class GoodsReceiptsService {
 
     const goodsReceiptVariants = await this.getGoodsReceiptVariants(id)
 
+    const oldTotalAmount = goodsReceipt.productVariants
+      .map(
+        ({ receivedQuantity, supplierPrice }) =>
+          receivedQuantity * Number(supplierPrice),
+      )
+      .reduce((prev, curr) => prev + curr, 0)
+
+    const oldAmountPaid = Number(goodsReceipt.supplierInvoice?.amountPaid) ?? 0
+
+    const totalAmount =
+      updateGoodsReceiptDto.variants &&
+      updateGoodsReceiptDto.variants.length > 0
+        ? updateGoodsReceiptDto.variants
+            .map(
+              ({ receivedQuantity, supplierPrice }) =>
+                receivedQuantity * supplierPrice,
+            )
+            .reduce((prev, curr) => prev + curr, 0)
+        : 0
+
     const arraysDif = updateGoodsReceiptDto.variants
       ? compareArrays(
           goodsReceiptVariants as unknown as GoodsReceiptVariant[],
@@ -551,6 +606,10 @@ export class GoodsReceiptsService {
                     receivedQuantity * supplierPrice,
                 )
                 .reduce((accumulator, current) => accumulator + current, 0),
+              amountPaid: updateGoodsReceiptDto.amountPaid,
+              outstandingBalance: updateGoodsReceiptDto.amountPaid
+                ? totalAmount - updateGoodsReceiptDto.amountPaid
+                : 0,
             },
           },
           productVariants: {
@@ -577,6 +636,58 @@ export class GoodsReceiptsService {
     ])
 
     await this.updateVariantSellingPrices(updateGoodsReceiptDto.variants)
+
+    // New supplier
+    if (updateGoodsReceiptDto.supplierId !== goodsReceipt.supplierId) {
+      if (goodsReceipt.supplierId) {
+        await this.db.supplier.update({
+          where: {
+            id: goodsReceipt.supplierId,
+          },
+          data: {
+            totalOutstandingBalance: {
+              decrement: oldTotalAmount - oldAmountPaid,
+            },
+          },
+        })
+      }
+
+      await this.db.supplier.update({
+        where: {
+          id: updateGoodsReceiptDto.supplierId,
+        },
+        data: {
+          totalOutstandingBalance: {
+            increment: oldTotalAmount - oldAmountPaid,
+          },
+        },
+      })
+    }
+
+    // New total amount
+    if (
+      totalAmount &&
+      (totalAmount !== oldTotalAmount ||
+        updateGoodsReceiptDto.amountPaid !== oldAmountPaid) &&
+      (updateGoodsReceiptDto.supplierId || goodsReceipt.supplierId)
+    ) {
+      await this.db.supplier.update({
+        where: {
+          id:
+            updateGoodsReceiptDto.supplierId ??
+            goodsReceipt.supplierId ??
+            undefined,
+        },
+        data: {
+          totalOutstandingBalance: {
+            increment:
+              totalAmount -
+              (updateGoodsReceiptDto.amountPaid ?? 0) -
+              (oldTotalAmount - oldAmountPaid),
+          },
+        },
+      })
+    }
   }
 
   private async updateVariantQuantities(

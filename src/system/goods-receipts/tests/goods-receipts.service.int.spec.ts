@@ -127,6 +127,7 @@ describe('GoodsReceiptsService', () => {
       supplierId: 'test-supplier',
       warehouseId: 'Test Warehouse 1',
       variants: [],
+      amountPaid: 0,
     }
 
     it('should successfully create a new goods receipt', async () => {
@@ -311,6 +312,33 @@ describe('GoodsReceiptsService', () => {
       expect(Number(variant?.price)).toBe(12345)
     })
 
+    it('should correclty calculate outstanding balance', async () => {
+      await service.create({
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 1',
+            receivedQuantity: 1,
+            supplierPrice: 100,
+            sellingPrice: 1,
+          },
+        ],
+        amountPaid: 50,
+      })
+
+      const supplierInvoice = await db.supplierInvoice.findFirst()
+      const supplier = await db.supplier.findUnique({
+        where: {
+          id: 'test-supplier',
+        },
+      })
+
+      expect(Number(supplierInvoice?.accountsPayable)).toBe(100)
+      expect(Number(supplierInvoice?.amountPaid)).toBe(50)
+      expect(Number(supplierInvoice?.outstandingBalance)).toBe(50)
+      expect(Number(supplier?.totalOutstandingBalance)).toBe(50)
+    })
+
     it('should throw an exception if the supplier does not exist', async () => {
       await expect(
         service.create({ ...data, supplierId: 'non-existent' }),
@@ -454,6 +482,7 @@ describe('GoodsReceiptsService', () => {
               create: {
                 accountsPayable: 100,
                 paymentOption: 'CASH_REGISTER',
+                outstandingBalance: 0,
               },
             },
             productVariants: {
@@ -680,6 +709,34 @@ describe('GoodsReceiptsService', () => {
       expect(Number(variant?.price)).toBe(12345)
     })
 
+    it('should correclty calculate outstanding balance', async () => {
+      await service.update(id, {
+        ...data,
+        variants: [
+          {
+            variantId: 'Test Variant 1',
+            receivedQuantity: 1,
+            supplierPrice: 100,
+            sellingPrice: 1,
+          },
+        ],
+        supplierId: 'test-supplier',
+        amountPaid: 50,
+      })
+
+      const supplierInvoice = await db.supplierInvoice.findFirst()
+      const supplier = await db.supplier.findUnique({
+        where: {
+          id: 'test-supplier',
+        },
+      })
+
+      expect(Number(supplierInvoice?.accountsPayable)).toBe(100)
+      expect(Number(supplierInvoice?.amountPaid)).toBe(50)
+      expect(Number(supplierInvoice?.outstandingBalance)).toBe(50)
+      expect(Number(supplier?.totalOutstandingBalance)).toBe(50)
+    })
+
     it('should fail if the goods receipt does not exist', async () => {
       await expect(service.update('non-existent', data)).rejects.toThrow(
         NotFoundException,
@@ -699,6 +756,7 @@ describe('GoodsReceiptsService', () => {
               create: {
                 accountsPayable: 100,
                 paymentOption: 'CASH_REGISTER',
+                outstandingBalance: 0,
               },
             },
             productVariants: {
@@ -796,6 +854,7 @@ describe('GoodsReceiptsService', () => {
               create: {
                 accountsPayable: 100,
                 paymentOption: 'CASH_REGISTER',
+                outstandingBalance: 0,
               },
             },
             productVariants: {

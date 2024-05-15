@@ -1,6 +1,6 @@
 {
   "editor.fontSize": 14,
-  "editor.fontFamily": "'Monaspace Neon Var', monospace",
+  "editor.fontFamily": "'JetBrainsMonoNL Nerd Font Mono', monospace",
   "files.autoSave": "afterDelay",
   "editor.tabSize": 4,
   "[javascript]": {
@@ -11,5 +11,8 @@
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "window.zoomLevel": 1
+  "window.zoomLevel": 1,
+  "conventionalCommits.scopes": [
+    "goods-receipts"
+  ]
 }

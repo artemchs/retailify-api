@@ -59,4 +59,8 @@ export class CreateGoodsReceiptDto {
   })
   @Type(() => GoodsReceiptVariant)
   variants: GoodsReceiptVariant[]
+
+  @IsNotEmpty()
+  @IsNumber()
+  amountPaid: number
 }
