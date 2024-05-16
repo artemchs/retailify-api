@@ -1,6 +1,7 @@
 {
-  "editor.fontSize": 14,
-  "editor.fontFamily": "'JetBrainsMonoNL Nerd Font Mono', monospace",
+  "editor.fontSize": 16,
+  "editor.fontFamily": "'FiraCode Nerd Font Mono Regular', monospace",
+  "editor.fontLigatures": true,
   "files.autoSave": "afterDelay",
   "editor.tabSize": 4,
   "[javascript]": {

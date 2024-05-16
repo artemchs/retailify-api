@@ -743,6 +743,16 @@ export class GoodsReceiptsService {
     if (!goodsReceipt.isArchived) {
       await Promise.all([
         this.updateVariantQuantities('decrement', goodsReceipt.productVariants),
+        this.db.supplier.update({
+          where: {
+            id: goodsReceipt.supplierId ?? undefined,
+          },
+          data: {
+            totalOutstandingBalance: {
+              decrement: goodsReceipt.supplierInvoice?.outstandingBalance,
+            },
+          },
+        }),
         this.db.goodsReceipt.update({
           where: {
             id,
@@ -761,6 +771,16 @@ export class GoodsReceiptsService {
     if (goodsReceipt.isArchived) {
       await Promise.all([
         this.updateVariantQuantities('increment', goodsReceipt.productVariants),
+        this.db.supplier.update({
+          where: {
+            id: goodsReceipt.supplierId ?? undefined,
+          },
+          data: {
+            totalOutstandingBalance: {
+              increment: goodsReceipt.supplierInvoice?.outstandingBalance,
+            },
+          },
+        }),
         this.db.goodsReceipt.update({
           where: {
             id,
