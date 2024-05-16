@@ -52,6 +52,8 @@ export class GoodsReceiptsService {
           select: {
             accountsPayable: true,
             paymentOption: true,
+            amountPaid: true,
+            outstandingBalance: true,
           },
         },
         supplier: {
@@ -470,6 +472,8 @@ export class GoodsReceiptsService {
             select: {
               accountsPayable: true,
               paymentOption: true,
+              amountPaid: true,
+              outstandingBalance: true,
             },
           },
           supplier: {
