@@ -23,6 +23,32 @@ model SystemUser {
   role              SystemUserRole @default(CASHIER)
   pointsOfSale      PointOfSale[]
   shifts            CashierShift[]
+
+  soleProprietorInfo   SoleProprietorInfo? @relation(fields: [soleProprietorInfoId], references: [id])
+  soleProprietorInfoId String?             @unique
+}
+
+model SoleProprietorInfo {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tin String?
+
+  systemUser      SystemUser?
+  currentAccounts SoleProprietorCurrentAccount[]
+}
+
+model SoleProprietorCurrentAccount {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+  iban String
+
+  soleProprietorInfo   SoleProprietorInfo? @relation(fields: [soleProprietorInfoId], references: [id])
+  soleProprietorInfoId String?
 }
 
 model AllowedSystemUserEmail {

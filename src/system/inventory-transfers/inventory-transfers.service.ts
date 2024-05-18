@@ -518,8 +518,6 @@ export class InventoryTransfersService {
       id,
     }))
 
-    console.log({ newItems, updatedItems, removedItems })
-
     await this.db.$transaction(async (tx) => {
       if (compareArraysRes?.updated) {
         await Promise.all(
@@ -537,11 +535,8 @@ export class InventoryTransfersService {
                 },
               })
 
-              console.log({ vtw })
-
               if (vtw) {
                 const quantityDiff = quantity - vtw.warehouseQuantity
-                console.log({ quantityDiff, vtw })
 
                 await Promise.all([
                   tx.variantToWarehouse.update({

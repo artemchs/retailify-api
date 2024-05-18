@@ -234,8 +234,6 @@ describe('OrdersService', () => {
         },
       })
 
-      console.log({ vtw })
-
       expect(vtw?.warehouseQuantity).toBe(9)
       expect(variant?.totalWarehouseQuantity).toBe(9)
       expect(product?.totalWarehouseQuantity).toBe(9)

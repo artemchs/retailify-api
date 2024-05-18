@@ -27,6 +27,9 @@ async function seedSystemUsers() {
           fullName: 'Артем Черниш',
           hash: await argon.hash('admin'),
           role: 'ADMIN',
+          soleProprietorInfo: {
+            create: {},
+          },
         },
       }),
       prisma.allowedSystemUserEmail.create({

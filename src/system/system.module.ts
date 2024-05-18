@@ -23,6 +23,7 @@ import { CustomersModule } from './customers/customers.module'
 import { OrdersModule } from './orders/orders.module'
 import { RefundsModule } from './refunds/refunds.module'
 import { VariantAdditionalAttributesModule } from './variant-additional-attributes/variant-additional-attributes.module'
+import { SoleProprietorInfoModule } from './sole-proprietor-info/sole-proprietor-info.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { VariantAdditionalAttributesModule } from './variant-additional-attribut
     OrdersModule,
     RefundsModule,
     VariantAdditionalAttributesModule,
+    SoleProprietorInfoModule,
   ],
   providers: [
     {

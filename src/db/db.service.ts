@@ -68,6 +68,8 @@ export class DbService
         this.refundItem.deleteMany(),
         this.additionalAttribute.deleteMany(),
         this.variantAdditionalAttribute.deleteMany(),
+        this.soleProprietorInfo.deleteMany(),
+        this.soleProprietorCurrentAccount.deleteMany(),
       ])
     }
   }

@@ -752,6 +752,15 @@ describe('GoodsReceiptsService', () => {
             id: 'Goods Receipt 1',
             name: 'Goods Receipt 1',
             goodsReceiptDate: new Date(),
+            supplier: {
+              create: {
+                address: 'asdf',
+                contactPerson: 'asdf',
+                email: 'asdf',
+                name: 'asdf',
+                phone: 'asfd',
+              },
+            },
             supplierInvoice: {
               create: {
                 accountsPayable: 100,
@@ -855,6 +864,15 @@ describe('GoodsReceiptsService', () => {
                 accountsPayable: 100,
                 paymentOption: 'CASH_REGISTER',
                 outstandingBalance: 0,
+              },
+            },
+            supplier: {
+              create: {
+                address: 'asdf',
+                contactPerson: 'asdf',
+                email: 'asdf',
+                name: 'asdf',
+                phone: 'asfd',
               },
             },
             productVariants: {
