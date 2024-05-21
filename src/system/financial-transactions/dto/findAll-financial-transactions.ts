@@ -12,7 +12,6 @@ export type FindAllFinancialTransactionsDto = {
     to?: Date
   }
   orderBy?: {
-    fullName?: 'asc' | 'desc'
-    email?: 'asc' | 'desc'
+    amount?: 'asc' | 'desc'
   }
 }
