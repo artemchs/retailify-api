@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { CreateFinancialTransactionDto } from './dto/create-financial-transaction.dto'
 import { UpdateFinancialTransactionDto } from './dto/update-financial-transaction.dto'
 import { DbService } from '../../db/db.service'
@@ -13,6 +13,20 @@ import { Prisma } from '@prisma/client'
 @Injectable()
 export class FinancialTransactionsService {
   constructor(private db: DbService) {}
+
+  private async getTransaction(id: string) {
+    const data = await this.db.transaction.findUnique({
+      where: {
+        id,
+      },
+    })
+
+    if (!data) {
+      throw new NotFoundException('Транзакция не найдена.')
+    }
+
+    return data
+  }
 
   async create({
     amount,
@@ -100,7 +114,7 @@ export class FinancialTransactionsService {
   }
 
   async findOne(id: string) {
-    return `This action returns a #${id} financialTransaction`
+    return this.getTransaction(id)
   }
 
   async update(
