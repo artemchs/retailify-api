@@ -7,8 +7,24 @@ import { DbService } from '../../db/db.service'
 export class FinancialTransactionsService {
   constructor(private db: DbService) {}
 
-  async create(createFinancialTransactionDto: CreateFinancialTransactionDto) {
-    return 'This action adds a new financialTransaction'
+  async create({
+    amount,
+    direction,
+    type,
+    orderInvoiceId,
+    refundId,
+    shiftId,
+  }: CreateFinancialTransactionDto) {
+    return await this.db.transaction.create({
+      data: {
+        amount,
+        direction,
+        type,
+        orderInvoiceId,
+        refundId,
+        shiftId,
+      },
+    })
   }
 
   async findAll() {

@@ -15,6 +15,7 @@
   "window.zoomLevel": 1,
   "conventionalCommits.scopes": [
     "goods-receipts",
-    "sole-proprietor-info"
+    "sole-proprietor-info",
+    "financial-transactions"
   ]
 }
