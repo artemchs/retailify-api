@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { CreateFinancialTransactionDto } from './dto/create-financial-transaction.dto'
-import { UpdateFinancialTransactionDto } from './dto/update-financial-transaction.dto'
 import { DbService } from '../../db/db.service'
 import { FindAllFinancialTransactionsDto } from './dto/findAll-financial-transactions'
 import {
@@ -115,16 +114,5 @@ export class FinancialTransactionsService {
 
   async findOne(id: string) {
     return this.getTransaction(id)
-  }
-
-  async update(
-    id: string,
-    updateFinancialTransactionDto: UpdateFinancialTransactionDto,
-  ) {
-    return `This action updates a #${id} financialTransaction`
-  }
-
-  async remove(id: string) {
-    return `This action removes a #${id} financialTransaction`
   }
 }
