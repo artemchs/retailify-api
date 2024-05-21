@@ -8,8 +8,8 @@ export type FindAllFinancialTransactionsDto = {
   directions?: `${TransactionDirection}`[]
   systemUserIds?: string[]
   createdAt?: {
-    from?: Date
-    to?: Date
+    from?: string
+    to?: string
   }
   orderBy?: {
     amount?: 'asc' | 'desc'
