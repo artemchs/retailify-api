@@ -24,6 +24,7 @@ import { OrdersModule } from './orders/orders.module'
 import { RefundsModule } from './refunds/refunds.module'
 import { VariantAdditionalAttributesModule } from './variant-additional-attributes/variant-additional-attributes.module'
 import { SoleProprietorInfoModule } from './sole-proprietor-info/sole-proprietor-info.module';
+import { FinancialTransactionsModule } from './financial-transactions/financial-transactions.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { SoleProprietorInfoModule } from './sole-proprietor-info/sole-proprietor
     RefundsModule,
     VariantAdditionalAttributesModule,
     SoleProprietorInfoModule,
+    FinancialTransactionsModule,
   ],
   providers: [
     {
