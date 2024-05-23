@@ -404,6 +404,13 @@ export class GoodsReceiptsService {
           warehouseQuantity: 0,
         })),
       }),
+      this.db.transaction.create({
+        data: {
+          amount: createGoodsReceiptDto.amountPaid,
+          direction: 'CREDIT',
+          type: 'SUPPLIER_PAYMENT',
+        },
+      }),
     ])
 
     await Promise.all([
@@ -639,6 +646,22 @@ export class GoodsReceiptsService {
       }),
     ])
 
+    if (
+      updateGoodsReceiptDto.amountPaid !==
+      goodsReceipt.supplierInvoice?.amountPaid
+    ) {
+      const diff =
+        updateGoodsReceiptDto.amountPaid ??
+        0 - Number(goodsReceipt.supplierInvoice?.amountPaid ?? 0)
+
+      await this.db.transaction.create({
+        data: {
+          amount: diff,
+          direction: 'CREDIT',
+          type: 'SUPPLIER_PAYMENT',
+        },
+      })
+    }
     await this.updateVariantSellingPrices(updateGoodsReceiptDto.variants)
 
     // New supplier
