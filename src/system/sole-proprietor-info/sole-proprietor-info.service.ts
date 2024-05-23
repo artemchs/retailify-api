@@ -52,7 +52,7 @@ export class SoleProprietorInfoService {
           id: info.id,
         },
         data: {
-          tin: editSoleProprietorInfoDto.tin,
+          tin: editSoleProprietorInfoDto.tin?.toString(),
           currentAccounts:
             editSoleProprietorInfoDto.currentAccounts &&
             (compareArraysRes?.newItems ||

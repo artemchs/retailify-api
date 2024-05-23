@@ -55,12 +55,15 @@ describe('SoleProprietorInfoService', () => {
   describe('edit', () => {
     it('should successfully edit info', async () => {
       await service.edit('user', {
-        tin: 'asdf',
+        phoneNumber: '',
+        taxAddress: '',
+        taxGroup: '',
+        tin: 1,
       })
 
       const info = await db.soleProprietorInfo.findFirst()
 
-      expect(info?.tin).toBe('asdf')
+      expect(info?.tin).toBe('1')
     })
 
     it('should successfully edit current accounts', async () => {
@@ -71,11 +74,22 @@ describe('SoleProprietorInfoService', () => {
             iban: 'asdf',
           },
         ],
+        phoneNumber: '',
+        taxAddress: '',
+        taxGroup: '',
+        tin: 1,
       })
     })
 
     it('should throw an exception if the info does not exist', async () => {
-      await expect(service.edit('asdf', {})).rejects.toThrow(NotFoundException)
+      await expect(
+        service.edit('asdf', {
+          phoneNumber: '',
+          taxAddress: '',
+          taxGroup: '',
+          tin: 1,
+        }),
+      ).rejects.toThrow(NotFoundException)
     })
   })
 })

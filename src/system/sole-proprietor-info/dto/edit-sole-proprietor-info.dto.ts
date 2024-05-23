@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsPhoneNumber,
   IsString,
   MaxLength,
   ValidateNested,
@@ -25,8 +26,23 @@ export class SoleProprietorCurrentAccount {
 }
 
 export class EditSoleProprietorInfoDto {
+  @IsNotEmpty()
   @IsNumber()
-  tin?: number
+  tin: number
+
+  @IsNotEmpty()
+  @IsPhoneNumber('UA', {
+    message: 'Пожалуйста, введите корректный номер телефона.',
+  })
+  phoneNumber: string
+
+  @IsNotEmpty()
+  @IsString()
+  taxAddress: string
+
+  @IsNotEmpty()
+  @IsString()
+  taxGroup: string
 
   @IsOptional()
   @ValidateNested({
