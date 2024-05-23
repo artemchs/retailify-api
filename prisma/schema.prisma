@@ -34,7 +34,7 @@ model SoleProprietorInfo {
   updatedAt DateTime @updatedAt
 
   tin         String?
-  taxAdress   String?
+  taxAddress   String?
   phoneNumber String?
   taxGroup    String?
 

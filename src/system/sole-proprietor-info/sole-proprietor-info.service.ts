@@ -52,10 +52,8 @@ export class SoleProprietorInfoService {
           id: info.id,
         },
         data: {
+          ...editSoleProprietorInfoDto,
           tin: editSoleProprietorInfoDto.tin?.toString(),
-          phoneNumber: editSoleProprietorInfoDto.phoneNumber,
-          taxAdress: editSoleProprietorInfoDto.taxAddress,
-          taxGroup: editSoleProprietorInfoDto.taxGroup,
           currentAccounts: editSoleProprietorInfoDto.currentAccounts
             ? editSoleProprietorInfoDto.currentAccounts &&
               (compareArraysRes?.newItems ||
