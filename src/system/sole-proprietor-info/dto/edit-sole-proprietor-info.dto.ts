@@ -2,6 +2,7 @@ import { Type } from 'class-transformer'
 import {
   IsAlphanumeric,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
@@ -24,9 +25,8 @@ export class SoleProprietorCurrentAccount {
 }
 
 export class EditSoleProprietorInfoDto {
-  @IsOptional()
-  @IsString()
-  tin?: string
+  @IsNumber()
+  tin?: number
 
   @IsOptional()
   @ValidateNested({

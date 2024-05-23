@@ -33,7 +33,7 @@ model SoleProprietorInfo {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tin String?
+  tin Int?
 
   systemUser      SystemUser?
   currentAccounts SoleProprietorCurrentAccount[]
