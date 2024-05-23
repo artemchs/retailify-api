@@ -1,6 +1,8 @@
 import { TransactionDirection, TransactionType } from '@prisma/client'
+import { Transform } from 'class-transformer'
 
 import {
+  IsDate,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -9,6 +11,11 @@ import {
 } from 'class-validator'
 
 export class CreateFinancialTransactionDto {
+  @IsNotEmpty({ message: 'Дата не должна быть пустой' })
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  goodsReceiptDate: Date
+
   @IsNotEmpty()
   @IsNumber()
   amount: number

@@ -27,23 +27,9 @@ export class FinancialTransactionsService {
     return data
   }
 
-  async create({
-    amount,
-    direction,
-    type,
-    orderInvoiceId,
-    refundId,
-    shiftId,
-  }: CreateFinancialTransactionDto) {
+  async create(createFinancialTransactionDto: CreateFinancialTransactionDto) {
     return await this.db.transaction.create({
-      data: {
-        amount,
-        direction,
-        type,
-        orderInvoiceId,
-        refundId,
-        shiftId,
-      },
+      data: createFinancialTransactionDto,
     })
   }
 

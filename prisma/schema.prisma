@@ -34,7 +34,7 @@ model SoleProprietorInfo {
   updatedAt DateTime @updatedAt
 
   tin         String?
-  taxAddress   String?
+  taxAddress  String?
   phoneNumber String?
   taxGroup    String?
 
@@ -578,6 +578,7 @@ model Transaction {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  date      DateTime             @default(now())
   amount    Decimal              @db.Decimal(12, 2)
   type      TransactionType
   direction TransactionDirection
