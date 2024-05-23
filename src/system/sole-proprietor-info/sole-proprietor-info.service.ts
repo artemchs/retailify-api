@@ -53,11 +53,14 @@ export class SoleProprietorInfoService {
         },
         data: {
           tin: editSoleProprietorInfoDto.tin?.toString(),
-          currentAccounts:
-            editSoleProprietorInfoDto.currentAccounts &&
-            (compareArraysRes?.newItems ||
-              compareArraysRes?.updated ||
-              compareArraysRes?.deleted)
+          phoneNumber: editSoleProprietorInfoDto.phoneNumber,
+          taxAdress: editSoleProprietorInfoDto.taxAddress,
+          taxGroup: editSoleProprietorInfoDto.taxGroup,
+          currentAccounts: editSoleProprietorInfoDto.currentAccounts
+            ? editSoleProprietorInfoDto.currentAccounts &&
+              (compareArraysRes?.newItems ||
+                compareArraysRes?.updated ||
+                compareArraysRes?.deleted)
               ? {
                   createMany: {
                     data: compareArraysRes?.newItems,
@@ -75,7 +78,10 @@ export class SoleProprietorInfoService {
                     }),
                   ),
                 }
-              : undefined,
+              : undefined
+            : {
+                set: [],
+              },
         },
       })
     }
