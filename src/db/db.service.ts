@@ -70,6 +70,7 @@ export class DbService
         this.variantAdditionalAttribute.deleteMany(),
         this.soleProprietorInfo.deleteMany(),
         this.soleProprietorCurrentAccount.deleteMany(),
+        this.customFinancialOperation.deleteMany(),
       ])
     }
   }

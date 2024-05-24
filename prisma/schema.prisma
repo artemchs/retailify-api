@@ -78,7 +78,8 @@ model Supplier {
 
   totalOutstandingBalance Decimal @default(0) @db.Decimal(12, 2)
 
-  isArchived Boolean @default(false)
+  isArchived  Boolean       @default(false)
+  transactions Transaction[]
 }
 
 model Warehouse {
@@ -582,14 +583,19 @@ model Transaction {
   amount    Decimal              @db.Decimal(12, 2)
   type      TransactionType
   direction TransactionDirection
+  comment   String?
 
   shift   CashierShift? @relation(fields: [shiftId], references: [id])
   shiftId String?
 
-  orderInvoice   OrderInvoice? @relation(fields: [orderInvoiceId], references: [id])
-  orderInvoiceId String?
-  refund         Refund?       @relation(fields: [refundId], references: [id])
-  refundId       String?
+  orderInvoice      OrderInvoice?             @relation(fields: [orderInvoiceId], references: [id])
+  orderInvoiceId    String?
+  refund            Refund?                   @relation(fields: [refundId], references: [id])
+  refundId          String?
+  customOperation   CustomFinancialOperation? @relation(fields: [customOperationId], references: [id])
+  customOperationId String?
+  supplier          Supplier?                 @relation(fields: [supplierId], references: [id])
+  supplierId        String?
 }
 
 enum TransactionDirection {
@@ -604,7 +610,16 @@ enum TransactionType {
   SALARY_PAYMENT
   CASH_REGISTER_DEPOSIT
   CASH_REGISTER_WITHDRAWAL
-  // Add more types as needed
+  OTHER
+}
+
+model CustomFinancialOperation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name         String
+  transactions Transaction[]
 }
 
 model Refund {

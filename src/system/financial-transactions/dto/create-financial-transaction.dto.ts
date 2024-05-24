@@ -1,6 +1,4 @@
-import { TransactionDirection, TransactionType } from '@prisma/client'
 import { Transform } from 'class-transformer'
-
 import {
   IsDate,
   IsEnum,
@@ -8,35 +6,39 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  ValidateIf,
 } from 'class-validator'
 
+export enum CreateFinancialTransactionType {
+  SUPPLIER_PAYMENT = 'SUPPLIER_PAYMENT',
+  OTHER = 'OTHER',
+}
+
 export class CreateFinancialTransactionDto {
-  @IsNotEmpty({ message: 'Дата не должна быть пустой' })
+  @IsNotEmpty()
   @Transform(({ value }) => new Date(value))
   @IsDate()
-  goodsReceiptDate: Date
+  date: Date
 
   @IsNotEmpty()
   @IsNumber()
   amount: number
 
   @IsNotEmpty()
-  @IsEnum(TransactionType)
-  type: TransactionType
+  @IsEnum(CreateFinancialTransactionType)
+  type: CreateFinancialTransactionType
 
+  @ValidateIf((o) => o.type === CreateFinancialTransactionType.SUPPLIER_PAYMENT)
   @IsNotEmpty()
-  @IsEnum(TransactionDirection)
-  direction: TransactionDirection
+  @IsString()
+  supplierId?: string
+
+  @ValidateIf((o) => o.type === CreateFinancialTransactionType.OTHER)
+  @IsNotEmpty()
+  @IsString()
+  customOperationId?: string
 
   @IsOptional()
   @IsString()
-  shiftId?: string
-
-  @IsOptional()
-  @IsString()
-  orderInvoiceId?: string
-
-  @IsOptional()
-  @IsString()
-  refundId?: string
+  comment?: string
 }

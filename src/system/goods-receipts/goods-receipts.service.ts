@@ -409,6 +409,7 @@ export class GoodsReceiptsService {
           amount: createGoodsReceiptDto.amountPaid,
           direction: 'CREDIT',
           type: 'SUPPLIER_PAYMENT',
+          supplierId: createGoodsReceiptDto.supplierId,
         },
       }),
     ])
@@ -659,6 +660,8 @@ export class GoodsReceiptsService {
           amount: diff,
           direction: 'CREDIT',
           type: 'SUPPLIER_PAYMENT',
+          supplierId:
+            updateGoodsReceiptDto.supplierId ?? goodsReceipt.supplierId,
         },
       })
     }

@@ -1,5 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { CreateFinancialTransactionDto } from './dto/create-financial-transaction.dto'
+import {
+  CreateFinancialTransactionDto,
+  CreateFinancialTransactionType,
+} from './dto/create-financial-transaction.dto'
 import { DbService } from '../../db/db.service'
 import { FindAllFinancialTransactionsDto } from './dto/findAll-financial-transactions'
 import {
@@ -27,10 +30,72 @@ export class FinancialTransactionsService {
     return data
   }
 
-  async create(createFinancialTransactionDto: CreateFinancialTransactionDto) {
-    return await this.db.transaction.create({
-      data: createFinancialTransactionDto,
+  private async getSupplier(id: string) {
+    const supplier = await this.db.supplier.findUnique({
+      where: {
+        id,
+      },
     })
+
+    if (!supplier) {
+      throw new NotFoundException('Поставщик не найден.')
+    }
+
+    return supplier
+  }
+
+  async create({
+    amount,
+    date,
+    type,
+    comment,
+    customOperationId,
+    supplierId,
+  }: CreateFinancialTransactionDto) {
+    if (type === CreateFinancialTransactionType.OTHER) {
+      return await this.db.transaction.create({
+        data: {
+          amount,
+          direction: 'CREDIT',
+          type: 'OTHER',
+          date,
+          customOperation: {
+            connect: {
+              id: customOperationId,
+            },
+          },
+          comment,
+        },
+      })
+    } else if (
+      type === CreateFinancialTransactionType.SUPPLIER_PAYMENT &&
+      supplierId
+    ) {
+      await this.getSupplier(supplierId)
+
+      await Promise.all([
+        this.db.supplier.update({
+          where: {
+            id: supplierId,
+          },
+          data: {
+            totalOutstandingBalance: {
+              decrement: amount,
+            },
+          },
+        }),
+        this.db.transaction.create({
+          data: {
+            amount,
+            direction: 'CREDIT',
+            type: 'SUPPLIER_PAYMENT',
+            date,
+            comment,
+            supplierId,
+          },
+        }),
+      ])
+    }
   }
 
   async findAll({

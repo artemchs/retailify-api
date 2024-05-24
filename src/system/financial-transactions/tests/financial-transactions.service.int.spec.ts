@@ -2,7 +2,10 @@ import { DbService } from 'src/db/db.service'
 import { FinancialTransactionsService } from '../financial-transactions.service'
 import { Test } from '@nestjs/testing'
 import { AppModule } from 'src/app.module'
-import { CreateFinancialTransactionDto } from '../dto/create-financial-transaction.dto'
+import {
+  CreateFinancialTransactionDto,
+  CreateFinancialTransactionType,
+} from '../dto/create-financial-transaction.dto'
 import { FindAllFinancialTransactionsDto } from '../dto/findAll-financial-transactions'
 import { NotFoundException } from '@nestjs/common'
 
@@ -28,18 +31,73 @@ describe('FinancialTransactions (int)', () => {
   })
 
   describe('create', () => {
+    beforeEach(async () => {
+      await Promise.all([
+        db.customFinancialOperation.create({
+          data: {
+            name: 'asdf',
+            id: 'customFinancialOperation',
+          },
+        }),
+        db.supplier.create({
+          data: {
+            id: 'supplier',
+            address: 'asfd',
+            contactPerson: 'asdf',
+            email: 'asdf',
+            name: 'asdf',
+            phone: 'asdf',
+          },
+        }),
+      ])
+    })
+
     const data: CreateFinancialTransactionDto = {
-      amount: 1234.56,
-      direction: 'DEBIT',
-      type: 'CASH_REGISTER_WITHDRAWAL',
+      amount: 100,
+      date: new Date(),
+      type: CreateFinancialTransactionType.OTHER,
+      comment: 'asdfasdfasdf',
+      customOperationId: 'customFinancialOperation',
     }
 
-    it('should successfully create a new financial transaction', async () => {
+    it('should successfully create a custom financial transaction', async () => {
       await service.create(data)
 
       const transaction = await db.transaction.findFirst()
 
-      expect(Number(transaction?.amount)).toBe(data.amount)
+      expect(transaction).toBeDefined()
+      expect(transaction).not.toBeNull()
+      expect(transaction?.customOperationId).toBe('customFinancialOperation')
+    })
+
+    it('should successfully create a supplier payment transaction', async () => {
+      const alteredData: CreateFinancialTransactionDto = {
+        ...data,
+        type: CreateFinancialTransactionType.SUPPLIER_PAYMENT,
+        amount: 100,
+        supplierId: 'supplier',
+      }
+
+      await service.create(alteredData)
+
+      const transaction = await db.transaction.findFirst()
+
+      expect(transaction).toBeDefined()
+      expect(transaction).not.toBeNull()
+      expect(transaction?.supplierId).toBe('supplier')
+    })
+
+    it('should fail if the supplier does not exist', async () => {
+      const alteredData: CreateFinancialTransactionDto = {
+        ...data,
+        type: CreateFinancialTransactionType.SUPPLIER_PAYMENT,
+        amount: 100,
+        supplierId: 'non-existent-supplier',
+      }
+
+      await expect(service.create(alteredData)).rejects.toThrow(
+        NotFoundException,
+      )
     })
   })
 
