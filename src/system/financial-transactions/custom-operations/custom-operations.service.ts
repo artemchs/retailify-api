@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { CreateCustomOperationDto } from './dto/create-custom-operation.dto'
 import { UpdateCustomOperationDto } from './dto/update-custom-operation.dto'
 import { DbService } from '../../../db/db.service'
@@ -9,6 +9,20 @@ import { buildContainsArray } from 'src/system/common/utils/db-helpers'
 @Injectable()
 export class CustomOperationsService {
   constructor(private db: DbService) {}
+
+  private async getCustomOperation(id: string) {
+    const customOperation = await this.db.customFinancialOperation.findUnique({
+      where: {
+        id,
+      },
+    })
+
+    if (!customOperation) {
+      throw new NotFoundException('Пользовательская операция не найдена.')
+    }
+
+    return customOperation
+  }
 
   async create(createCustomOperationDto: CreateCustomOperationDto) {
     return await this.db.customFinancialOperation.create({
@@ -45,7 +59,7 @@ export class CustomOperationsService {
   }
 
   async findOne(id: string) {
-    return `This action returns a #${id} customOperation`
+    return await this.getCustomOperation(id)
   }
 
   async update(id: string, updateCustomOperationDto: UpdateCustomOperationDto) {
