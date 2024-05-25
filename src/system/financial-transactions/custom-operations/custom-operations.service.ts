@@ -3,6 +3,8 @@ import { CreateCustomOperationDto } from './dto/create-custom-operation.dto'
 import { UpdateCustomOperationDto } from './dto/update-custom-operation.dto'
 import { DbService } from '../../../db/db.service'
 import { FindAllCustomOperationDto } from './dto/findAll-custom-operation.dto'
+import { Prisma } from '@prisma/client'
+import { buildContainsArray } from 'src/system/common/utils/db-helpers'
 
 @Injectable()
 export class CustomOperationsService {
@@ -15,7 +17,31 @@ export class CustomOperationsService {
   }
 
   async findAll({ cursor, query }: FindAllCustomOperationDto) {
-    return `This action returns all customOperations`
+    const limit = 10
+
+    const where: Prisma.CustomFinancialOperationWhereInput = {
+      OR: buildContainsArray({ fields: ['name'], query }),
+    }
+
+    const items = await this.db.customFinancialOperation.findMany({
+      take: limit + 1,
+      where,
+      cursor: cursor ? { id: cursor } : undefined,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    let nextCursor: typeof cursor | undefined = undefined
+    if (items.length > limit) {
+      const nextItem = items.pop()
+      nextCursor = nextItem!.id
+    }
+
+    return {
+      items,
+      nextCursor,
+    }
   }
 
   async findOne(id: string) {
