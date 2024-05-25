@@ -9,7 +9,9 @@ export class CustomOperationsService {
   constructor(private db: DbService) {}
 
   async create(createCustomOperationDto: CreateCustomOperationDto) {
-    return 'This action adds a new customOperation'
+    return await this.db.customFinancialOperation.create({
+      data: createCustomOperationDto,
+    })
   }
 
   async findAll({ cursor, query }: FindAllCustomOperationDto) {
