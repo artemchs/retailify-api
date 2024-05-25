@@ -13,6 +13,6 @@ export type FindAllFinancialTransactionsDto = {
   }
   orderBy?: {
     amount?: 'asc' | 'desc'
-    createdAt?: 'asc' | 'desc'
+    date?: 'asc' | 'desc'
   }
 }

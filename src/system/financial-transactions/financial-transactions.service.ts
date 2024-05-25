@@ -147,6 +147,7 @@ export class FinancialTransactionsService {
           orderInvoice: true,
           refund: true,
           shift: true,
+          customOperation: true,
         },
       }),
       this.db.transaction.count({
