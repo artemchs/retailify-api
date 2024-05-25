@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { CreateCustomOperationDto } from './dto/create-custom-operation.dto'
 import { UpdateCustomOperationDto } from './dto/update-custom-operation.dto'
 import { DbService } from '../../../db/db.service'
@@ -74,6 +78,23 @@ export class CustomOperationsService {
   }
 
   async remove(id: string) {
-    return `This action removes a #${id} customOperation`
+    await this.getCustomOperation(id)
+    const transactionsCount = await this.db.transaction.count({
+      where: {
+        customOperationId: id,
+      },
+    })
+
+    if (transactionsCount >= 1) {
+      throw new BadRequestException(
+        `Невозможно удалить операцию, так как она используеться в ${transactionsCount} транзакциях.`,
+      )
+    }
+
+    await this.db.customFinancialOperation.delete({
+      where: {
+        id,
+      },
+    })
   }
 }
