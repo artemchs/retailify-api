@@ -13,7 +13,7 @@ import { CreateCustomOperationDto } from './dto/create-custom-operation.dto'
 import { UpdateCustomOperationDto } from './dto/update-custom-operation.dto'
 import { FindAllCustomOperationDto } from './dto/findAll-custom-operation.dto'
 
-@Controller('system/financial-transactions/custom-operations')
+@Controller('system/custom-operations')
 export class CustomOperationsController {
   constructor(
     private readonly customOperationsService: CustomOperationsService,
@@ -25,8 +25,8 @@ export class CustomOperationsController {
   }
 
   @Get()
-  findAll(@Query() queryData: FindAllCustomOperationDto) {
-    return this.customOperationsService.findAll(queryData)
+  findAll(@Query() query: FindAllCustomOperationDto) {
+    return this.customOperationsService.findAll(query)
   }
 
   @Get(':id')

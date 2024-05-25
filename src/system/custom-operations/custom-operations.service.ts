@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common'
 import { CreateCustomOperationDto } from './dto/create-custom-operation.dto'
 import { UpdateCustomOperationDto } from './dto/update-custom-operation.dto'
-import { DbService } from '../../../db/db.service'
+import { DbService } from '../../db/db.service'
 import { FindAllCustomOperationDto } from './dto/findAll-custom-operation.dto'
 import { Prisma } from '@prisma/client'
 import { buildContainsArray } from 'src/system/common/utils/db-helpers'

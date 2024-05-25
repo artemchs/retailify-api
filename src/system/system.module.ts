@@ -23,8 +23,9 @@ import { CustomersModule } from './customers/customers.module'
 import { OrdersModule } from './orders/orders.module'
 import { RefundsModule } from './refunds/refunds.module'
 import { VariantAdditionalAttributesModule } from './variant-additional-attributes/variant-additional-attributes.module'
-import { SoleProprietorInfoModule } from './sole-proprietor-info/sole-proprietor-info.module';
-import { FinancialTransactionsModule } from './financial-transactions/financial-transactions.module';
+import { SoleProprietorInfoModule } from './sole-proprietor-info/sole-proprietor-info.module'
+import { FinancialTransactionsModule } from './financial-transactions/financial-transactions.module'
+import { CustomOperationsModule } from './custom-operations/custom-operations.module'
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { FinancialTransactionsModule } from './financial-transactions/financial-
     VariantAdditionalAttributesModule,
     SoleProprietorInfoModule,
     FinancialTransactionsModule,
+    CustomOperationsModule,
   ],
   providers: [
     {
