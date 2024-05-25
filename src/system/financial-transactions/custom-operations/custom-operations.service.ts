@@ -63,7 +63,14 @@ export class CustomOperationsService {
   }
 
   async update(id: string, updateCustomOperationDto: UpdateCustomOperationDto) {
-    return `This action updates a #${id} customOperation`
+    await this.getCustomOperation(id)
+
+    return await this.db.customFinancialOperation.update({
+      where: {
+        id,
+      },
+      data: updateCustomOperationDto,
+    })
   }
 
   async remove(id: string) {
