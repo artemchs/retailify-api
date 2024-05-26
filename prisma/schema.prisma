@@ -78,7 +78,7 @@ model Supplier {
 
   totalOutstandingBalance Decimal @default(0) @db.Decimal(12, 2)
 
-  isArchived  Boolean       @default(false)
+  isArchived   Boolean       @default(false)
   transactions Transaction[]
 }
 
@@ -596,6 +596,8 @@ model Transaction {
   customOperationId String?
   supplier          Supplier?                 @relation(fields: [supplierId], references: [id])
   supplierId        String?
+
+  isManual Boolean @default(false)
 }
 
 enum TransactionDirection {

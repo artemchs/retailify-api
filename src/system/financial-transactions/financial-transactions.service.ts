@@ -65,6 +65,7 @@ export class FinancialTransactionsService {
             },
           },
           comment,
+          isManual: true,
         },
       })
     } else if (
@@ -92,6 +93,7 @@ export class FinancialTransactionsService {
             date,
             comment,
             supplierId,
+            isManual: true,
           },
         }),
       ])
