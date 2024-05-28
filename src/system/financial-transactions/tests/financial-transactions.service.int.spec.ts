@@ -8,6 +8,7 @@ import {
 } from '../dto/create-financial-transaction.dto'
 import { FindAllFinancialTransactionsDto } from '../dto/findAll-financial-transactions'
 import { NotFoundException } from '@nestjs/common'
+import { UpdateFinancialTransactionDto } from '../dto/update-financial-transaction.dto'
 
 describe('FinancialTransactions (int)', () => {
   let service: FinancialTransactionsService
@@ -243,6 +244,228 @@ describe('FinancialTransactions (int)', () => {
       await expect(service.findOne('non-existent')).rejects.toThrow(
         NotFoundException,
       )
+    })
+  })
+
+  describe('update', () => {
+    const id = '1'
+
+    beforeEach(async () => {
+      await db.transaction.create({
+        data: {
+          id,
+          amount: 12345.68,
+          direction: 'DEBIT',
+          type: 'SALARY_PAYMENT',
+        },
+      })
+    })
+
+    const data: UpdateFinancialTransactionDto = {
+      type: CreateFinancialTransactionType.OTHER,
+    }
+
+    it('should update the type of the transaction', async () => {
+      await service.update(id, data)
+
+      const transaction = await db.transaction.findUnique({
+        where: { id },
+      })
+
+      expect(transaction?.type).toBe('OTHER')
+    })
+
+    it('should update the amount when transaction type is "SUPPLIER_PAYMENT"', async () => {
+      const supplierId = '1'
+      const transactionId = '2'
+
+      await db.supplier.create({
+        data: {
+          id: supplierId,
+          address: 'asdf',
+          contactPerson: 'asdf',
+          email: 'asdf',
+          name: 'asdf',
+          phone: 'asdf',
+          totalOutstandingBalance: 0,
+        },
+      })
+
+      await db.transaction.create({
+        data: {
+          id: transactionId,
+          amount: 100,
+          direction: 'CREDIT',
+          type: 'SUPPLIER_PAYMENT',
+          supplierId,
+        },
+      })
+
+      await service.update(transactionId, {
+        amount: 50,
+        supplierId,
+        type: CreateFinancialTransactionType.SUPPLIER_PAYMENT,
+      })
+
+      const transaction = await db.transaction.findUnique({
+        where: { id: transactionId },
+      })
+
+      const supplier = await db.supplier.findUnique({
+        where: { id: supplierId },
+      })
+
+      expect(Number(transaction?.amount)).toBe(50)
+      expect(Number(supplier?.totalOutstandingBalance)).toBe(50)
+    })
+
+    it('should update the amount when transaction type is "OTHER"', async () => {
+      const transactionId = '3'
+
+      await db.transaction.create({
+        data: {
+          id: transactionId,
+          amount: 200,
+          direction: 'CREDIT',
+          type: 'OTHER',
+        },
+      })
+
+      await service.update(transactionId, { amount: 150 })
+
+      const transaction = await db.transaction.findUnique({
+        where: { id: transactionId },
+      })
+
+      expect(Number(transaction?.amount)).toBe(150)
+    })
+
+    it('should update both supplier and amount when both change', async () => {
+      const oldSupplierId = '1'
+      const newSupplierId = '2'
+      const transactionId = '4'
+
+      await db.supplier.create({
+        data: {
+          id: oldSupplierId,
+          address: 'asdf',
+          contactPerson: 'asdf',
+          email: 'asdf',
+          name: 'asdf',
+          phone: 'asdf',
+          totalOutstandingBalance: 100,
+        },
+      })
+
+      await db.supplier.create({
+        data: {
+          id: newSupplierId,
+          address: 'qwer',
+          contactPerson: 'qwer',
+          email: 'qwer',
+          name: 'qwer',
+          phone: 'qwer',
+          totalOutstandingBalance: 100,
+        },
+      })
+
+      await db.transaction.create({
+        data: {
+          id: transactionId,
+          amount: 100,
+          direction: 'CREDIT',
+          type: 'SUPPLIER_PAYMENT',
+          supplierId: oldSupplierId,
+        },
+      })
+
+      await service.update(transactionId, {
+        amount: 50,
+        supplierId: newSupplierId,
+        type: CreateFinancialTransactionType.SUPPLIER_PAYMENT,
+      })
+
+      const transaction = await db.transaction.findUnique({
+        where: { id: transactionId },
+      })
+
+      const oldSupplier = await db.supplier.findUnique({
+        where: { id: oldSupplierId },
+      })
+
+      const newSupplier = await db.supplier.findUnique({
+        where: { id: newSupplierId },
+      })
+
+      expect(Number(transaction?.amount)).toBe(50)
+      expect(Number(oldSupplier?.totalOutstandingBalance)).toBe(200)
+      expect(Number(newSupplier?.totalOutstandingBalance)).toBe(50)
+    })
+
+    it('should change transaction type from "SUPPLIER_PAYMENT" to "OTHER" and adjust supplier balance', async () => {
+      const supplierId = '1'
+      const transactionId = '5'
+
+      await db.supplier.create({
+        data: {
+          id: supplierId,
+          address: 'asdf',
+          contactPerson: 'asdf',
+          email: 'asdf',
+          name: 'asdf',
+          phone: 'asdf',
+          totalOutstandingBalance: 100,
+        },
+      })
+
+      await db.transaction.create({
+        data: {
+          id: transactionId,
+          amount: 100,
+          direction: 'CREDIT',
+          type: 'SUPPLIER_PAYMENT',
+          supplierId: supplierId,
+        },
+      })
+
+      await service.update(transactionId, {
+        type: CreateFinancialTransactionType.OTHER,
+      })
+
+      const transaction = await db.transaction.findUnique({
+        where: { id: transactionId },
+      })
+
+      const supplier = await db.supplier.findUnique({
+        where: { id: supplierId },
+      })
+
+      expect(transaction?.type).toBe('OTHER')
+      expect(Number(supplier?.totalOutstandingBalance)).toBe(200)
+    })
+
+    it('should handle update when no supplier is defined', async () => {
+      const transactionId = '6'
+
+      await db.transaction.create({
+        data: {
+          id: transactionId,
+          amount: 100,
+          direction: 'CREDIT',
+          type: 'SUPPLIER_PAYMENT',
+        },
+      })
+
+      await service.update(transactionId, {
+        amount: 50,
+        type: CreateFinancialTransactionType.SUPPLIER_PAYMENT,
+      })
+
+      const transaction = await db.transaction.findUnique({
+        where: { id: transactionId },
+      })
+
+      expect(Number(transaction?.amount)).toBe(50)
     })
   })
 })

@@ -11,6 +11,7 @@ import {
   getPaginationData,
 } from '../common/utils/db-helpers'
 import { Prisma } from '@prisma/client'
+import { UpdateFinancialTransactionDto } from './dto/update-financial-transaction.dto'
 
 @Injectable()
 export class FinancialTransactionsService {
@@ -168,5 +169,80 @@ export class FinancialTransactionsService {
 
   async findOne(id: string) {
     return this.getTransaction(id)
+  }
+
+  async update(
+    id: string,
+    updateFinancialTransactionDto: UpdateFinancialTransactionDto,
+  ) {
+    const transaction = await this.getTransaction(id)
+    const updatedAmount = updateFinancialTransactionDto.amount ?? 0
+    const transactionAmount = Number(transaction.amount)
+
+    // Update the basic info of the transaction
+    await this.db.transaction.update({
+      where: { id },
+      data: updateFinancialTransactionDto,
+    })
+
+    const isSupplierPayment =
+      updateFinancialTransactionDto.type === 'SUPPLIER_PAYMENT'
+    const isOtherType = updateFinancialTransactionDto.type === 'OTHER'
+    const isAmountChanged = updatedAmount !== transactionAmount
+    const isSupplierChanged =
+      updateFinancialTransactionDto.supplierId !== transaction.supplierId
+
+    if (isSupplierPayment) {
+      if (isSupplierChanged) {
+        // If the supplier has changed, update the balances of both old and new suppliers
+        if (transaction.supplierId) {
+          // Increment the outstanding balance of the old supplier
+          await this.db.supplier.update({
+            where: { id: transaction.supplierId },
+            data: {
+              totalOutstandingBalance: {
+                increment: transactionAmount,
+              },
+            },
+          })
+        }
+
+        // Decrement the outstanding balance of the new supplier
+        if (updateFinancialTransactionDto.supplierId) {
+          await this.db.supplier.update({
+            where: { id: updateFinancialTransactionDto.supplierId },
+            data: {
+              totalOutstandingBalance: {
+                decrement: updatedAmount,
+              },
+            },
+          })
+        }
+      } else if (isAmountChanged) {
+        // If the amount has changed but the supplier remains the same
+        await this.db.supplier.update({
+          where: { id: updateFinancialTransactionDto.supplierId },
+          data: {
+            totalOutstandingBalance: {
+              decrement: updatedAmount - transactionAmount,
+            },
+          },
+        })
+      }
+    }
+
+    if (isOtherType && transaction.type === 'SUPPLIER_PAYMENT') {
+      // If the transaction type has changed from SUPPLIER_PAYMENT to OTHER, increment the outstanding balance of the old supplier
+      if (transaction.supplierId) {
+        await this.db.supplier.update({
+          where: { id: transaction.supplierId },
+          data: {
+            totalOutstandingBalance: {
+              increment: transactionAmount,
+            },
+          },
+        })
+      }
+    }
   }
 }

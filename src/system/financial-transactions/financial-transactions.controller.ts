@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common'
+import { Controller, Get, Post, Body, Param, Query, Put } from '@nestjs/common'
 import { FinancialTransactionsService } from './financial-transactions.service'
 import { CreateFinancialTransactionDto } from './dto/create-financial-transaction.dto'
 import { FindAllFinancialTransactionsDto } from './dto/findAll-financial-transactions'
+import { UpdateFinancialTransactionDto } from './dto/update-financial-transaction.dto'
 
 @Controller('system/financial-transactions')
 export class FinancialTransactionsController {
@@ -28,5 +29,16 @@ export class FinancialTransactionsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.financialTransactionsService.findOne(id)
+  }
+
+  @Put(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateFinancialTransactionDto: UpdateFinancialTransactionDto,
+  ) {
+    return this.financialTransactionsService.update(
+      id,
+      updateFinancialTransactionDto,
+    )
   }
 }
