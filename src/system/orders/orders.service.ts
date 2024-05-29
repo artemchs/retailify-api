@@ -364,13 +364,13 @@ export class OrdersService {
                       createMany: {
                         data: [
                           {
-                            direction: 'CREDIT',
+                            direction: 'DEBIT',
                             amount: cardTotal ?? 0,
                             type: 'ORDER_PAYMENT',
                             shiftId,
                           },
                           {
-                            direction: 'CREDIT',
+                            direction: 'DEBIT',
                             amount: cashTotal ?? 0,
                             type: 'ORDER_PAYMENT',
                             shiftId,
@@ -381,7 +381,7 @@ export class OrdersService {
                   : {
                       create: {
                         amount: total ?? 0,
-                        direction: 'CREDIT',
+                        direction: 'DEBIT',
                         type: 'ORDER_PAYMENT',
                         shiftId,
                       },

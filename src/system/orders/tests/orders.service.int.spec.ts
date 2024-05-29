@@ -262,7 +262,7 @@ describe('OrdersService', () => {
       expect(Number(orderInvoice?.totalCardAmount)).toBe(0)
       expect(Number(transaction?.amount)).toBe(90)
       expect(transaction?.type).toBe('ORDER_PAYMENT')
-      expect(transaction?.direction).toBe('CREDIT')
+      expect(transaction?.direction).toBe('DEBIT')
     })
 
     it('should correctly create a mixed payment inovice and transaction', async () => {

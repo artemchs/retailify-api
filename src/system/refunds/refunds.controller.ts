@@ -5,6 +5,7 @@ import {
   FindAllRefundDto,
   FindAllRefundInfiniteListDto,
 } from './dto/findAll-refund.dto'
+import { GetCurrentUserAccessToken } from '../common/decorators'
 
 @Controller('system/refunds')
 export class RefundsController {
@@ -13,9 +14,10 @@ export class RefundsController {
   @Post()
   create(
     @Body() createRefundDto: CreateRefundDto,
-    @Query('shiftId') shiftId: string,
+    @GetCurrentUserAccessToken('sub') userId: string,
+    @Query('shiftId') shiftId?: string,
   ) {
-    return this.refundsService.create(createRefundDto, shiftId)
+    return this.refundsService.create(createRefundDto, userId, shiftId)
   }
 
   @Get()

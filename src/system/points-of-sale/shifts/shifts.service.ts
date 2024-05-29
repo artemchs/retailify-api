@@ -100,7 +100,7 @@ export class ShiftsService {
           amount: depositDto.amount,
           type: 'CASH_REGISTER_DEPOSIT',
           shiftId: shift.id,
-          direction: 'CREDIT',
+          direction: 'DEBIT',
         },
       }),
       this.db.pointOfSale.update({
@@ -154,7 +154,7 @@ export class ShiftsService {
           amount: withdrawalDto.amount,
           type: 'CASH_REGISTER_WITHDRAWAL',
           shiftId: shift.id,
-          direction: 'DEBIT',
+          direction: 'CREDIT',
         },
       }),
       this.db.pointOfSale.update({

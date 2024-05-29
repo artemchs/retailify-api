@@ -44,21 +44,23 @@ export class RefundsService {
     return customer
   }
 
-  private async getShift(id: string) {
-    const shift = await this.db.cashierShift.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        pointOfSale: true,
-      },
-    })
+  private async getShift(id?: string) {
+    if (id) {
+      const shift = await this.db.cashierShift.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          pointOfSale: true,
+        },
+      })
 
-    if (!shift) {
-      throw new NotFoundException('Смена не найдена.')
+      if (!shift) {
+        throw new NotFoundException('Смена не найдена.')
+      }
+
+      return shift
     }
-
-    return shift
   }
 
   private async getRefund(id: string) {
@@ -400,14 +402,27 @@ export class RefundsService {
     }
   }
 
-  async create(refundOrderDto: CreateRefundDto, shiftId: string) {
-    const [count, shift, order] = await Promise.all([
+  async create(
+    refundOrderDto: CreateRefundDto,
+    userId: string,
+    shiftId?: string,
+  ) {
+    const [count, shift, order, user] = await Promise.all([
       this.db.refund.count(),
       this.getShift(shiftId),
       this.getOrder(refundOrderDto.orderId),
+      this.db.systemUser.findUnique({
+        where: {
+          id: userId,
+        },
+      }),
     ])
 
-    if (!shift?.isOpened) {
+    if (!user) {
+      throw new BadRequestException('Пользователь не найден.')
+    }
+
+    if (user.role !== 'ADMIN' && !shift?.isOpened) {
       throw new BadRequestException('Смена закрыта.')
     }
 
@@ -465,7 +480,8 @@ export class RefundsService {
         data: {
           name: `Возврат #${count + 1}`,
           orderId: refundOrderDto.orderId,
-          shiftId: shift.id,
+          shiftId: shift?.id,
+          adminId: user.role === 'ADMIN' ? user.id : undefined,
           refundItems: {
             createMany: {
               data: refundItems,
@@ -474,8 +490,8 @@ export class RefundsService {
           amount: refundTotal,
           transactions: {
             create: {
-              amount: refundTotal * -1,
-              direction: 'DEBIT',
+              amount: refundTotal,
+              direction: 'CREDIT',
               type: 'ORDER_REFUND',
               shiftId,
               orderInvoiceId: order.orderInvoiceId,

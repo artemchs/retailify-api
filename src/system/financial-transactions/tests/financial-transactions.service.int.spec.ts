@@ -109,7 +109,7 @@ describe('FinancialTransactions (int)', () => {
           data: {
             id: '1',
             amount: 1000,
-            direction: 'CREDIT',
+            direction: 'DEBIT',
             type: 'CASH_REGISTER_DEPOSIT',
             createdAt: new Date(2),
             shift: {
@@ -132,7 +132,7 @@ describe('FinancialTransactions (int)', () => {
           data: {
             id: '2',
             amount: 500,
-            direction: 'DEBIT',
+            direction: 'CREDIT',
             type: 'CASH_REGISTER_WITHDRAWAL',
             createdAt: new Date(5),
           },
@@ -227,7 +227,7 @@ describe('FinancialTransactions (int)', () => {
         data: {
           id,
           amount: 12345.68,
-          direction: 'DEBIT',
+          direction: 'CREDIT',
           type: 'SALARY_PAYMENT',
         },
       })
@@ -255,7 +255,7 @@ describe('FinancialTransactions (int)', () => {
         data: {
           id,
           amount: 12345.68,
-          direction: 'DEBIT',
+          direction: 'CREDIT',
           type: 'SALARY_PAYMENT',
         },
       })

@@ -26,6 +26,7 @@ model SystemUser {
 
   soleProprietorInfo   SoleProprietorInfo? @relation(fields: [soleProprietorInfoId], references: [id])
   soleProprietorInfoId String?             @unique
+  refunds              Refund[]
 }
 
 model SoleProprietorInfo {
@@ -632,6 +633,8 @@ model Refund {
   name    String
   shift   CashierShift? @relation(fields: [shiftId], references: [id])
   shiftId String?
+  admin   SystemUser?   @relation(fields: [adminId], references: [id])
+  adminId String?
 
   order   Order?  @relation(fields: [orderId], references: [id])
   orderId String?

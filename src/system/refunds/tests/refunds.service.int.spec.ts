@@ -50,6 +50,14 @@ describe('RefundsService', () => {
           phoneNumber: '2134',
         },
       }),
+      db.systemUser.create({
+        data: {
+          email: 'asdf',
+          fullName: 'asdf',
+          hash: 'asdf',
+          id: 'user',
+        },
+      }),
     ])
 
     await db.pointOfSale.create({
@@ -226,7 +234,7 @@ describe('RefundsService', () => {
     }
 
     it('should create a refund', async () => {
-      await service.create(data, shiftId)
+      await service.create(data, 'user', shiftId)
 
       const refundsCount = await db.refund.count()
 
@@ -234,17 +242,17 @@ describe('RefundsService', () => {
     })
 
     it('should create a transaction for the total amount of the refunded goods', async () => {
-      await service.create(data, shiftId)
+      await service.create(data, 'user', shiftId)
 
       const transactionsCount = await db.transaction.count()
       const transaction = await db.transaction.findFirst()
 
       expect(transactionsCount).toBe(1)
-      expect(Number(transaction?.amount)).toBe(-100)
+      expect(Number(transaction?.amount)).toBe(100)
     })
 
     it('should increment quantities of the refunded items', async () => {
-      await service.create(data, shiftId)
+      await service.create(data, 'user', shiftId)
 
       const vtw = await db.variantToWarehouse.findUnique({
         where: {
@@ -280,9 +288,9 @@ describe('RefundsService', () => {
     })
 
     it('should fail if the shift does not exist', async () => {
-      await expect(service.create(data, 'non-existent')).rejects.toThrow(
-        NotFoundException,
-      )
+      await expect(
+        service.create(data, 'user', 'non-existent'),
+      ).rejects.toThrow(NotFoundException)
     })
   })
 

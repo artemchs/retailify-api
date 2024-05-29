@@ -261,7 +261,7 @@ describe('CashierShiftsService', () => {
       const transaction = await db.transaction.findFirst()
 
       expect(Number(transaction?.amount)).toBe(100)
-      expect(transaction?.direction).toBe('CREDIT')
+      expect(transaction?.direction).toBe('DEBIT')
       expect(transaction?.type).toBe('CASH_REGISTER_DEPOSIT')
     })
 
@@ -313,7 +313,7 @@ describe('CashierShiftsService', () => {
       const transaction = await db.transaction.findFirst()
 
       expect(Number(transaction?.amount)).toBe(100)
-      expect(transaction?.direction).toBe('DEBIT')
+      expect(transaction?.direction).toBe('CREDIT')
       expect(transaction?.type).toBe('CASH_REGISTER_WITHDRAWAL')
     })
 
