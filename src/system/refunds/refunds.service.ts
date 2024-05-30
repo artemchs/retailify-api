@@ -228,6 +228,12 @@ export class RefundsService {
               },
             },
           },
+          admin: {
+            select: {
+              id: true,
+              fullName: true,
+            },
+          },
         },
       }),
       this.db.refund.count({

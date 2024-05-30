@@ -17,6 +17,7 @@
     "goods-receipts",
     "sole-proprietor-info",
     "financial-transactions",
-    "custom-operations"
+    "custom-operations",
+    "refunds"
   ]
 }
