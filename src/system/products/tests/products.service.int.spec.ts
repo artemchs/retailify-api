@@ -9,6 +9,7 @@ import { UpdateProductDto } from '../dto/update-product.dto'
 import { StorageService } from '../../storage/storage.service'
 import { ListObjectsV2Command } from '@aws-sdk/client-s3'
 import { BatchEditProductDto } from '../dto/batch-edit-product.dto'
+import { ProductGender, ProductSeason } from '@prisma/client'
 
 describe('ProductsService', () => {
   let service: ProductsService
@@ -58,10 +59,23 @@ describe('ProductsService', () => {
           productName: 'Test Category 1',
         },
       }),
+      db.category.create({
+        data: {
+          id: 'Test Category 2',
+          name: 'Test Category 2',
+          productName: 'Test Category 2',
+        },
+      }),
       db.brand.create({
         data: {
           id: 'Test Brand 1',
           name: 'Test Brand 1',
+        },
+      }),
+      db.brand.create({
+        data: {
+          id: 'Test Brand 2',
+          name: 'Test Brand 2',
         },
       }),
     ])
@@ -354,183 +368,197 @@ describe('ProductsService', () => {
 
   describe('batchEdit', () => {
     beforeEach(async () => {
-      await Promise.all([
-        db.product.create({
-          data: {
-            id: 'Test Product 1',
-            title: 'Test Product 1',
-            description: 'Test Product 1',
+      await db.product.createMany({
+        data: [
+          {
+            id: 'Product1',
+            brandId: 'Test Brand 1',
+            categoryId: 'Test Category 1',
+            gender: 'UNISEX',
+            season: 'SUMMER',
             packagingHeight: 10,
             packagingLength: 10,
             packagingWeight: 10,
             packagingWidth: 10,
-            colors: {
-              createMany: {
-                data: [
-                  {
-                    colorId: 'color_1',
-                    index: 0,
-                  },
-                  {
-                    colorId: 'color_2',
-                    index: 1,
-                  },
-                ],
-              },
-            },
-            gender: 'UNISEX',
-            season: 'ALL_SEASON',
-            sku: '1',
+            supplierSku: 'SKU1',
+            sku: 'Product1',
+            title: 'Product1',
           },
-        }),
-        db.product.create({
-          data: {
-            id: 'Test Product 2',
-            title: 'Test Product 2',
-            description: 'Test Product 2',
-            packagingHeight: 10,
-            packagingLength: 10,
-            packagingWeight: 10,
-            packagingWidth: 10,
-            colors: {
-              createMany: {
-                data: [
-                  {
-                    colorId: 'color_1',
-                    index: 0,
-                  },
-                  {
-                    colorId: 'color_2',
-                    index: 1,
-                  },
-                ],
-              },
-            },
-            gender: 'UNISEX',
-            season: 'ALL_SEASON',
-            sku: '2',
+          {
+            id: 'Product2',
+            brandId: 'Test Brand 1',
+            categoryId: 'Test Category 1',
+            gender: 'FEMALE',
+            season: 'WINTER',
+            packagingHeight: 20,
+            packagingLength: 20,
+            packagingWeight: 20,
+            packagingWidth: 20,
+            supplierSku: 'SKU2',
+            sku: 'Product2',
+            title: 'Product2',
           },
-        }),
-        db.product.create({
-          data: {
-            id: 'Test Product 3',
-            title: 'Test Product 3',
-            description: 'Test Product 3',
-            packagingHeight: 10,
-            packagingLength: 10,
-            packagingWeight: 10,
-            packagingWidth: 10,
-            colors: {
-              createMany: {
-                data: [
-                  {
-                    colorId: 'color_1',
-                    index: 0,
-                  },
-                  {
-                    colorId: 'color_2',
-                    index: 1,
-                  },
-                ],
-              },
-            },
-            gender: 'UNISEX',
-            season: 'ALL_SEASON',
-            sku: '3',
-          },
-        }),
-      ])
+        ],
+      })
     })
 
-    it('should successfully edit many products', async () => {
-      const data: BatchEditProductDto = {
-        products: [
-          {
-            id: 'Test Product 1',
-            packagingHeight: 12345,
-          },
-          {
-            id: 'Test Product 2',
-            packagingHeight: 12345,
-          },
-          {
-            id: 'Test Product 3',
-            packagingHeight: 12345,
-          },
+    it('should successfully batch edit products', async () => {
+      const dto: BatchEditProductDto = {
+        productIds: ['Product1', 'Product2'],
+        brandId: 'Test Brand 2',
+        categoryId: 'Test Category 2',
+        gender: ProductGender.UNISEX,
+        season: ProductSeason.SPRING_FALL,
+        packagingHeight: 30,
+        packagingLength: 30,
+        packagingWeight: 30,
+        packagingWidth: 30,
+        supplierSku: 'UpdatedSKU',
+        colors: [
+          { id: 'color_1', index: 0 },
+          { id: 'color_2', index: 1 },
         ],
       }
 
-      await service.batchEdit(data)
-
-      const editedProductsCount = await db.product.count({
-        where: {
-          packagingHeight: 12345,
-        },
-      })
-
-      expect(editedProductsCount).toBe(3)
-    })
-
-    it('should successfully edit with changed colors', async () => {
-      await db.color.create({
-        data: {
-          id: 'New Color 1',
-          color: 'New Color 1',
-          name: 'New Color 1',
-        },
-      })
-
-      const data: BatchEditProductDto = {
-        products: [
-          {
-            id: 'Test Product 1',
-            colors: [
-              {
-                id: 'New Color 1',
-                index: 0,
-              },
-            ],
-          },
-          {
-            id: 'Test Product 2',
-            colors: [
-              {
-                id: 'New Color 1',
-                index: 0,
-              },
-            ],
-          },
-          {
-            id: 'Test Product 3',
-            colors: [
-              {
-                id: 'New Color 1',
-                index: 0,
-              },
-            ],
-          },
-        ],
-      }
-
-      await service.batchEdit(data)
+      await service.batchEdit(dto)
 
       const products = await db.product.findMany({
-        select: {
-          colors: {
-            select: {
-              index: true,
-              colorId: true,
-            },
-          },
-        },
+        where: { id: { in: dto.productIds } },
+        include: { colors: true },
       })
 
-      expect(products.length).toBe(3)
-      for (const product of products) {
-        expect(product.colors[0].index).toBe(0)
-        expect(product.colors[0].colorId).toBe('New Color 1')
-        expect(product.colors[1]).toBeUndefined()
+      products.forEach((product) => {
+        expect(product.brandId).toBe(dto.brandId)
+        expect(product.categoryId).toBe(dto.categoryId)
+        expect(product.gender).toBe(dto.gender)
+        expect(product.season).toBe(dto.season)
+        expect(Number(product.packagingHeight)).toBe(dto.packagingHeight)
+        expect(Number(product.packagingLength)).toBe(dto.packagingLength)
+        expect(Number(product.packagingWeight)).toBe(dto.packagingWeight)
+        expect(Number(product.packagingWidth)).toBe(dto.packagingWidth)
+        expect(product.supplierSku).toBe(dto.supplierSku)
+      })
+
+      const productToColors = await db.productToColor.findMany({
+        where: { productId: { in: dto.productIds } },
+      })
+
+      expect(productToColors.length).toBe(4) // 2 products with 2 colors each
+    })
+
+    it('should handle partial edit without changing colors', async () => {
+      const dto: BatchEditProductDto = {
+        productIds: ['Product1', 'Product2'],
+        brandId: 'Test Brand 2',
+        packagingHeight: 15,
       }
+
+      await service.batchEdit(dto)
+
+      const products = await db.product.findMany({
+        where: { id: { in: dto.productIds } },
+      })
+
+      products.forEach((product) => {
+        expect(product.brandId).toBe(dto.brandId)
+        expect(Number(product.packagingHeight)).toBe(dto.packagingHeight)
+      })
+
+      const productToColorsCount = await db.productToColor.count()
+      expect(productToColorsCount).toBe(0) // No colors updated
+    })
+
+    it('should handle edit with no changes', async () => {
+      const dto: BatchEditProductDto = {
+        productIds: ['Product1', 'Product2'],
+      }
+
+      await service.batchEdit(dto)
+
+      const products = await db.product.findMany({
+        where: { id: { in: dto.productIds } },
+      })
+
+      products.forEach((product) => {
+        expect(product.brandId).not.toBe('UpdatedBrand')
+        expect(product.packagingHeight).not.toBe(30)
+      })
+
+      const productToColorsCount = await db.productToColor.count()
+      expect(productToColorsCount).toBe(0) // No colors updated
+    })
+
+    it('should handle non-existent products gracefully', async () => {
+      const dto: BatchEditProductDto = {
+        productIds: ['NonExistentProduct'],
+        brandId: 'NonExistentBrand',
+      }
+
+      await expect(service.batchEdit(dto)).resolves.not.toThrow()
+    })
+
+    it('should handle invalid color data', async () => {
+      const dto: BatchEditProductDto = {
+        productIds: ['Product1'],
+        colors: [{ id: 'InvalidColor', index: 0 }],
+      }
+
+      await expect(service.batchEdit(dto)).rejects.toThrow()
+    })
+
+    it('should reset and update colors correctly', async () => {
+      await db.color.createMany({
+        data: [
+          {
+            color: 'qwer',
+            name: 'qwer',
+            id: 'New Color 1',
+          },
+          {
+            color: 'qwer',
+            name: 'qwer',
+            id: 'New Color 2',
+          },
+        ],
+      })
+
+      await db.productToColor.createMany({
+        data: [
+          { productId: 'Product1', colorId: 'color_1', index: 0 },
+          { productId: 'Product2', colorId: 'color_2', index: 1 },
+        ],
+      })
+
+      const dto: BatchEditProductDto = {
+        productIds: ['Product1', 'Product2'],
+        colors: [
+          { id: 'New Color 1', index: 0 },
+          { id: 'New Color 2', index: 1 },
+        ],
+      }
+
+      await service.batchEdit(dto)
+
+      const productToColors = await db.productToColor.findMany({
+        where: { productId: { in: dto.productIds } },
+      })
+
+      expect(productToColors.length).toBe(4) // 2 products with 2 colors each
+      expect(productToColors.some((p) => p.colorId === 'ColorOld1')).toBe(false)
+      expect(productToColors.some((p) => p.colorId === 'ColorOld2')).toBe(false)
+    })
+
+    it('should handle database update errors gracefully', async () => {
+      jest.spyOn(db.product, 'updateMany').mockImplementationOnce(() => {
+        throw new Error('Database error')
+      })
+
+      const dto: BatchEditProductDto = {
+        productIds: ['Product1', 'Product2'],
+        brandId: 'BrandWithError',
+      }
+
+      await expect(service.batchEdit(dto)).rejects.toThrow('Database error')
     })
   })
 

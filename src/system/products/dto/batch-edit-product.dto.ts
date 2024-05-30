@@ -10,10 +10,14 @@ import {
 import { ProductColorDto } from './create-product.dto'
 import { ProductGender, ProductSeason } from '@prisma/client'
 
-export class ProductsInBatchEditingDto {
+export class BatchEditProductDto {
   @IsNotEmpty()
   @IsString()
-  id: string
+  productIds: string[]
+
+  @IsOptional()
+  @IsString()
+  supplierSku?: string
 
   @IsOptional()
   @IsString()
@@ -52,10 +56,4 @@ export class ProductsInBatchEditingDto {
   @IsOptional()
   @IsNumber()
   packagingWeight?: number
-}
-
-export class BatchEditProductDto {
-  @ValidateNested({ each: true })
-  @Type(() => ProductsInBatchEditingDto)
-  products: ProductsInBatchEditingDto[]
 }

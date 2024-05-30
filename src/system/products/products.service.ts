@@ -672,44 +672,61 @@ export class ProductsService {
     ])
   }
 
-  async batchEdit({ products }: BatchEditProductDto) {
-    await this.db.$transaction(async (tx) => {
-      await Promise.all(
-        products.map(async (product) => {
-          if (product.colors && product.colors.length >= 1) {
-            await tx.productToColor.deleteMany({
-              where: {
-                productId: product.id,
-              },
-            })
-
-            await tx.productToColor.createMany({
-              data: product.colors.map((c) => ({
-                colorId: c.id,
-                index: c.index,
-                productId: product.id,
-              })),
-            })
-          }
-
-          await tx.product.update({
-            where: {
-              id: product.id,
-            },
-            data: {
-              brandId: product.brandId,
-              categoryId: product.categoryId,
-              gender: product.gender,
-              season: product.season,
-              packagingHeight: product.packagingHeight,
-              packagingLength: product.packagingLength,
-              packagingWeight: product.packagingWeight,
-              packagingWidth: product.packagingWidth,
-            },
-          })
-        }),
-      )
+  async batchEdit({
+    productIds,
+    brandId,
+    categoryId,
+    colors,
+    gender,
+    packagingHeight,
+    packagingLength,
+    packagingWeight,
+    packagingWidth,
+    season,
+    supplierSku,
+  }: BatchEditProductDto) {
+    await this.db.product.updateMany({
+      where: {
+        id: {
+          in: productIds,
+        },
+      },
+      data: {
+        brandId,
+        categoryId,
+        gender,
+        packagingHeight,
+        packagingLength,
+        packagingWeight,
+        packagingWidth,
+        season,
+        supplierSku,
+      },
     })
+
+    if (colors && colors.length >= 1) {
+      // Reset Product-Color connections
+      await this.db.productToColor.deleteMany({
+        where: {
+          productId: {
+            in: productIds,
+          },
+        },
+      })
+
+      // Create new Product-Color connections
+      const productToColorData = productIds.flatMap((productId) =>
+        colors.map((color) => ({
+          productId,
+          colorId: color.id,
+          index: color.index,
+        })),
+      )
+
+      await this.db.productToColor.createMany({
+        data: productToColorData,
+      })
+    }
   }
 
   async archive(id: string) {
