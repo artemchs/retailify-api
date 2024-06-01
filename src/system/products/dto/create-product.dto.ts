@@ -97,10 +97,6 @@ export class CreateProductDto {
 
   @IsString()
   @IsNotEmpty()
-  title: string
-
-  @IsString()
-  @IsNotEmpty()
   description: string
 
   @ValidateNested({ each: true })

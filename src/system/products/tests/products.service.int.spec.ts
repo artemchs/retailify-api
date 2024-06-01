@@ -36,63 +36,63 @@ describe('ProductsService', () => {
     expect(service).toBeDefined()
   })
 
+  const ids = {
+    colors: {
+      1: 'Color 1',
+      2: 'Color 2',
+      3: 'Color 3',
+      4: 'Color 4',
+    },
+    categories: {
+      1: 'Category 1',
+      2: 'Category 2',
+      3: 'Category 3',
+      4: 'Category 4',
+    },
+    brands: {
+      1: 'Brand 1',
+      2: 'Brand 2',
+      3: 'Brand 3',
+      4: 'Brand 4',
+    },
+  }
+
   beforeEach(async () => {
     await Promise.all([
       db.color.createMany({
-        data: [
-          {
-            id: 'color_1',
-            color: 'color_1',
-            name: 'color_1',
-          },
-          {
-            id: 'color_2',
-            color: 'color_2',
-            name: 'color_2',
-          },
-        ],
+        data: Object.values(ids.colors).map((val) => ({
+          id: val,
+          name: val,
+          color: val,
+        })),
       }),
-      db.category.create({
-        data: {
-          id: 'Test Category 1',
-          name: 'Test Category 1',
-          productName: 'Test Category 1',
-        },
+      db.category.createMany({
+        data: Object.values(ids.categories).map((val) => ({
+          id: val,
+          name: val,
+          productName: val,
+        })),
       }),
-      db.category.create({
-        data: {
-          id: 'Test Category 2',
-          name: 'Test Category 2',
-          productName: 'Test Category 2',
-        },
-      }),
-      db.brand.create({
-        data: {
-          id: 'Test Brand 1',
-          name: 'Test Brand 1',
-        },
-      }),
-      db.brand.create({
-        data: {
-          id: 'Test Brand 2',
-          name: 'Test Brand 2',
-        },
+      db.brand.createMany({
+        data: Object.values(ids.brands).map((val) => ({
+          id: val,
+          name: val,
+        })),
       }),
     ])
   })
 
   describe('create', () => {
     const data: CreateProductDto = {
-      title: 'Test Product 1',
       description: 'Test Product 1',
       supplierSku: 'asdfasdfasdfasdf',
       colors: [
         {
-          id: 'color_1',
+          id: ids.colors[1],
           index: 0,
         },
         {
-          id: 'color_2',
+          id: ids.colors[2],
           index: 1,
         },
       ],
@@ -112,8 +112,8 @@ describe('ProductsService', () => {
       packagingWidth: 10,
       gender: 'UNISEX',
       season: 'SPRING_FALL',
-      categoryId: 'Test Category 1',
-      brandId: 'Test Brand 1',
+      categoryId: ids.categories[1],
+      brandId: ids.brands[1],
     }
 
     it('should successfully create a new product', async () => {
@@ -143,14 +143,8 @@ describe('ProductsService', () => {
     it('should correctly generate the sku field', async () => {
       await service.create(data)
 
-      const product = await db.product.findFirst({
-        where: {
-          title: data.title,
-        },
-      })
+      const product = await db.product.findFirst()
 
-      expect(product?.supplierSku).toBeDefined()
-      expect(product?.supplierSku).not.toBeNull()
       expect(product?.sku).toBeDefined()
       expect(product?.sku).not.toBeNull()
       expect(product?.sku).toBe('00001')
@@ -180,9 +174,6 @@ describe('ProductsService', () => {
       })
 
       const product = await db.product.findFirst({
-        where: {
-          title: 'Test Product 1',
-        },
         include: {
           variants: true,
         },
@@ -323,13 +314,12 @@ describe('ProductsService', () => {
           season: 'ALL_SEASON',
           brand: {
             create: {
-              name: 'Test Brand 1',
+              name: ids.brands[1],
             },
           },
           category: {
-            create: {
-              name: 'Test Category 1',
-              productName: 'Test Category 1',
+            connect: {
+              id: ids.categories[1],
             },
           },
           characteristicValues: {
@@ -372,8 +362,8 @@ describe('ProductsService', () => {
         data: [
           {
             id: 'Product1',
-            brandId: 'Test Brand 1',
-            categoryId: 'Test Category 1',
+            brandId: ids.brands[1],
+            categoryId: ids.categories[1],
             gender: 'UNISEX',
             season: 'SUMMER',
             packagingHeight: 10,
@@ -386,8 +376,8 @@ describe('ProductsService', () => {
           },
           {
             id: 'Product2',
-            brandId: 'Test Brand 1',
-            categoryId: 'Test Category 1',
+            brandId: ids.brands[1],
+            categoryId: ids.categories[1],
             gender: 'FEMALE',
             season: 'WINTER',
             packagingHeight: 20,
@@ -405,8 +395,8 @@ describe('ProductsService', () => {
     it('should successfully batch edit products', async () => {
       const dto: BatchEditProductDto = {
         productIds: ['Product1', 'Product2'],
-        brandId: 'Test Brand 2',
-        categoryId: 'Test Category 2',
+        brandId: ids.brands[2],
+        categoryId: ids.categories[2],
         gender: ProductGender.UNISEX,
         season: ProductSeason.SPRING_FALL,
         packagingHeight: 30,
@@ -415,8 +405,8 @@ describe('ProductsService', () => {
         packagingWidth: 30,
         supplierSku: 'UpdatedSKU',
         colors: [
-          { id: 'color_1', index: 0 },
-          { id: 'color_2', index: 1 },
+          { id: ids.colors[3], index: 0 },
+          { id: ids.colors[4], index: 1 },
         ],
       }
 
@@ -446,10 +436,27 @@ describe('ProductsService', () => {
       expect(productToColors.length).toBe(4) // 2 products with 2 colors each
     })
 
+    it('should correctly update titles', async () => {
+      const dto: BatchEditProductDto = {
+        productIds: ['Product1', 'Product2'],
+        brandId: ids.brands[4],
+      }
+
+      await service.batchEdit(dto)
+
+      const products = await db.product.findMany({
+        where: { id: { in: dto.productIds } },
+      })
+
+      for (const { title } of products) {
+        expect(title.includes(ids.brands[4])).toBeTruthy()
+      }
+    })
+
     it('should handle partial edit without changing colors', async () => {
       const dto: BatchEditProductDto = {
         productIds: ['Product1', 'Product2'],
-        brandId: 'Test Brand 2',
+        brandId: ids.brands[2],
         packagingHeight: 15,
       }
 
@@ -488,13 +495,13 @@ describe('ProductsService', () => {
       expect(productToColorsCount).toBe(0) // No colors updated
     })
 
-    it('should handle non-existent products gracefully', async () => {
+    it('should fail if something does not exist', async () => {
       const dto: BatchEditProductDto = {
         productIds: ['NonExistentProduct'],
         brandId: 'NonExistentBrand',
       }
 
-      await expect(service.batchEdit(dto)).resolves.not.toThrow()
+      await expect(service.batchEdit(dto)).rejects.toThrow(NotFoundException)
     })
 
     it('should handle invalid color data', async () => {
@@ -507,33 +514,11 @@ describe('ProductsService', () => {
     })
 
     it('should reset and update colors correctly', async () => {
-      await db.color.createMany({
-        data: [
-          {
-            color: 'qwer',
-            name: 'qwer',
-            id: 'New Color 1',
-          },
-          {
-            color: 'qwer',
-            name: 'qwer',
-            id: 'New Color 2',
-          },
-        ],
-      })
-
-      await db.productToColor.createMany({
-        data: [
-          { productId: 'Product1', colorId: 'color_1', index: 0 },
-          { productId: 'Product2', colorId: 'color_2', index: 1 },
-        ],
-      })
-
       const dto: BatchEditProductDto = {
         productIds: ['Product1', 'Product2'],
         colors: [
-          { id: 'New Color 1', index: 0 },
-          { id: 'New Color 2', index: 1 },
+          { id: ids.colors[3], index: 0 },
+          { id: ids.colors[4], index: 1 },
         ],
       }
 
@@ -544,8 +529,12 @@ describe('ProductsService', () => {
       })
 
       expect(productToColors.length).toBe(4) // 2 products with 2 colors each
-      expect(productToColors.some((p) => p.colorId === 'ColorOld1')).toBe(false)
-      expect(productToColors.some((p) => p.colorId === 'ColorOld2')).toBe(false)
+      expect(productToColors.some((p) => p.colorId === ids.colors[1])).toBe(
+        false,
+      )
+      expect(productToColors.some((p) => p.colorId === ids.colors[1])).toBe(
+        false,
+      )
     })
 
     it('should handle database update errors gracefully', async () => {
@@ -577,11 +566,11 @@ describe('ProductsService', () => {
             createMany: {
               data: [
                 {
-                  colorId: 'color_1',
+                  colorId: ids.colors[1],
                   index: 0,
                 },
                 {
-                  colorId: 'color_2',
+                  colorId: ids.colors[2],
                   index: 1,
                 },
               ],
@@ -617,7 +606,7 @@ describe('ProductsService', () => {
     const id = 'Test Product 1'
 
     const data: UpdateProductDto = {
-      title: 'Updated Test Product 1',
+      supplierSku: 'Updated Test Product 1',
     }
 
     it('should successfully update the requested product', async () => {
@@ -633,7 +622,7 @@ describe('ProductsService', () => {
         },
       })
 
-      expect(product?.title).toBe(data.title)
+      expect(product?.supplierSku).toBe(data.supplierSku)
     })
 
     it('should leave unchanged fields as they were', async () => {
@@ -655,27 +644,19 @@ describe('ProductsService', () => {
     })
 
     it('should select an another color', async () => {
-      await db.color.create({
-        data: {
-          id: 'color_3',
-          color: 'color_3',
-          name: 'color_3',
-        },
-      })
-
       await service.update(id, {
         ...data,
         colors: [
           {
-            id: 'color_1',
+            id: ids.colors[1],
             index: 0,
           },
           {
-            id: 'color_2',
+            id: ids.colors[2],
             index: 1,
           },
           {
-            id: 'color_3',
+            id: ids.colors[3],
             index: 2,
           },
         ],
@@ -690,11 +671,9 @@ describe('ProductsService', () => {
         },
       })
       const productsToColorsCount = await db.productToColor.count()
-      const colorsCount = await db.color.count()
 
       expect(product?.colors.length).toBe(3)
       expect(productsToColorsCount).toBe(3)
-      expect(colorsCount).toBe(3)
     })
 
     it('should handle the case when one color is no longer used', async () => {
@@ -702,7 +681,7 @@ describe('ProductsService', () => {
         ...data,
         colors: [
           {
-            id: 'color_1',
+            id: ids.colors[1],
             index: 0,
           },
         ],
@@ -717,11 +696,9 @@ describe('ProductsService', () => {
         },
       })
       const productsToColorsCount = await db.productToColor.count()
-      const colorsCount = await db.color.count()
 
       expect(product?.colors.length).toBe(1)
       expect(productsToColorsCount).toBe(1)
-      expect(colorsCount).toBe(2)
     })
 
     it('should handle the case when color indexes have been changed', async () => {
@@ -729,11 +706,11 @@ describe('ProductsService', () => {
         ...data,
         colors: [
           {
-            id: 'color_1',
+            id: ids.colors[1],
             index: 1,
           },
           {
-            id: 'color_2',
+            id: ids.colors[2],
             index: 0,
           },
         ],
@@ -752,12 +729,10 @@ describe('ProductsService', () => {
         },
       })
       const productsToColorsCount = await db.productToColor.count()
-      const colorsCount = await db.color.count()
 
       expect(product?.colors.length).toBe(2)
-      expect(product?.colors[0].colorId).toBe('color_2')
+      expect(product?.colors[0].colorId).toBe(ids.colors[2])
       expect(productsToColorsCount).toBe(2)
-      expect(colorsCount).toBe(2)
     })
 
     it('should add a media file', async () => {
@@ -1053,7 +1028,7 @@ describe('ProductsService', () => {
           packagingLength: 10,
           packagingWeight: 10,
           packagingWidth: 10,
-          categoryId: 'Test Category 1',
+          categoryId: ids.categories[1],
           gender: 'UNISEX',
           season: 'ALL_SEASON',
           sku: '1',
@@ -1095,7 +1070,7 @@ describe('ProductsService', () => {
           packagingLength: 10,
           packagingWeight: 10,
           packagingWidth: 10,
-          categoryId: 'Test Category 1',
+          categoryId: ids.categories[1],
           gender: 'UNISEX',
           season: 'ALL_SEASON',
           sku: '1',

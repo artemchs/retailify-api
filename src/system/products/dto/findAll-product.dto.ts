@@ -6,6 +6,7 @@ export class FindAllProductDto {
     title: 'asc' | 'desc'
     createdAt: 'asc' | 'desc'
     sku: 'asc' | 'desc'
+    supplierSku: 'asc' | 'desc'
     totalReceivedQuantity: 'asc' | 'desc'
     totalWarehouseQuantity: 'asc' | 'desc'
   }

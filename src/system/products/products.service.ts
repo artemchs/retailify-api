@@ -17,7 +17,7 @@ import {
   checkIsArchived,
   getPaginationData,
 } from '../common/utils/db-helpers'
-import { Prisma } from '@prisma/client'
+import { Prisma, ProductGender } from '@prisma/client'
 import { compareArrays } from '../common/utils/compare-arrays'
 import { FindAllInfiniteListProductDto } from './dto/findAllInfiniteList-product.dto'
 import { BatchEditProductDto } from './dto/batch-edit-product.dto'
@@ -199,8 +199,92 @@ export class ProductsService {
     }
   }
 
+  private assembleProductName({
+    categoryName,
+    gender,
+    brandName,
+    primaryColorName,
+    sku,
+  }: {
+    categoryName: string
+    gender: string
+    brandName: string
+    primaryColorName: string
+    sku: string
+  }) {
+    const genderName =
+      gender === 'MALE'
+        ? 'для хлопчиків'
+        : gender === 'FEMALE'
+          ? 'для дівчаток'
+          : 'унісекс'
+
+    return [
+      categoryName.trim(),
+      genderName.trim(),
+      brandName.trim(),
+      primaryColorName.trim(),
+      sku.trim(),
+    ].join(' ')
+  }
+
+  async getCategory(id: string) {
+    const category = await this.db.category.findUnique({
+      where: {
+        id,
+      },
+    })
+
+    if (!category) {
+      throw new NotFoundException('Категория не найдена.')
+    }
+
+    return category
+  }
+
+  async getBrand(id: string) {
+    const brand = await this.db.brand.findUnique({
+      where: {
+        id,
+      },
+    })
+
+    if (!brand) {
+      throw new NotFoundException('Бренд не найден.')
+    }
+
+    return brand
+  }
+
+  async getPrimaryColor(id: string) {
+    const color = await this.db.color.findUnique({
+      where: {
+        id,
+      },
+    })
+
+    if (!color) {
+      throw new NotFoundException('Основной цвет не найден.')
+    }
+
+    return color
+  }
+
   async create(createProductDto: CreateProductDto) {
-    const sku = await this.generateSku()
+    const [sku, category, brand, primaryColor] = await Promise.all([
+      this.generateSku(),
+      this.getCategory(createProductDto.categoryId),
+      this.getBrand(createProductDto.brandId),
+      this.getPrimaryColor(createProductDto.colors[0].id),
+    ])
+
+    const title = this.assembleProductName({
+      brandName: brand.name,
+      categoryName: category.productName,
+      sku,
+      primaryColorName: primaryColor.name,
+      gender: createProductDto.gender,
+    })
 
     const characteristics = createProductDto.characteristics
     createProductDto.characteristics = undefined
@@ -208,6 +292,7 @@ export class ProductsService {
     const product = await this.db.product.create({
       data: {
         ...createProductDto,
+        title,
         variants: undefined,
         colors: {
           createMany: {
@@ -304,6 +389,7 @@ export class ProductsService {
         select: {
           id: true,
           sku: true,
+          supplierSku: true,
           createdAt: true,
           updatedAt: true,
           title: true,
@@ -672,6 +758,88 @@ export class ProductsService {
     ])
   }
 
+  private async updateProductTitles({
+    productIds,
+    brandId,
+    categoryId,
+    colors,
+    gender,
+  }: {
+    productIds: string[]
+    brandId?: string
+    categoryId?: string
+    colors?: {
+      id: string
+      index: number
+    }[]
+    gender?: ProductGender
+  }) {
+    if (
+      productIds &&
+      productIds.length >= 1 &&
+      (brandId || categoryId || (colors && colors.length >= 1) || gender)
+    ) {
+      const brandPromise = brandId
+        ? this.getBrand(brandId)
+        : Promise.resolve(null)
+      const categoryPromise = categoryId
+        ? this.getCategory(categoryId)
+        : Promise.resolve(null)
+      const primaryColorPromise =
+        colors && colors[0].id
+          ? this.getPrimaryColor(colors[0].id)
+          : Promise.resolve(null)
+
+      const [brand, category, primaryColor] = await Promise.all([
+        brandPromise,
+        categoryPromise,
+        primaryColorPromise,
+      ])
+
+      const productPromises = productIds.map((id) =>
+        this.db.product.findUnique({
+          where: { id },
+          select: {
+            brand: true,
+            category: true,
+            colors: {
+              select: { color: true },
+            },
+            gender: true,
+            sku: true,
+          },
+        }),
+      )
+
+      const products = await Promise.all(productPromises)
+
+      const titles = products.map((product) =>
+        this.assembleProductName({
+          brandName: (brand ? brand.name : product?.brand?.name) ?? '',
+          categoryName:
+            (category
+              ? category.productName
+              : product?.category?.productName) ?? '',
+          gender: (gender ? gender : product?.gender) ?? '',
+          primaryColorName:
+            (primaryColor
+              ? primaryColor.name
+              : product?.colors[0]?.color.name) ?? '',
+          sku: product?.sku ?? '',
+        }),
+      )
+
+      const updatePromises = productIds.map((id, index) =>
+        this.db.product.update({
+          where: { id },
+          data: { title: titles[index] },
+        }),
+      )
+
+      await this.db.$transaction(updatePromises)
+    }
+  }
+
   async batchEdit({
     productIds,
     brandId,
@@ -684,49 +852,100 @@ export class ProductsService {
     packagingWidth,
     season,
     supplierSku,
+    media,
+    characteristics,
+    description,
+    tags,
   }: BatchEditProductDto) {
-    await this.db.product.updateMany({
-      where: {
-        id: {
-          in: productIds,
-        },
-      },
-      data: {
+    const updateProductData = {
+      brandId,
+      categoryId,
+      gender,
+      packagingHeight,
+      packagingLength,
+      packagingWeight,
+      packagingWidth,
+      season,
+      supplierSku,
+      description,
+    }
+
+    const updatePromises: Promise<any>[] = []
+
+    // Update common product data
+    updatePromises.push(
+      this.db.product.updateMany({
+        where: { id: { in: productIds } },
+        data: updateProductData,
+      }),
+    )
+
+    // Update Product-Color connections if colors are provided
+    if (colors?.length) {
+      updatePromises.push(
+        this.db.productToColor
+          .deleteMany({
+            where: { productId: { in: productIds } },
+          })
+          .then(() => {
+            const productToColorData = productIds.flatMap((productId) =>
+              colors.map((color) => ({
+                productId,
+                colorId: color.id,
+                index: color.index,
+              })),
+            )
+
+            return this.db.productToColor.createMany({
+              data: productToColorData,
+            })
+          }),
+      )
+    }
+
+    // Update media, tags, and characteristics using batched updates
+    const batchedUpdates = productIds
+      .map((id) => {
+        const data: any = {}
+
+        if (media?.length) {
+          data.media = {
+            createMany: {
+              data: media,
+            },
+          }
+        }
+
+        if (tags?.length) {
+          data.tags = { set: tags }
+        }
+
+        if (characteristics?.length) {
+          data.characteristicValues = {
+            set: characteristics
+              .flatMap((obj) => obj.values)
+              .map(({ id }) => ({ id })),
+          }
+        }
+
+        return data.media || data.tags || data.characteristicValues
+          ? this.db.product.update({ where: { id }, data })
+          : Promise.resolve(null)
+      })
+      .filter(Boolean)
+
+    updatePromises.push(...batchedUpdates)
+
+    await Promise.all([
+      Promise.all(updatePromises),
+      this.updateProductTitles({
+        productIds,
         brandId,
         categoryId,
+        colors,
         gender,
-        packagingHeight,
-        packagingLength,
-        packagingWeight,
-        packagingWidth,
-        season,
-        supplierSku,
-      },
-    })
-
-    if (colors && colors.length >= 1) {
-      // Reset Product-Color connections
-      await this.db.productToColor.deleteMany({
-        where: {
-          productId: {
-            in: productIds,
-          },
-        },
-      })
-
-      // Create new Product-Color connections
-      const productToColorData = productIds.flatMap((productId) =>
-        colors.map((color) => ({
-          productId,
-          colorId: color.id,
-          index: color.index,
-        })),
-      )
-
-      await this.db.productToColor.createMany({
-        data: productToColorData,
-      })
-    }
+      }),
+    ])
   }
 
   async archive(id: string) {

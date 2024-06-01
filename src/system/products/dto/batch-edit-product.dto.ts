@@ -1,23 +1,49 @@
 import { Type } from 'class-transformer'
 import {
+  ArrayNotEmpty,
+  IsArray,
   IsEnum,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator'
-import { ProductColorDto } from './create-product.dto'
+import {
+  ProductCharacteristicDto,
+  ProductColorDto,
+  ProductMediaDto,
+  ProductTagDto,
+} from './create-product.dto'
 import { ProductGender, ProductSeason } from '@prisma/client'
 
 export class BatchEditProductDto {
-  @IsNotEmpty()
-  @IsString()
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
   productIds: string[]
 
   @IsOptional()
   @IsString()
   supplierSku?: string
+
+  @IsOptional()
+  @IsString()
+  description?: string
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ProductTagDto)
+  tags?: ProductTagDto[]
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ProductMediaDto)
+  media?: ProductMediaDto[]
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ProductCharacteristicDto)
+  characteristics?: ProductCharacteristicDto[]
 
   @IsOptional()
   @IsString()
@@ -28,7 +54,6 @@ export class BatchEditProductDto {
   categoryId?: string
 
   @IsOptional()
-  @IsString()
   @ValidateNested({ each: true })
   @Type(() => ProductColorDto)
   colors?: ProductColorDto[]
