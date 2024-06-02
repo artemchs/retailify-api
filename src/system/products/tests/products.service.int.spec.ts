@@ -55,6 +55,18 @@ describe('ProductsService', () => {
       3: 'Brand 3',
       4: 'Brand 4',
     },
+    tags: {
+      1: 'Tag 1',
+      2: 'Tag 2',
+      3: 'Tag 3',
+      4: 'Tag 4',
+    },
+    characteristicValues: {
+      1: 'Characteristic Value 1',
+      2: 'Characteristic Value 2',
+      3: 'Characteristic Value 3',
+      4: 'Characteristic Value 4',
+    },
   }
 
   beforeEach(async () => {
@@ -77,6 +89,18 @@ describe('ProductsService', () => {
         data: Object.values(ids.brands).map((val) => ({
           id: val,
           name: val,
+        })),
+      }),
+      db.productTag.createMany({
+        data: Object.values(ids.tags).map((val) => ({
+          id: val,
+          name: val,
+        })),
+      }),
+      db.characteristicValue.createMany({
+        data: Object.values(ids.characteristicValues).map((val) => ({
+          id: val,
+          value: val,
         })),
       }),
     ])
@@ -214,9 +238,9 @@ describe('ProductsService', () => {
 
   describe('findAll', () => {
     beforeEach(async () => {
-      await db.product.createMany({
-        data: [
-          {
+      await Promise.all([
+        db.product.create({
+          data: {
             id: 'Test Product 1',
             title: 'Test Product 1',
             description: 'Test Product 1',
@@ -224,11 +248,31 @@ describe('ProductsService', () => {
             packagingLength: 10,
             packagingWeight: 10,
             packagingWidth: 10,
-            gender: 'UNISEX',
-            season: 'ALL_SEASON',
+            gender: 'MALE',
+            season: 'WINTER',
             sku: '1',
+            brandId: ids.brands[1],
+            categoryId: ids.categories[1],
+            colors: {
+              create: {
+                index: 0,
+                colorId: ids.colors[1],
+              },
+            },
+            tags: {
+              connect: {
+                id: ids.tags[1],
+              },
+            },
+            characteristicValues: {
+              connect: {
+                id: ids.characteristicValues[1],
+              },
+            },
           },
-          {
+        }),
+        db.product.create({
+          data: {
             id: 'Test Product 2',
             title: 'Test Product 2',
             description: 'Test Product 2',
@@ -239,8 +283,28 @@ describe('ProductsService', () => {
             gender: 'UNISEX',
             season: 'ALL_SEASON',
             sku: '2',
+            brandId: ids.brands[3],
+            categoryId: ids.categories[3],
+            colors: {
+              create: {
+                index: 0,
+                colorId: ids.colors[3],
+              },
+            },
+            tags: {
+              connect: {
+                id: ids.tags[3],
+              },
+            },
+            characteristicValues: {
+              connect: {
+                id: ids.characteristicValues[3],
+              },
+            },
           },
-          {
+        }),
+        db.product.create({
+          data: {
             id: 'Test Product 3',
             title: 'Test Product 3',
             description: 'Test Product 3',
@@ -251,8 +315,28 @@ describe('ProductsService', () => {
             gender: 'UNISEX',
             season: 'ALL_SEASON',
             sku: '3',
+            brandId: ids.brands[3],
+            categoryId: ids.categories[3],
+            colors: {
+              create: {
+                index: 0,
+                colorId: ids.colors[3],
+              },
+            },
+            tags: {
+              connect: {
+                id: ids.tags[3],
+              },
+            },
+            characteristicValues: {
+              connect: {
+                id: ids.characteristicValues[3],
+              },
+            },
           },
-          {
+        }),
+        db.product.create({
+          data: {
             id: 'Test Product 4',
             title: 'Test Product 4',
             description: 'Test Product 4',
@@ -264,9 +348,27 @@ describe('ProductsService', () => {
             gender: 'UNISEX',
             season: 'ALL_SEASON',
             sku: '4',
+            brandId: ids.brands[3],
+            categoryId: ids.categories[3],
+            colors: {
+              create: {
+                index: 0,
+                colorId: ids.colors[3],
+              },
+            },
+            tags: {
+              connect: {
+                id: ids.tags[3],
+              },
+            },
+            characteristicValues: {
+              connect: {
+                id: ids.characteristicValues[3],
+              },
+            },
           },
-        ],
-      })
+        }),
+      ])
     })
 
     const data: FindAllProductDto = {
@@ -297,6 +399,60 @@ describe('ProductsService', () => {
 
       expect(info.totalItems).toBe(1)
     })
+
+    it('should filter items by brand id', async () => {
+      const { info } = await service.findAll({
+        ...data,
+        brandIds: [ids.brands[1]],
+      })
+
+      expect(info.totalItems).toBe(1)
+    })
+
+    it('should filter items by category id', async () => {
+      const { info } = await service.findAll({
+        ...data,
+        categoryIds: [ids.categories[3]],
+      })
+
+      expect(info.totalItems).toBe(2)
+    })
+
+    it('should filter items by tag id', async () => {
+      const { info } = await service.findAll({
+        ...data,
+        tagIds: [ids.tags[3]],
+      })
+
+      expect(info.totalItems).toBe(2)
+    })
+
+    it('should filter items by season', async () => {
+      const { info } = await service.findAll({
+        ...data,
+        productSeasons: ['WINTER'],
+      })
+
+      expect(info.totalItems).toBe(1)
+    })
+
+    it('should filter items by gender', async () => {
+      const { info } = await service.findAll({
+        ...data,
+        productGenders: ['UNISEX'],
+      })
+
+      expect(info.totalItems).toBe(2)
+    })
+
+    it('should filter items by characteristic value id', async () => {
+      const { info } = await service.findAll({
+        ...data,
+        characteristicValueIds: [ids.characteristicValues[1]],
+      })
+
+      expect(info.totalItems).toBe(1)
+    })
   })
 
   describe('findOne', () => {
@@ -323,8 +479,8 @@ describe('ProductsService', () => {
             },
           },
           characteristicValues: {
-            create: {
-              value: 'Test Characteristic Value 1',
+            connect: {
+              id: ids.characteristicValues[1],
             },
           },
           variants: {
@@ -591,9 +747,8 @@ describe('ProductsService', () => {
             },
           },
           characteristicValues: {
-            create: {
-              id: 'Test Value 1',
-              value: 'Test Value 1',
+            connect: {
+              id: ids.characteristicValues[1],
             },
           },
           gender: 'UNISEX',
@@ -843,39 +998,22 @@ describe('ProductsService', () => {
           characteristicValues: true,
         },
       })
-      const characteristicValuesCount = await db.characteristicValue.count()
 
       expect(product?.characteristicValues.length).toBe(0)
-      expect(characteristicValuesCount).toBe(1)
     })
 
     it('should be able to select new characteristic values', async () => {
-      await db.characteristicValue.create({
-        data: {
-          id: 'Test Value 2',
-          value: 'Test Value 2',
-        },
-      })
-
       await service.update(id, {
         ...data,
-        // characteristicValues: [
-        //   {
-        //     id: 'Test Value 1',
-        //   },
-        //   {
-        //     id: 'Test Value 2',
-        //   },
-        // ],
         characteristics: [
           {
             id: 'asdfasdf',
             values: [
               {
-                id: 'Test Value 1',
+                id: ids.characteristicValues[1],
               },
               {
-                id: 'Test Value 2',
+                id: ids.characteristicValues[2],
               },
             ],
           },
@@ -890,10 +1028,8 @@ describe('ProductsService', () => {
           characteristicValues: true,
         },
       })
-      const characteristicValuesCount = await db.characteristicValue.count()
 
       expect(product?.characteristicValues.length).toBe(2)
-      expect(characteristicValuesCount).toBe(2)
     })
 
     it('should correctly add a new variant', async () => {

@@ -1,7 +1,16 @@
+import { ProductGender, ProductSeason } from '@prisma/client'
+
 export class FindAllProductDto {
   page: number
   rowsPerPage: number
   query?: string
+  colorIds?: string[]
+  characteristicValueIds?: string[]
+  tagIds?: string[]
+  productSeasons?: ProductSeason[]
+  productGenders?: ProductGender[]
+  categoryIds?: string[]
+  brandIds?: string[]
   orderBy?: {
     title: 'asc' | 'desc'
     createdAt: 'asc' | 'desc'

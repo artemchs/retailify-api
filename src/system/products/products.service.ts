@@ -372,12 +372,69 @@ export class ProductsService {
     isArchived,
     orderBy,
     query,
+    brandIds,
+    categoryIds,
+    characteristicValueIds,
+    colorIds,
+    productGenders,
+    productSeasons,
+    tagIds,
   }: FindAllProductDto) {
     const { skip, take } = getPaginationData({ page, rowsPerPage })
 
     const where: Prisma.ProductWhereInput = {
       isArchived: checkIsArchived(isArchived),
-      OR: buildContainsArray({ fields: ['title', 'sku'], query }),
+      OR: buildContainsArray({
+        fields: ['title', 'sku', 'supplierSku'],
+        query,
+      }),
+      brandId: brandIds
+        ? {
+            in: brandIds,
+          }
+        : undefined,
+      categoryId: categoryIds
+        ? {
+            in: categoryIds,
+          }
+        : undefined,
+      characteristicValues: characteristicValueIds
+        ? {
+            some: {
+              id: {
+                in: characteristicValueIds,
+              },
+            },
+          }
+        : undefined,
+      colors: colorIds
+        ? {
+            some: {
+              colorId: {
+                in: colorIds,
+              },
+            },
+          }
+        : undefined,
+      gender: productGenders
+        ? {
+            in: productGenders,
+          }
+        : undefined,
+      season: productSeasons
+        ? {
+            in: productSeasons,
+          }
+        : undefined,
+      tags: tagIds
+        ? {
+            some: {
+              id: {
+                in: tagIds,
+              },
+            },
+          }
+        : undefined,
     }
 
     const [items, totalItems] = await Promise.all([
