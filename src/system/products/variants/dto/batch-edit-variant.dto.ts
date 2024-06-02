@@ -10,7 +10,7 @@ export class BatchEditVariantDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsString({ each: true })
-  productIds: string[]
+  variantIds: string[]
 
   @IsOptional()
   @IsNumber()

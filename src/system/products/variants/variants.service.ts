@@ -418,11 +418,11 @@ export class VariantsService {
     })
   }
 
-  async batchEdit({ productIds, sale }: BatchEditVariantDto) {
+  async batchEdit({ variantIds, sale }: BatchEditVariantDto) {
     await this.db.variant.updateMany({
       where: {
         id: {
-          in: productIds,
+          in: variantIds,
         },
       },
       data: {
