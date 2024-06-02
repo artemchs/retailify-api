@@ -146,6 +146,9 @@ export class VariantsService {
               warehouseId: {
                 in: warehouseIds,
               },
+              warehouseQuantity: {
+                not: 0,
+              },
             },
           }
         : undefined,
