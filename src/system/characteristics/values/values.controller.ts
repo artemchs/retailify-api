@@ -7,6 +7,7 @@ import {
   Delete,
   Put,
   Query,
+  Logger,
 } from '@nestjs/common'
 import { ValuesService } from './values.service'
 import { CreateValueDto } from './dto/create-value.dto'
@@ -30,10 +31,12 @@ export class ValuesController {
 
   @Get()
   findAll(
-    @Param('characteristicId') characteristicId: string,
     @Query() query: FindAllCharacteristicValueDto,
+    @Param('characteristicId') characteristicId?: string,
   ) {
-    return this.valuesService.findAll(characteristicId, query)
+    Logger.log(characteristicId)
+
+    return this.valuesService.findAll(query, characteristicId)
   }
 
   @Get(':valueId')

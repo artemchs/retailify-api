@@ -63,14 +63,15 @@ export class ValuesService {
   }
 
   async findAll(
-    characteristicId: string,
     { cursor, query }: FindAllCharacteristicValueDto,
+    characteristicId?: string,
   ) {
     const limit = 10
 
     const where: Prisma.CharacteristicValueWhereInput = {
       OR: buildContainsArray({ fields: ['value'], query }),
-      characteristicId,
+      characteristicId:
+        characteristicId !== 'undefined' ? characteristicId : undefined,
     }
 
     const items = await this.db.characteristicValue.findMany({
