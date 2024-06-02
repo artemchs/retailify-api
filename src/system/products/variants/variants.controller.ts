@@ -15,6 +15,7 @@ import { FindAllVariantDto } from './dto/findAll-variant.dto'
 import { Roles } from '../../../system/common/decorators'
 import { Role } from '../../../system/common/enums'
 import { FindAllInfiniteListVariantDto } from './dto/findAllInfiniteList-variant.dto'
+import { BatchEditVariantDto } from './dto/batch-edit-variant.dto'
 
 @Roles(Role.Admin)
 @Controller('system/products/:productId/variants')
@@ -52,6 +53,11 @@ export class VariantsController {
   @Get(':variantId')
   findOne(@Param('variantId') id: string) {
     return this.variantsService.findOne(id)
+  }
+
+  @Put()
+  batchEdit(@Body() batchEditVariantDto: BatchEditVariantDto) {
+    return this.variantsService.batchEdit(batchEditVariantDto)
   }
 
   @Put(':variantId')

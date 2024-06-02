@@ -11,6 +11,7 @@ import {
 } from '../../common/utils/db-helpers'
 import { Prisma } from '@prisma/client'
 import { FindAllInfiniteListVariantDto } from './dto/findAllInfiniteList-variant.dto'
+import { BatchEditVariantDto } from './dto/batch-edit-variant.dto'
 
 @Injectable()
 export class VariantsService {
@@ -413,6 +414,19 @@ export class VariantsService {
       data: {
         ...updateVariantDto,
         productId,
+      },
+    })
+  }
+
+  async batchEdit({ productIds, sale }: BatchEditVariantDto) {
+    await this.db.variant.updateMany({
+      where: {
+        id: {
+          in: productIds,
+        },
+      },
+      data: {
+        sale,
       },
     })
   }

@@ -19,6 +19,7 @@
     "financial-transactions",
     "custom-operations",
     "refunds",
-    "products"
+    "products",
+    "characteristic-values"
   ]
 }
