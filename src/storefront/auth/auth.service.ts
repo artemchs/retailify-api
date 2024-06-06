@@ -14,8 +14,8 @@ import * as argon2 from 'argon2'
 import { SendOtpDto } from './dto/send-otp.dto'
 import { SmsService } from '../../sms/sms.service'
 import { SignUpDto } from './dto/sign-up.dto'
-import { SignInDto } from './dto/sign-in.dto'
 import { SignOutDto } from './dto/sign-out.dto'
+import { ValidateOtpDto } from './dto/validate-otp.dto'
 
 @Injectable()
 export class AuthService {
@@ -34,9 +34,9 @@ export class AuthService {
     return this.smsService.sendOtp(phoneNumber, otp)
   }
 
-  async isOtpValid({ phoneNumber }: SendOtpDto, input: string) {
+  validateOtp({ otp, phoneNumber }: ValidateOtpDto) {
     const validOtp = this.verificationCodes.get(phoneNumber)
-    if (validOtp && validOtp === input) {
+    if (validOtp && validOtp === otp) {
       this.verificationCodes.delete(phoneNumber)
       return true
     } else {
@@ -117,6 +117,21 @@ export class AuthService {
     return tokens
   }
 
+  async getCustomer(phoneNumber: string) {
+    const customer = await this.db.customer.findUnique({
+      where: {
+        phoneNumber,
+      },
+    })
+
+    if (!customer) return null
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { rtHash, ...data } = customer
+
+    return data
+  }
+
   async signUp(data: SignUpDto) {
     const newCustomer = await this.db.customer.create({
       data: data,
@@ -133,24 +148,14 @@ export class AuthService {
     return tokens
   }
 
-  async signIn({ phoneNumber }: SignInDto) {
-    const customer = await this.db.customer.findUnique({
-      where: {
-        phoneNumber,
-      },
-    })
-
-    if (!customer) {
-      throw new NotFoundException('Customer not found.')
-    }
-
+  async signIn(customerId: string) {
     const payload: CustomerPayloadAccessToken = {
-      sub: customer.id,
+      sub: customerId,
     }
 
     const tokens = await this.signTokens(payload)
 
-    await this.updateRefreshTokenHash(customer.id, tokens.refreshToken)
+    await this.updateRefreshTokenHash(customerId, tokens.refreshToken)
 
     return tokens
   }
