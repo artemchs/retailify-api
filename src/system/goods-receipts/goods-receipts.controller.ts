@@ -7,6 +7,7 @@ import {
   Query,
   Put,
   Delete,
+  UseGuards,
 } from '@nestjs/common'
 import { GoodsReceiptsService } from './goods-receipts.service'
 import { CreateGoodsReceiptDto } from './dto/create-goods-receipt.dto'
@@ -14,8 +15,10 @@ import { UpdateGoodsReceiptDto } from './dto/update-goods-receipt.dto'
 import { FindAllGoodsReceiptDto } from './dto/findAll-goods-receipt.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/goods-receipts')
 export class GoodsReceiptsController {
   constructor(private readonly goodsReceiptsService: GoodsReceiptsService) {}

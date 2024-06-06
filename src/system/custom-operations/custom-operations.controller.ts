@@ -7,12 +7,15 @@ import {
   Delete,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common'
 import { CustomOperationsService } from './custom-operations.service'
 import { CreateCustomOperationDto } from './dto/create-custom-operation.dto'
 import { UpdateCustomOperationDto } from './dto/update-custom-operation.dto'
 import { FindAllCustomOperationDto } from './dto/findAll-custom-operation.dto'
+import { AccessTokenGuard } from '../common/guards'
 
+@UseGuards(AccessTokenGuard)
 @Controller('system/custom-operations')
 export class CustomOperationsController {
   constructor(

@@ -1,11 +1,21 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common'
 import { OrdersService } from './orders.service'
 import { CreateOrderDto } from './dto/create-order.dto'
 import {
   FindAllOrderDto,
   FindAllOrderInfiniteListDto,
 } from './dto/findAll-order.dto'
+import { AccessTokenGuard } from '../common/guards'
 
+@UseGuards(AccessTokenGuard)
 @Controller('system/orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}

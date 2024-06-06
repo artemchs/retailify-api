@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, Put, Query } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common'
 import { ShiftsService } from './shifts.service'
 import { CreateShiftDto } from './dto/create-shift.dto'
 import { GetCurrentUserAccessToken } from '../../../system/common/decorators'
@@ -6,7 +15,9 @@ import { FindAllShiftDto } from './dto/findAll-shifts.dto'
 import { UpdateShiftDto } from './dto/update-shift.dto'
 import { CashRegisterTransactionDto } from './dto/cash-register-transaction.dto'
 import { Cron, CronExpression } from '@nestjs/schedule'
+import { AccessTokenGuard } from 'src/system/common/guards'
 
+@UseGuards(AccessTokenGuard)
 @Controller('system/points-of-sale/:posId/shifts')
 export class ShiftsController {
   constructor(private readonly shiftsService: ShiftsService) {}

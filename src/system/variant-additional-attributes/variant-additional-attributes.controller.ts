@@ -7,6 +7,7 @@ import {
   Delete,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common'
 import { VariantAdditionalAttributesService } from './variant-additional-attributes.service'
 import { CreateVariantAdditionalAttributeDto } from './dto/create-variant-additional-attribute.dto'
@@ -14,8 +15,10 @@ import { UpdateVariantAdditionalAttributeDto } from './dto/update-variant-additi
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { FindAllVariantAdditionalAttributeDto } from './dto/findAll-variant-additional-attribute.dto'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/variant-additional-attributes')
 export class VariantAdditionalAttributesController {
   constructor(

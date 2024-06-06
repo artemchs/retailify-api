@@ -7,6 +7,7 @@ import {
   Delete,
   Query,
   Put,
+  UseGuards,
 } from '@nestjs/common'
 import { BrandsService } from './brands.service'
 import { CreateBrandDto } from './dto/create-brand.dto'
@@ -14,8 +15,10 @@ import { UpdateBrandDto } from './dto/update-brand.dto'
 import { FindAllBrandDto } from './dto/findAll-brand.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/brands')
 export class BrandsController {
   constructor(private readonly brandsService: BrandsService) {}

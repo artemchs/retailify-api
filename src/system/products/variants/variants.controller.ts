@@ -7,6 +7,7 @@ import {
   Delete,
   Query,
   Put,
+  UseGuards,
 } from '@nestjs/common'
 import { VariantsService } from './variants.service'
 import { CreateVariantDto } from './dto/create-variant.dto'
@@ -16,8 +17,10 @@ import { Roles } from '../../../system/common/decorators'
 import { Role } from '../../../system/common/enums'
 import { FindAllInfiniteListVariantDto } from './dto/findAllInfiniteList-variant.dto'
 import { BatchEditVariantDto } from './dto/batch-edit-variant.dto'
+import { AccessTokenGuard } from 'src/system/common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/products/:productId/variants')
 export class VariantsController {
   constructor(private readonly variantsService: VariantsService) {}

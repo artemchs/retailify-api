@@ -1,9 +1,20 @@
-import { Controller, Get, Post, Body, Param, Query, Put } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Put,
+  UseGuards,
+} from '@nestjs/common'
 import { FinancialTransactionsService } from './financial-transactions.service'
 import { CreateFinancialTransactionDto } from './dto/create-financial-transaction.dto'
 import { FindAllFinancialTransactionsDto } from './dto/findAll-financial-transactions'
 import { UpdateFinancialTransactionDto } from './dto/update-financial-transaction.dto'
+import { AccessTokenGuard } from '../common/guards'
 
+@UseGuards(AccessTokenGuard)
 @Controller('system/financial-transactions')
 export class FinancialTransactionsController {
   constructor(

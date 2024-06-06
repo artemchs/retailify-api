@@ -7,6 +7,7 @@ import {
   Put,
   Query,
   Delete,
+  UseGuards,
 } from '@nestjs/common'
 import { InventoryTransfersService } from './inventory-transfers.service'
 import { CreateInventoryTransferDto } from './dto/create-inventory-transfer.dto'
@@ -16,8 +17,10 @@ import { Role } from '../common/enums'
 import { FindAllInventoryTransferDto } from './dto/findAll-inventory-transfer.dto'
 import { CreateInventoryTransferReasonDto } from './dto/create-inventory-transfer-reason.dto'
 import { UpdateInventoryTransferReasonDto } from './dto/update-inventory-transfer-reason.dto'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/inventory-transfers')
 export class InventoryTransfersController {
   constructor(

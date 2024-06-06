@@ -7,6 +7,7 @@ import {
   Delete,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common'
 import { PointsOfSaleService } from './points-of-sale.service'
 import { CreatePointsOfSaleDto } from './dto/create-points-of-sale.dto'
@@ -14,8 +15,10 @@ import { UpdatePointsOfSaleDto } from './dto/update-points-of-sale.dto'
 import { FindAllPointsOfSaleDto } from './dto/findAll-points-of-sale.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/points-of-sale')
 export class PointsOfSaleController {
   constructor(private readonly pointsOfSaleService: PointsOfSaleService) {}

@@ -7,6 +7,7 @@ import {
   Delete,
   Query,
   Put,
+  UseGuards,
 } from '@nestjs/common'
 import { InventoryAdjustmentsService } from './inventory-adjustments.service'
 import { CreateInventoryAdjustmentDto } from './dto/create-inventory-adjustment.dto'
@@ -16,8 +17,10 @@ import { CreateInventoryAdjustmentReasonDto } from './dto/create-inventory-adjus
 import { UpdateInventoryAdjustmentReasonDto } from './dto/update-inventory-adjustment-reason.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/inventory-adjustments')
 export class InventoryAdjustmentsController {
   constructor(

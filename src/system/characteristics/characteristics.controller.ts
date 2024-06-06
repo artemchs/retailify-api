@@ -7,6 +7,7 @@ import {
   Delete,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common'
 import { CharacteristicsService } from './characteristics.service'
 import { CreateCharacteristicDto } from './dto/create-characteristic.dto'
@@ -14,8 +15,10 @@ import { UpdateCharacteristicDto } from './dto/update-characteristic.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { FindAllCharacteristicDto } from './dto/findAll-characteristic.dto'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/characteristics')
 export class CharacteristicsController {
   constructor(

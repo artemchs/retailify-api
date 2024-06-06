@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common'
 import { RefundsService } from './refunds.service'
 import { CreateRefundDto } from './dto/create-refund.dto'
 import {
@@ -6,7 +14,9 @@ import {
   FindAllRefundInfiniteListDto,
 } from './dto/findAll-refund.dto'
 import { GetCurrentUserAccessToken } from '../common/decorators'
+import { AccessTokenGuard } from '../common/guards'
 
+@UseGuards(AccessTokenGuard)
 @Controller('system/refunds')
 export class RefundsController {
   constructor(private readonly refundsService: RefundsService) {}

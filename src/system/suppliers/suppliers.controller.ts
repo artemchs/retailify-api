@@ -7,6 +7,7 @@ import {
   Delete,
   Query,
   Put,
+  UseGuards,
 } from '@nestjs/common'
 import { SuppliersService } from './suppliers.service'
 import { CreateSupplierDto } from './dto/create-supplier.dto'
@@ -15,7 +16,9 @@ import { FindAllSupplierDto } from './dto/findAll-supplier.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { FindAllInfiniteListSupplierDto } from './dto/findAllInfiniteList-supplier.dto'
+import { AccessTokenGuard } from '../common/guards'
 
+@UseGuards(AccessTokenGuard)
 @Controller('system/suppliers')
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}

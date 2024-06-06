@@ -7,6 +7,7 @@ import {
   Delete,
   Query,
   Put,
+  UseGuards,
 } from '@nestjs/common'
 import { CategoriesService } from './categories.service'
 import { CreateCategoryDto } from './dto/create-category.dto'
@@ -17,8 +18,10 @@ import {
 } from './dto/findAll-category.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}

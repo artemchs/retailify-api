@@ -7,6 +7,7 @@ import {
   Delete,
   Query,
   Put,
+  UseGuards,
 } from '@nestjs/common'
 import { ProductTagsService } from './product-tags.service'
 import { CreateProductTagDto } from './dto/create-product-tag.dto'
@@ -14,8 +15,10 @@ import { UpdateProductTagDto } from './dto/update-product-tag.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { FindAllProductTagDto } from './dto/findAll-product-tag.dto'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/product-tags')
 export class ProductTagsController {
   constructor(private readonly productTagsService: ProductTagsService) {}

@@ -7,13 +7,16 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common'
 import { EmployeesService } from './employees.service'
 import { CreateDto, FindAllDto, UpdateDto } from './dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/employees')
 export class EmployeesController {
   constructor(private employeesService: EmployeesService) {}

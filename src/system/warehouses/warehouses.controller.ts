@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
@@ -15,8 +16,10 @@ import { CreateWarehouseDto } from './dto/create-warehouse.dto'
 import { FindAllWarehouseDto } from './dto/findAll-warehouse.dto'
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto'
 import { FindAllInfiniteListWarehouseDto } from './dto/findAllInfiniteList-warehouse.dto'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/warehouses')
 export class WarehousesController {
   constructor(private readonly warehousesService: WarehousesService) {}

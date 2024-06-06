@@ -7,6 +7,7 @@ import {
   Delete,
   Query,
   Put,
+  UseGuards,
 } from '@nestjs/common'
 import { ProductsService } from './products.service'
 import { CreateProductDto } from './dto/create-product.dto'
@@ -16,8 +17,10 @@ import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { FindAllInfiniteListProductDto } from './dto/findAllInfiniteList-product.dto'
 import { BatchEditProductDto } from './dto/batch-edit-product.dto'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}

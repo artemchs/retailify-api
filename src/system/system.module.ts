@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common'
 import { AuthModule } from './auth/auth.module'
-import { APP_GUARD } from '@nestjs/core'
-import { AccessTokenGuard, RolesGuard } from './common/guards'
 import { UsersModule } from './users/users.module'
 import { EmployeesModule } from './employees/employees.module'
 import { SuppliersModule } from './suppliers/suppliers.module'
@@ -26,6 +24,8 @@ import { VariantAdditionalAttributesModule } from './variant-additional-attribut
 import { SoleProprietorInfoModule } from './sole-proprietor-info/sole-proprietor-info.module'
 import { FinancialTransactionsModule } from './financial-transactions/financial-transactions.module'
 import { CustomOperationsModule } from './custom-operations/custom-operations.module'
+import { APP_GUARD } from '@nestjs/core'
+import { RolesGuard } from './common/guards'
 
 @Module({
   imports: [
@@ -56,10 +56,6 @@ import { CustomOperationsModule } from './custom-operations/custom-operations.mo
     CustomOperationsModule,
   ],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: AccessTokenGuard,
-    },
     {
       provide: APP_GUARD,
       useClass: RolesGuard,

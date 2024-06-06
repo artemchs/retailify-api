@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { SignUpDto, LogInDto } from './dto'
-import { RefreshTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RefreshTokenGuard } from '../common/guards'
 import {
   GetCurrentUserAccessToken,
   GetCurrentUserRefreshToken,
@@ -19,6 +19,7 @@ import { UserPayloadRefreshToken } from '../common/types'
 import { Response } from 'express'
 import { setRefreshTokenCookie } from '../common/utils/set-refresh-token'
 
+@UseGuards(AccessTokenGuard)
 @Controller('system/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

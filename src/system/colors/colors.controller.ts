@@ -7,6 +7,7 @@ import {
   Delete,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common'
 import { ColorsService } from './colors.service'
 import { CreateColorDto } from './dto/create-color.dto'
@@ -14,8 +15,10 @@ import { UpdateColorDto } from './dto/update-color.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { FindAllColorDto } from './dto/findAll-color.dto'
+import { AccessTokenGuard } from '../common/guards'
 
 @Roles(Role.Admin)
+@UseGuards(AccessTokenGuard)
 @Controller('system/colors')
 export class ColorsController {
   constructor(private readonly colorsService: ColorsService) {}
