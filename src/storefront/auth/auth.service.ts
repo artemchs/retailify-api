@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { DbService } from '../../db/db.service'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { CustomerPayloadAccessToken } from './types/customer-payload-access-token'
 import { Tokens } from './types/tokens'
 import { hashData } from 'src/system/common/utils/hash-data'
+import { RefreshTokenDto } from './dto/refresh-token.dto'
+import * as argon2 from 'argon2'
 
 @Injectable()
 export class AuthService {
@@ -53,5 +59,37 @@ export class AuthService {
         rtHash,
       },
     })
+  }
+
+  async refreshToken({ customerId, refreshToken }: RefreshTokenDto) {
+    const customer = await this.db.customer.findUnique({
+      where: {
+        id: customerId,
+      },
+    })
+
+    if (!customer) {
+      throw new NotFoundException('Customer has not been found.')
+    }
+
+    if (!customer.rtHash) {
+      throw new UnauthorizedException('Access denied.')
+    }
+
+    const rtMatches = await argon2.verify(customer.rtHash, refreshToken)
+
+    if (!rtMatches) {
+      throw new UnauthorizedException('Access denied.')
+    }
+
+    const payload: CustomerPayloadAccessToken = {
+      sub: customer.id,
+    }
+
+    const tokens = await this.signTokens(payload)
+
+    await this.updateRefreshTokenHash(customer.id, tokens.refreshToken)
+
+    return tokens
   }
 }
