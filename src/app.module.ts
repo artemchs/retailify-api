@@ -5,6 +5,7 @@ import { DbModule } from './db/db.module'
 import { SystemModule } from './system/system.module'
 import { ScheduleModule } from '@nestjs/schedule'
 import { SmsModule } from './sms/sms.module';
+import { StorefrontModule } from './storefront/storefront.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SmsModule } from './sms/sms.module';
     SystemModule,
     ScheduleModule.forRoot(),
     SmsModule,
+    StorefrontModule,
   ],
   controllers: [],
   providers: [],

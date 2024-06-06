@@ -21,6 +21,7 @@
     "refunds",
     "products",
     "characteristic-values",
-    "product-variants"
+    "product-variants",
+    "sms"
   ]
 }
