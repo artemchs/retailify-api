@@ -514,6 +514,7 @@ model Customer {
   lastName    String
   email       String?
   phoneNumber String  @unique // Phone numbers are stored in international formats
+  rtHash      String?
 
   isEmailVerified Boolean @default(false)
   Order           Order[]
