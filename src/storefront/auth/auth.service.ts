@@ -14,6 +14,7 @@ import * as argon2 from 'argon2'
 import { SendOtpDto } from './dto/send-otp.dto'
 import { SmsService } from '../../sms/sms.service'
 import { SignUpDto } from './dto/sign-up.dto'
+import { SignInDto } from './dto/sign-in.dto'
 
 @Injectable()
 export class AuthService {
@@ -127,6 +128,28 @@ export class AuthService {
     const tokens = await this.signTokens(payload)
 
     await this.updateRefreshTokenHash(newCustomer.id, tokens.refreshToken)
+
+    return tokens
+  }
+
+  async signIn({ phoneNumber }: SignInDto) {
+    const customer = await this.db.customer.findUnique({
+      where: {
+        phoneNumber,
+      },
+    })
+
+    if (!customer) {
+      throw new NotFoundException('Customer not found.')
+    }
+
+    const payload: CustomerPayloadAccessToken = {
+      sub: customer.id,
+    }
+
+    const tokens = await this.signTokens(payload)
+
+    await this.updateRefreshTokenHash(customer.id, tokens.refreshToken)
 
     return tokens
   }
