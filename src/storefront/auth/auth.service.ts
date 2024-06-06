@@ -15,6 +15,7 @@ import { SendOtpDto } from './dto/send-otp.dto'
 import { SmsService } from '../../sms/sms.service'
 import { SignUpDto } from './dto/sign-up.dto'
 import { SignInDto } from './dto/sign-in.dto'
+import { SignOutDto } from './dto/sign-out.dto'
 
 @Injectable()
 export class AuthService {
@@ -152,5 +153,21 @@ export class AuthService {
     await this.updateRefreshTokenHash(customer.id, tokens.refreshToken)
 
     return tokens
+  }
+
+  async signOut({ customerId }: SignOutDto) {
+    await this.db.customer.updateMany({
+      where: {
+        AND: {
+          id: customerId,
+          rtHash: {
+            not: null,
+          },
+        },
+      },
+      data: {
+        rtHash: null,
+      },
+    })
   }
 }
