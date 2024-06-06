@@ -4,6 +4,7 @@ import { validateENVs } from './env.validation'
 import { DbModule } from './db/db.module'
 import { SystemModule } from './system/system.module'
 import { ScheduleModule } from '@nestjs/schedule'
+import { SmsModule } from './sms/sms.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ScheduleModule } from '@nestjs/schedule'
     DbModule,
     SystemModule,
     ScheduleModule.forRoot(),
+    SmsModule,
   ],
   controllers: [],
   providers: [],
