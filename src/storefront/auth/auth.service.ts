@@ -11,14 +11,28 @@ import { Tokens } from './types/tokens'
 import { hashData } from 'src/system/common/utils/hash-data'
 import { RefreshTokenDto } from './dto/refresh-token.dto'
 import * as argon2 from 'argon2'
+import { SendOtpDto } from './dto/send-otp.dto'
+import { SmsService } from '../../sms/sms.service'
 
 @Injectable()
 export class AuthService {
   constructor(
     private db: DbService,
     private jwtService: JwtService,
+    private smsService: SmsService,
     private config: ConfigService,
   ) {}
+
+  async sendOtp({ phoneNumber }: SendOtpDto) {
+    const otp = Math.floor(1000 + Math.random() * 9000).toString()
+    const hash = await hashData(otp)
+    await this.db.customerOtp.create({
+      data: {
+        hash,
+      },
+    })
+    return this.smsService.sendOtp(phoneNumber, otp)
+  }
 
   async signTokens(payload: CustomerPayloadAccessToken): Promise<Tokens> {
     const [at, rt] = await Promise.all([
