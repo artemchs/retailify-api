@@ -23,15 +23,22 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
+  private verificationCodes = new Map<string, string>()
+
   async sendOtp({ phoneNumber }: SendOtpDto) {
     const otp = Math.floor(1000 + Math.random() * 9000).toString()
-    const hash = await hashData(otp)
-    await this.db.customerOtp.create({
-      data: {
-        hash,
-      },
-    })
+    this.verificationCodes.set(phoneNumber, otp)
     return this.smsService.sendOtp(phoneNumber, otp)
+  }
+
+  async isOtpValid({ phoneNumber }: SendOtpDto, input: string) {
+    const validOtp = this.verificationCodes.get(phoneNumber)
+    if (validOtp && validOtp === input) {
+      this.verificationCodes.delete(phoneNumber)
+      return true
+    } else {
+      return false
+    }
   }
 
   async signTokens(payload: CustomerPayloadAccessToken): Promise<Tokens> {

@@ -520,13 +520,6 @@ model Customer {
   Order           Order[]
 }
 
-model CustomerOtp {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-
-  hash String
-}
-
 model Order {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
