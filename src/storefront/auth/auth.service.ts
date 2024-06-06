@@ -13,6 +13,7 @@ import { RefreshTokenDto } from './dto/refresh-token.dto'
 import * as argon2 from 'argon2'
 import { SendOtpDto } from './dto/send-otp.dto'
 import { SmsService } from '../../sms/sms.service'
+import { SignUpDto } from './dto/sign-up.dto'
 
 @Injectable()
 export class AuthService {
@@ -110,6 +111,22 @@ export class AuthService {
     const tokens = await this.signTokens(payload)
 
     await this.updateRefreshTokenHash(customer.id, tokens.refreshToken)
+
+    return tokens
+  }
+
+  async signUp(data: SignUpDto) {
+    const newCustomer = await this.db.customer.create({
+      data: data,
+    })
+
+    const payload: CustomerPayloadAccessToken = {
+      sub: newCustomer.id,
+    }
+
+    const tokens = await this.signTokens(payload)
+
+    await this.updateRefreshTokenHash(newCustomer.id, tokens.refreshToken)
 
     return tokens
   }
