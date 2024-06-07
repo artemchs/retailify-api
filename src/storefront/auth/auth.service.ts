@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -29,15 +30,24 @@ export class AuthService {
   private verificationCodes = new Map<string, string>()
 
   async sendOtp({ phoneNumber }: SendOtpDto) {
-    const otp = Math.floor(1000 + Math.random() * 9000).toString()
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
     this.verificationCodes.set(phoneNumber, otp)
     return this.smsService.sendOtp(phoneNumber, otp)
   }
 
-  validateOtp({ otp, phoneNumber }: ValidateOtpDto) {
+  async validateOtp({ otp, phoneNumber }: ValidateOtpDto) {
     const validOtp = this.verificationCodes.get(phoneNumber)
     if (validOtp && validOtp === otp) {
-      this.verificationCodes.delete(phoneNumber)
+      const customer = await this.db.customer.findUnique({
+        where: {
+          phoneNumber,
+        },
+      })
+
+      if (customer) {
+        this.verificationCodes.delete(phoneNumber)
+      }
+
       return true
     } else {
       return false
@@ -133,8 +143,17 @@ export class AuthService {
   }
 
   async signUp(data: SignUpDto) {
+    const verificationCode = this.verificationCodes.get(data.phoneNumber)
+
+    if (!verificationCode || verificationCode !== data.validatedOtp)
+      throw new BadRequestException('Код, який ви надіслали, є недійсним.')
+
     const newCustomer = await this.db.customer.create({
-      data: data,
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phoneNumber: data.phoneNumber,
+      },
     })
 
     const payload: CustomerPayloadAccessToken = {

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  NotFoundException,
   Post,
   Res,
   UseGuards,
@@ -16,6 +17,9 @@ import { GetCurrentCustomerAccessToken } from '../decorators/get-current-custome
 import { RefreshTokenGuard } from './guards/refresh-token.guard'
 import { GetCurrentCustomerRefreshToken } from '../decorators/get-current-customer-refresh-token.decorator'
 import { CustomerPayloadRefreshToken } from './types/customer-payload-refresh-token'
+import { setAccessTokenCookie } from './utils/set-access-token'
+import { Authenticated } from '../decorators/authenticated.decorator'
+import { AccessTokenGuard } from './guards/access-token.guard'
 
 @Controller('storefront/auth')
 export class AuthController {
@@ -23,6 +27,12 @@ export class AuthController {
 
   private removeRefreshTokenCookie(response: Response) {
     response.cookie('storefront-jwt-refresh-token', '', {
+      expires: new Date(),
+    })
+  }
+
+  private removeAccessTokenCookie(response: Response) {
+    response.cookie('storefront-jwt-access-token', '', {
       expires: new Date(),
     })
   }
@@ -37,23 +47,20 @@ export class AuthController {
     @Body() body: ValidateOtpDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const isValid = this.authService.validateOtp(body)
+    const isValid = await this.authService.validateOtp(body)
 
     if (!isValid)
       throw new BadRequestException('Код, який ви надіслали, є недійсним.')
 
     const customer = await this.authService.getCustomer(body.phoneNumber)
 
-    if (!customer) return // do something here
+    if (!customer) throw new NotFoundException('You should sign up.')
 
     const { accessToken, refreshToken } = await this.authService.signIn(
       customer.id,
     )
     setRefreshTokenCookie(response, refreshToken)
-
-    return {
-      accessToken,
-    }
+    setAccessTokenCookie(response, accessToken)
   }
 
   @Post('sign-up')
@@ -63,22 +70,23 @@ export class AuthController {
   ) {
     const { accessToken, refreshToken } = await this.authService.signUp(body)
     setRefreshTokenCookie(response, refreshToken)
-
-    return {
-      accessToken,
-    }
+    setAccessTokenCookie(response, accessToken)
   }
 
+  @UseGuards(AccessTokenGuard)
+  @Authenticated()
   @Post('sign-out')
   async signOut(
     @GetCurrentCustomerAccessToken('sub') customerId: string,
     @Res({ passthrough: true }) response: Response,
   ) {
     this.removeRefreshTokenCookie(response)
+    this.removeAccessTokenCookie(response)
     return this.authService.signOut({ customerId })
   }
 
   @UseGuards(RefreshTokenGuard)
+  @Authenticated()
   @Post('refresh-token')
   async refreshToken(
     @GetCurrentCustomerRefreshToken() customer: CustomerPayloadRefreshToken,
@@ -89,9 +97,6 @@ export class AuthController {
       refreshToken: customer.refreshToken,
     })
     setRefreshTokenCookie(response, refreshToken)
-
-    return {
-      accessToken,
-    }
+    setAccessTokenCookie(response, accessToken)
   }
 }
