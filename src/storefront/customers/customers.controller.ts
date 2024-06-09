@@ -10,7 +10,9 @@ import {
 import { CustomersService } from './customers.service'
 import { CreateCustomerDto } from './dto/create-customer.dto'
 import { UpdateCustomerDto } from './dto/update-customer.dto'
+import { Throttle, minutes } from '@nestjs/throttler'
 
+@Throttle({ default: { ttl: minutes(1), limit: 100 } })
 @Controller('customers')
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}

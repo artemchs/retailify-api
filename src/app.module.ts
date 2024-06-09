@@ -6,6 +6,8 @@ import { SystemModule } from './system/system.module'
 import { ScheduleModule } from '@nestjs/schedule'
 import { SmsModule } from './sms/sms.module'
 import { StorefrontModule } from './storefront/storefront.module'
+import { ThrottlerGuard, ThrottlerModule, minutes } from '@nestjs/throttler'
+import { APP_GUARD } from '@nestjs/core'
 
 @Module({
   imports: [
@@ -18,8 +20,19 @@ import { StorefrontModule } from './storefront/storefront.module'
     ScheduleModule.forRoot(),
     SmsModule,
     StorefrontModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: minutes(1),
+        limit: 150,
+      },
+    ]),
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

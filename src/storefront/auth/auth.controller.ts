@@ -19,7 +19,9 @@ import { CustomerPayloadRefreshToken } from './types/customer-payload-refresh-to
 import { setAccessTokenCookie } from './utils/set-access-token'
 import { Authenticated } from '../decorators/authenticated.decorator'
 import { AccessTokenGuard } from './guards/access-token.guard'
+import { Throttle, minutes } from '@nestjs/throttler'
 
+@Throttle({ default: { ttl: minutes(1), limit: 100 } })
 @Controller('storefront/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -36,6 +38,7 @@ export class AuthController {
     })
   }
 
+  @Throttle({ default: { limit: 1, ttl: minutes(1) } })
   @Post('send-otp')
   async sendOtp(@Body() body: SendOtpDto) {
     return this.authService.sendOtp(body)

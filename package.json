@@ -53,6 +53,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.3.7",
     "@nestjs/schedule": "^4.0.1",
+    "@nestjs/throttler": "^5.1.2",
     "@prisma/client": "^5.14.0",
     "argon2": "^0.31.2",
     "axios": "^1.6.8",
