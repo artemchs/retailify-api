@@ -32,7 +32,7 @@ export class AuthService {
   async sendOtp({ phoneNumber }: SendOtpDto) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
     this.verificationCodes.set(phoneNumber, otp)
-    return this.smsService.sendOtp(phoneNumber, otp)
+    return this.smsService.sendMessage(phoneNumber, otp)
   }
 
   async validateOtp({ otp, phoneNumber }: ValidateOtpDto) {

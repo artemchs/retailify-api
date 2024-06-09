@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Body,
   Controller,
-  NotFoundException,
   Post,
   Res,
   UseGuards,
@@ -54,13 +53,20 @@ export class AuthController {
 
     const customer = await this.authService.getCustomer(body.phoneNumber)
 
-    if (!customer) throw new NotFoundException('You should sign up.')
+    if (!customer)
+      return {
+        firstTime: true,
+      }
 
     const { accessToken, refreshToken } = await this.authService.signIn(
       customer.id,
     )
     setRefreshTokenCookie(response, refreshToken)
     setAccessTokenCookie(response, accessToken)
+
+    return {
+      firstTime: false,
+    }
   }
 
   @Post('sign-up')
