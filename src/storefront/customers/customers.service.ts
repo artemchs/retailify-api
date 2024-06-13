@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { DbService } from '../../db/db.service'
 import { UpdateMeDto } from './dto/update-me.dto'
 import { SendOtpDto } from '../auth/dto/send-otp.dto'
 import { SmsService } from '../../sms/sms.service'
+import { UpdateMyPhoneNumber } from './dto/update-my-phone-number.dto'
 
 @Injectable()
 export class CustomersService {
@@ -47,5 +52,24 @@ export class CustomersService {
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
     this.verificationCodes.set(phoneNumber, otp)
     return this.smsService.sendMessage(phoneNumber, otp)
+  }
+
+  async updateMyPhoneNumber(
+    id: string,
+    { phoneNumber, otp }: UpdateMyPhoneNumber,
+  ) {
+    const validOtp = this.verificationCodes.get(phoneNumber)
+
+    if (!validOtp || validOtp !== otp)
+      throw new BadRequestException('Код, який ви надіслали, є недійсним.')
+
+    return this.db.customer.update({
+      where: {
+        id,
+      },
+      data: {
+        phoneNumber,
+      },
+    })
   }
 }

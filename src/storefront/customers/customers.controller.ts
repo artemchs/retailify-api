@@ -6,6 +6,7 @@ import { Authenticated } from '../decorators/authenticated.decorator'
 import { GetCurrentCustomerAccessToken } from '../decorators/get-current-customer-access-token.decorator'
 import { UpdateMeDto } from './dto/update-me.dto'
 import { SendOtpDto } from '../auth/dto/send-otp.dto'
+import { UpdateMyPhoneNumber } from './dto/update-my-phone-number.dto'
 
 @Throttle({ default: { ttl: minutes(1), limit: 100 } })
 @Controller('storefront/customers')
@@ -37,5 +38,15 @@ export class CustomersController {
     @Body() body: SendOtpDto,
   ) {
     return this.customersService.sendOtp(customerId, body)
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Authenticated()
+  @Put('my-phone-number')
+  updateMyPhoneNumber(
+    @GetCurrentCustomerAccessToken('sub') customerId: string,
+    @Body() body: UpdateMyPhoneNumber,
+  ) {
+    return this.customersService.updateMyPhoneNumber(customerId, body)
   }
 }
