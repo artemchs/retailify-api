@@ -1,26 +1,24 @@
-import { Injectable } from '@nestjs/common'
-import { CreateCustomerDto } from './dto/create-customer.dto'
-import { UpdateCustomerDto } from './dto/update-customer.dto'
+import { Injectable, NotFoundException } from '@nestjs/common'
+import { DbService } from '../../db/db.service'
 
 @Injectable()
 export class CustomersService {
-  create(createCustomerDto: CreateCustomerDto) {
-    return 'This action adds a new customer'
-  }
+  constructor(private db: DbService) {}
 
-  findAll() {
-    return `This action returns all customers`
-  }
+  async getMe(id: string) {
+    const customer = await this.db.customer.findUnique({
+      where: {
+        id,
+      },
+    })
 
-  findOne(id: number) {
-    return `This action returns a #${id} customer`
-  }
+    if (!customer) {
+      throw new NotFoundException('Ваш обліковий запис не знайдено.')
+    }
 
-  update(id: number, updateCustomerDto: UpdateCustomerDto) {
-    return `This action updates a #${id} customer`
-  }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { rtHash, ...result } = customer
 
-  remove(id: number) {
-    return `This action removes a #${id} customer`
+    return result
   }
 }

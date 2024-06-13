@@ -80,6 +80,10 @@ export class AuthController {
     const { accessToken, refreshToken } = await this.authService.signUp(body)
     setRefreshTokenCookie(response, refreshToken)
     setAccessTokenCookie(response, accessToken)
+
+    return {
+      msg: 'You have successfully signed up.',
+    }
   }
 
   @UseGuards(AccessTokenGuard)
@@ -91,7 +95,11 @@ export class AuthController {
   ) {
     this.removeRefreshTokenCookie(response)
     this.removeAccessTokenCookie(response)
-    return this.authService.signOut({ customerId })
+    this.authService.signOut({ customerId })
+
+    return {
+      msg: 'You have successfully signed out.',
+    }
   }
 
   @UseGuards(RefreshTokenGuard)
@@ -107,5 +115,9 @@ export class AuthController {
     })
     setRefreshTokenCookie(response, refreshToken)
     setAccessTokenCookie(response, accessToken)
+
+    return {
+      msg: 'You have successfully refreshed tokens.',
+    }
   }
 }
