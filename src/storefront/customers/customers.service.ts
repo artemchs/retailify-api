@@ -36,12 +36,17 @@ export class CustomersService {
   async updateMe(id: string, body: UpdateMeDto) {
     await this.getMe(id)
 
-    return await this.db.customer.update({
+    const customer = await this.db.customer.update({
       where: {
         id,
       },
       data: body,
     })
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { rtHash, ...result } = customer
+
+    return result
   }
 
   private verificationCodes = new Map<string, string>()
@@ -51,7 +56,11 @@ export class CustomersService {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
     this.verificationCodes.set(phoneNumber, otp)
-    return this.smsService.sendMessage(phoneNumber, otp)
+    this.smsService.sendMessage(phoneNumber, otp)
+
+    return {
+      msg: 'OTP has been sent.',
+    }
   }
 
   async updateMyPhoneNumber(
@@ -63,7 +72,7 @@ export class CustomersService {
     if (!validOtp || validOtp !== otp)
       throw new BadRequestException('Код, який ви надіслали, є недійсним.')
 
-    return this.db.customer.update({
+    const customer = await this.db.customer.update({
       where: {
         id,
       },
@@ -71,5 +80,10 @@ export class CustomersService {
         phoneNumber,
       },
     })
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { rtHash, ...result } = customer
+
+    return result
   }
 }
