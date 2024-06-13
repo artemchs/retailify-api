@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common'
 import { CustomersService } from './customers.service'
 import { Throttle, minutes } from '@nestjs/throttler'
 import { AccessTokenGuard } from '../auth/guards/access-token.guard'
 import { Authenticated } from '../decorators/authenticated.decorator'
 import { GetCurrentCustomerAccessToken } from '../decorators/get-current-customer-access-token.decorator'
 import { UpdateMeDto } from './dto/update-me.dto'
+import { SendOtpDto } from '../auth/dto/send-otp.dto'
 
 @Throttle({ default: { ttl: minutes(1), limit: 100 } })
 @Controller('storefront/customers')
@@ -26,5 +27,15 @@ export class CustomersController {
     @Body() body: UpdateMeDto,
   ) {
     return this.customersService.updateMe(customerId, body)
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Authenticated()
+  @Post('send-otp')
+  sendOtp(
+    @GetCurrentCustomerAccessToken('sub') customerId: string,
+    @Body() body: SendOtpDto,
+  ) {
+    return this.customersService.sendOtp(customerId, body)
   }
 }

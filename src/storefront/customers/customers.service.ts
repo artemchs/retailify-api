@@ -1,10 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { DbService } from '../../db/db.service'
 import { UpdateMeDto } from './dto/update-me.dto'
+import { SendOtpDto } from '../auth/dto/send-otp.dto'
+import { SmsService } from '../../sms/sms.service'
 
 @Injectable()
 export class CustomersService {
-  constructor(private db: DbService) {}
+  constructor(
+    private db: DbService,
+    private smsService: SmsService,
+  ) {}
 
   async getMe(id: string) {
     const customer = await this.db.customer.findUnique({
@@ -32,5 +37,15 @@ export class CustomersService {
       },
       data: body,
     })
+  }
+
+  private verificationCodes = new Map<string, string>()
+
+  async sendOtp(id: string, { phoneNumber }: SendOtpDto) {
+    await this.getMe(id)
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    this.verificationCodes.set(phoneNumber, otp)
+    return this.smsService.sendMessage(phoneNumber, otp)
   }
 }
