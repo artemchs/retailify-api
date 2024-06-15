@@ -30,6 +30,7 @@ export class CustomersController {
     return this.customersService.updateMe(customerId, body)
   }
 
+  @Throttle({ default: { limit: 3, ttl: minutes(1) } })
   @UseGuards(AccessTokenGuard)
   @Authenticated()
   @Post('send-otp')

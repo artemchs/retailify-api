@@ -72,6 +72,8 @@ export class CustomersService {
     if (!validOtp || validOtp !== otp)
       throw new BadRequestException('Код, який ви надіслали, є недійсним.')
 
+    this.verificationCodes.delete(phoneNumber)
+
     const customer = await this.db.customer.update({
       where: {
         id,
