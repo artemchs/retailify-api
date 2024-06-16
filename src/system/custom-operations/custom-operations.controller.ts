@@ -13,9 +13,13 @@ import { CustomOperationsService } from './custom-operations.service'
 import { CreateCustomOperationDto } from './dto/create-custom-operation.dto'
 import { UpdateCustomOperationDto } from './dto/update-custom-operation.dto'
 import { FindAllCustomOperationDto } from './dto/findAll-custom-operation.dto'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
+import { Roles } from '../common/decorators'
+import { Role } from '../common/enums'
 
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/custom-operations')
 export class CustomOperationsController {
   constructor(

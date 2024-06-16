@@ -18,10 +18,11 @@ import {
 } from './dto/findAll-category-group-dto'
 import { Roles } from '../../system/common/decorators'
 import { Role } from '../../system/common/enums'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/category-groups')
 export class CategoryGroupsController {
   constructor(private readonly categoryGroupsService: CategoryGroupsService) {}

@@ -17,10 +17,11 @@ import { CreateInventoryAdjustmentReasonDto } from './dto/create-inventory-adjus
 import { UpdateInventoryAdjustmentReasonDto } from './dto/update-inventory-adjustment-reason.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/inventory-adjustments')
 export class InventoryAdjustmentsController {
   constructor(

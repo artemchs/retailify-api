@@ -15,10 +15,11 @@ import { UpdateCharacteristicDto } from './dto/update-characteristic.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { FindAllCharacteristicDto } from './dto/findAll-characteristic.dto'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/characteristics')
 export class CharacteristicsController {
   constructor(

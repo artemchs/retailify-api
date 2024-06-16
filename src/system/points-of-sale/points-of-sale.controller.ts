@@ -15,10 +15,11 @@ import { UpdatePointsOfSaleDto } from './dto/update-points-of-sale.dto'
 import { FindAllPointsOfSaleDto } from './dto/findAll-points-of-sale.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/points-of-sale')
 export class PointsOfSaleController {
   constructor(private readonly pointsOfSaleService: PointsOfSaleService) {}

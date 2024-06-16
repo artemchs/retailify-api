@@ -16,10 +16,11 @@ import { CreateWarehouseDto } from './dto/create-warehouse.dto'
 import { FindAllWarehouseDto } from './dto/findAll-warehouse.dto'
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto'
 import { FindAllInfiniteListWarehouseDto } from './dto/findAllInfiniteList-warehouse.dto'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/warehouses')
 export class WarehousesController {
   constructor(private readonly warehousesService: WarehousesService) {}

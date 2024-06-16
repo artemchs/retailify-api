@@ -16,10 +16,11 @@ import { UpdateValueDto } from './dto/update-value.dto'
 import { Roles } from '../../../system/common/decorators'
 import { Role } from '../../../system/common/enums'
 import { FindAllCharacteristicValueDto } from './dto/findAll-value.dto'
-import { AccessTokenGuard } from 'src/system/common/guards'
+import { AccessTokenGuard, RolesGuard } from 'src/system/common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/characteristics/:characteristicId/values')
 export class ValuesController {
   constructor(private readonly valuesService: ValuesService) {}

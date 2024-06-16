@@ -18,9 +18,10 @@ import { UpdateMeDto, UpdatePasswordDto } from './dto'
 import { Response } from 'express'
 import { setRefreshTokenCookie } from '../common/utils/set-refresh-token'
 import { Role } from '../common/enums'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
 @Controller('system/users')
 export class UsersController {
   constructor(private usersService: UsersService) {}

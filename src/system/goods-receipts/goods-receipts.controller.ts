@@ -15,10 +15,11 @@ import { UpdateGoodsReceiptDto } from './dto/update-goods-receipt.dto'
 import { FindAllGoodsReceiptDto } from './dto/findAll-goods-receipt.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/goods-receipts')
 export class GoodsReceiptsController {
   constructor(private readonly goodsReceiptsService: GoodsReceiptsService) {}

@@ -17,10 +17,11 @@ import { Roles } from '../../../system/common/decorators'
 import { Role } from '../../../system/common/enums'
 import { FindAllInfiniteListVariantDto } from './dto/findAllInfiniteList-variant.dto'
 import { BatchEditVariantDto } from './dto/batch-edit-variant.dto'
-import { AccessTokenGuard } from 'src/system/common/guards'
+import { AccessTokenGuard, RolesGuard } from 'src/system/common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/products/:productId/variants')
 export class VariantsController {
   constructor(private readonly variantsService: VariantsService) {}

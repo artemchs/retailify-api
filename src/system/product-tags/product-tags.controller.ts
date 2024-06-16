@@ -15,10 +15,11 @@ import { UpdateProductTagDto } from './dto/update-product-tag.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { FindAllProductTagDto } from './dto/findAll-product-tag.dto'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/product-tags')
 export class ProductTagsController {
   constructor(private readonly productTagsService: ProductTagsService) {}

@@ -16,9 +16,11 @@ import { FindAllSupplierDto } from './dto/findAll-supplier.dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { FindAllInfiniteListSupplierDto } from './dto/findAllInfiniteList-supplier.dto'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/suppliers')
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}

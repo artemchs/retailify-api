@@ -13,9 +13,13 @@ import { CustomersService } from './customers.service'
 import { CreateCustomerDto } from './dto/create-customer.dto'
 import { UpdateCustomerDto } from './dto/update-customer.dto'
 import { FindAllCustomerDto } from './dto/findAll-customer.dto'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
+import { Roles } from '../common/decorators'
+import { Role } from '../common/enums'
 
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/customers')
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}

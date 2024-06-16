@@ -24,8 +24,6 @@ import { VariantAdditionalAttributesModule } from './variant-additional-attribut
 import { SoleProprietorInfoModule } from './sole-proprietor-info/sole-proprietor-info.module'
 import { FinancialTransactionsModule } from './financial-transactions/financial-transactions.module'
 import { CustomOperationsModule } from './custom-operations/custom-operations.module'
-import { APP_GUARD } from '@nestjs/core'
-import { RolesGuard } from './common/guards'
 
 @Module({
   imports: [
@@ -54,12 +52,6 @@ import { RolesGuard } from './common/guards'
     SoleProprietorInfoModule,
     FinancialTransactionsModule,
     CustomOperationsModule,
-  ],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
   ],
 })
 export class SystemModule {}

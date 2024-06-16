@@ -3,10 +3,11 @@ import { SoleProprietorInfoService } from './sole-proprietor-info.service'
 import { EditSoleProprietorInfoDto } from './dto/edit-sole-proprietor-info.dto'
 import { GetCurrentUserAccessToken, Roles } from '../common/decorators'
 import { Role } from '../common/enums'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/sole-proprietor-info')
 export class SoleProprietorInfoController {
   constructor(

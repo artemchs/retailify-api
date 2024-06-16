@@ -13,10 +13,11 @@ import { EmployeesService } from './employees.service'
 import { CreateDto, FindAllDto, UpdateDto } from './dto'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/employees')
 export class EmployeesController {
   constructor(private employeesService: EmployeesService) {}

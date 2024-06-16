@@ -17,10 +17,11 @@ import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { FindAllInfiniteListProductDto } from './dto/findAllInfiniteList-product.dto'
 import { BatchEditProductDto } from './dto/batch-edit-product.dto'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}

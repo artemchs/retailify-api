@@ -17,10 +17,11 @@ import { Role } from '../common/enums'
 import { FindAllInventoryTransferDto } from './dto/findAll-inventory-transfer.dto'
 import { CreateInventoryTransferReasonDto } from './dto/create-inventory-transfer-reason.dto'
 import { UpdateInventoryTransferReasonDto } from './dto/update-inventory-transfer-reason.dto'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@Roles(Role.Admin)
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/inventory-transfers')
 export class InventoryTransfersController {
   constructor(

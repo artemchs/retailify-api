@@ -12,9 +12,13 @@ import { FinancialTransactionsService } from './financial-transactions.service'
 import { CreateFinancialTransactionDto } from './dto/create-financial-transaction.dto'
 import { FindAllFinancialTransactionsDto } from './dto/findAll-financial-transactions'
 import { UpdateFinancialTransactionDto } from './dto/update-financial-transaction.dto'
-import { AccessTokenGuard } from '../common/guards'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
+import { Roles } from '../common/decorators'
+import { Role } from '../common/enums'
 
 @UseGuards(AccessTokenGuard)
+@UseGuards(RolesGuard)
+@Roles(Role.Admin)
 @Controller('system/financial-transactions')
 export class FinancialTransactionsController {
   constructor(
