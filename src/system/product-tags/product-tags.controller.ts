@@ -17,10 +17,9 @@ import { Role } from '../common/enums'
 import { FindAllProductTagDto } from './dto/findAll-product-tag.dto'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/product-tags')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class ProductTagsController {
   constructor(private readonly productTagsService: ProductTagsService) {}
 

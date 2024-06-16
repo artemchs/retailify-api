@@ -17,10 +17,9 @@ import { AccessTokenGuard, RolesGuard } from '../common/guards'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/customers')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 

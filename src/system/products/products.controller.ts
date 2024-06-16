@@ -19,10 +19,9 @@ import { FindAllInfiniteListProductDto } from './dto/findAllInfiniteList-product
 import { BatchEditProductDto } from './dto/batch-edit-product.dto'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/products')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 

@@ -4,10 +4,9 @@ import { Role } from '../common/enums'
 import { StorageService } from './storage.service'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/storage')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class StorageController {
   constructor(private storageService: StorageService) {}
 

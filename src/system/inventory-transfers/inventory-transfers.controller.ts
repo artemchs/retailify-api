@@ -19,10 +19,9 @@ import { CreateInventoryTransferReasonDto } from './dto/create-inventory-transfe
 import { UpdateInventoryTransferReasonDto } from './dto/update-inventory-transfer-reason.dto'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/inventory-transfers')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class InventoryTransfersController {
   constructor(
     private readonly inventoryTransfersService: InventoryTransfersService,

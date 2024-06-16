@@ -17,10 +17,9 @@ import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/points-of-sale')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class PointsOfSaleController {
   constructor(private readonly pointsOfSaleService: PointsOfSaleService) {}
 

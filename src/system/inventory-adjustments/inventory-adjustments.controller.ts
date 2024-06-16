@@ -19,10 +19,9 @@ import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/inventory-adjustments')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class InventoryAdjustmentsController {
   constructor(
     private readonly inventoryAdjustmentsService: InventoryAdjustmentsService,

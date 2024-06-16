@@ -9,25 +9,17 @@ import {
 } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { SignUpDto, LogInDto } from './dto'
-import {
-  AccessTokenGuard,
-  RefreshTokenGuard,
-  RolesGuard,
-} from '../common/guards'
+import { AccessTokenGuard, RefreshTokenGuard } from '../common/guards'
 import {
   GetCurrentUserAccessToken,
   GetCurrentUserRefreshToken,
   Public,
-  Roles,
 } from '../common/decorators'
 import { UserPayloadRefreshToken } from '../common/types'
 import { Response } from 'express'
 import { setRefreshTokenCookie } from '../common/utils/set-refresh-token'
-import { Role } from '../common/enums'
 
 @UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

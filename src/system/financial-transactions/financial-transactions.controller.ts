@@ -16,10 +16,9 @@ import { AccessTokenGuard, RolesGuard } from '../common/guards'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/financial-transactions')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class FinancialTransactionsController {
   constructor(
     private readonly financialTransactionsService: FinancialTransactionsService,

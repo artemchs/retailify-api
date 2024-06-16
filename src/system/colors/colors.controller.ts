@@ -17,10 +17,9 @@ import { Role } from '../common/enums'
 import { FindAllColorDto } from './dto/findAll-color.dto'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/colors')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class ColorsController {
   constructor(private readonly colorsService: ColorsService) {}
 

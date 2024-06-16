@@ -20,10 +20,9 @@ import { Roles } from '../../system/common/decorators'
 import { Role } from '../../system/common/enums'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/category-groups')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class CategoryGroupsController {
   constructor(private readonly categoryGroupsService: CategoryGroupsService) {}
 

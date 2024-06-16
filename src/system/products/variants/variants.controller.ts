@@ -19,10 +19,9 @@ import { FindAllInfiniteListVariantDto } from './dto/findAllInfiniteList-variant
 import { BatchEditVariantDto } from './dto/batch-edit-variant.dto'
 import { AccessTokenGuard, RolesGuard } from 'src/system/common/guards'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/products/:productId/variants')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class VariantsController {
   constructor(private readonly variantsService: VariantsService) {}
 

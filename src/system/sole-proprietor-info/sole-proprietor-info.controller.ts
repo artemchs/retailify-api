@@ -5,10 +5,9 @@ import { GetCurrentUserAccessToken, Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/sole-proprietor-info')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class SoleProprietorInfoController {
   constructor(
     private readonly soleProprietorInfoService: SoleProprietorInfoService,

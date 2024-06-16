@@ -17,10 +17,9 @@ import { GetCurrentUserAccessToken, Roles } from '../common/decorators'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
 import { Role } from '../common/enums'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/refunds')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class RefundsController {
   constructor(private readonly refundsService: RefundsService) {}
 

@@ -18,10 +18,9 @@ import { Role } from '../../../system/common/enums'
 import { FindAllCharacteristicValueDto } from './dto/findAll-value.dto'
 import { AccessTokenGuard, RolesGuard } from 'src/system/common/guards'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/characteristics/:characteristicId/values')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class ValuesController {
   constructor(private readonly valuesService: ValuesService) {}
 

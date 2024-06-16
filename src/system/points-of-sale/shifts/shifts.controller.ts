@@ -21,10 +21,9 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 import { AccessTokenGuard, RolesGuard } from 'src/system/common/guards'
 import { Role } from 'src/system/common/enums'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
-@Roles(Role.Admin)
 @Controller('system/points-of-sale/:posId/shifts')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class ShiftsController {
   constructor(private readonly shiftsService: ShiftsService) {}
 

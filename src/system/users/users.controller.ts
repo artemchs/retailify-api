@@ -20,9 +20,8 @@ import { setRefreshTokenCookie } from '../common/utils/set-refresh-token'
 import { Role } from '../common/enums'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
 
-@UseGuards(AccessTokenGuard)
-@UseGuards(RolesGuard)
 @Controller('system/users')
+@UseGuards(AccessTokenGuard, RolesGuard)
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
@@ -53,8 +52,8 @@ export class UsersController {
     return this.usersService.updateMe(body, userId, file?.buffer)
   }
 
-  @Roles(Role.Admin)
   @Put('/me/password')
+  @Roles(Role.Admin)
   async updatePassword(
     @Body() body: UpdatePasswordDto,
     @GetCurrentUserAccessToken('sub') userId: string,
