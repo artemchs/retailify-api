@@ -23,6 +23,7 @@
     "characteristic-values",
     "product-variants",
     "sms",
-    "storefront"
+    "storefront",
+    "import"
   ]
 }

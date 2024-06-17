@@ -11,6 +11,8 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { randomUUID } from 'crypto'
+import { GeneratePresignedPutUrlDto } from './dto/generate-presigned-put-url.dto'
 
 @Injectable()
 export class StorageService extends S3Client {
@@ -107,7 +109,9 @@ export class StorageService extends S3Client {
     return url
   }
 
-  async generatePresignedPutUrl(key: string) {
+  async generatePresignedPutUrl({ dir }: GeneratePresignedPutUrlDto) {
+    const key = `${dir}/${randomUUID()}`
+
     const params: PutObjectCommandInput = {
       Bucket: this.bucketName,
       Key: key,
@@ -116,6 +120,9 @@ export class StorageService extends S3Client {
     const command = new PutObjectCommand(params)
     const url = await getSignedUrl(this, command)
 
-    return url
+    return {
+      url,
+      key,
+    }
   }
 }

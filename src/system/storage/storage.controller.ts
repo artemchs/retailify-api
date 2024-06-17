@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Query, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common'
 import { Roles } from '../common/decorators'
 import { Role } from '../common/enums'
 import { StorageService } from './storage.service'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
+import { GeneratePresignedPutUrlDto } from './dto/generate-presigned-put-url.dto'
 
 @Controller('system/storage')
 @UseGuards(AccessTokenGuard, RolesGuard)
@@ -16,7 +17,7 @@ export class StorageController {
   }
 
   @Post()
-  generatePresignedPutUrl(@Query('key') key: string) {
-    return this.storageService.generatePresignedPutUrl(key)
+  generatePresignedPutUrl(@Body() body: GeneratePresignedPutUrlDto) {
+    return this.storageService.generatePresignedPutUrl(body)
   }
 }
