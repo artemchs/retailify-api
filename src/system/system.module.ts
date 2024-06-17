@@ -24,6 +24,7 @@ import { VariantAdditionalAttributesModule } from './variant-additional-attribut
 import { SoleProprietorInfoModule } from './sole-proprietor-info/sole-proprietor-info.module'
 import { FinancialTransactionsModule } from './financial-transactions/financial-transactions.module'
 import { CustomOperationsModule } from './custom-operations/custom-operations.module'
+import { ImportModule } from './import/import.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { CustomOperationsModule } from './custom-operations/custom-operations.mo
     SoleProprietorInfoModule,
     FinancialTransactionsModule,
     CustomOperationsModule,
+    ImportModule,
   ],
 })
 export class SystemModule {}
