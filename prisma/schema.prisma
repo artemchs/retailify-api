@@ -227,6 +227,10 @@ enum ProductSeason {
   SPRING_FALL
   SUMMER
   ALL_SEASON
+  SPRING_SUMMER
+  DEMI_SEASON
+  SPRING_WINTER
+  FALL
 }
 
 enum ProductGender {
@@ -329,7 +333,7 @@ model Characteristic {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name           String
+  name           String                @unique
   values         CharacteristicValue[]
   categoryGroups CategoryGroup[]
   categories     Category[]
