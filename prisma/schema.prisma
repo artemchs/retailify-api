@@ -205,6 +205,10 @@ model Product {
   packagingHeight Decimal @db.Decimal(8, 2)
   packagingWeight Decimal @db.Decimal(8, 2)
 
+  torgsoftId String? @unique
+  promId     String? @unique
+  rozetkaId  String? @unique
+
   tags ProductTag[]
 
   isArchived Boolean @default(false)
@@ -275,6 +279,10 @@ model Variant {
   barcode              String                       @unique
   price                Decimal                      @db.Decimal(8, 2)
   sale                 Decimal?                     @db.Decimal(8, 2)
+
+  torgsoftId String? @unique
+  promId     String? @unique
+  rozetkaId  String? @unique
 
   isArchived            Boolean                 @default(false)
   InventoryTransferItem InventoryTransferItem[]
