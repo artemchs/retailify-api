@@ -21,6 +21,7 @@ import { Prisma, ProductGender } from '@prisma/client'
 import { compareArrays } from '../common/utils/compare-arrays'
 import { FindAllInfiniteListProductDto } from './dto/findAllInfiniteList-product.dto'
 import { BatchEditProductDto } from './dto/batch-edit-product.dto'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 @Injectable()
 export class ProductsService {
@@ -331,8 +332,6 @@ export class ProductsService {
   }
 
   async findAllInfiniteList({ cursor, query }: FindAllInfiniteListProductDto) {
-    const limit = 10
-
     const where: Prisma.ProductWhereInput = {
       OR: buildContainsArray({
         fields: ['title', 'sku'],
@@ -342,7 +341,7 @@ export class ProductsService {
     }
 
     const items = await this.db.product.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -355,7 +354,7 @@ export class ProductsService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

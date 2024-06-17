@@ -12,6 +12,7 @@ import {
   getPaginationData,
 } from '../common/utils/db-helpers'
 import { FindAllInfiniteListSupplierDto } from './dto/findAllInfiniteList-supplier.dto'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 @Injectable()
 export class SuppliersService {
@@ -76,8 +77,6 @@ export class SuppliersService {
   }
 
   async findAllInfiniteList({ cursor, query }: FindAllInfiniteListSupplierDto) {
-    const limit = 10
-
     const where: Prisma.SupplierWhereInput = {
       OR: buildContainsArray({
         fields: ['name', 'contactPerson', 'email', 'phone', 'address'],
@@ -87,7 +86,7 @@ export class SuppliersService {
     }
 
     const items = await this.db.supplier.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -96,7 +95,7 @@ export class SuppliersService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

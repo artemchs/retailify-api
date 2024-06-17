@@ -12,6 +12,7 @@ import {
 import { Prisma } from '@prisma/client'
 import { FindAllInfiniteListVariantDto } from './dto/findAllInfiniteList-variant.dto'
 import { BatchEditVariantDto } from './dto/batch-edit-variant.dto'
+import { DEFAULT_PRISMA_LIMIT } from 'src/system/common/constants'
 
 @Injectable()
 export class VariantsService {
@@ -278,8 +279,6 @@ export class VariantsService {
     productId: string,
     { cursor, query }: FindAllInfiniteListVariantDto,
   ) {
-    const limit = 10
-
     const where: Prisma.VariantWhereInput = {
       OR: buildContainsArray({
         fields: ['size'],
@@ -290,7 +289,7 @@ export class VariantsService {
     }
 
     const items = await this.db.variant.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -302,7 +301,7 @@ export class VariantsService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }
@@ -323,7 +322,6 @@ export class VariantsService {
     cursor?: string
   }) {
     await this.getWarehouse(warehouseId)
-    const limit = 10
 
     const where: Prisma.VariantWhereInput = {
       OR: query
@@ -365,7 +363,7 @@ export class VariantsService {
     }
 
     const items = await this.db.variant.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -386,7 +384,7 @@ export class VariantsService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

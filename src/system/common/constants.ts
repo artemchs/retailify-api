@@ -1,0 +1,1 @@
+export const DEFAULT_PRISMA_LIMIT = 10

@@ -9,6 +9,7 @@ import { DbService } from '../../db/db.service'
 import { FindAllCustomOperationDto } from './dto/findAll-custom-operation.dto'
 import { Prisma } from '@prisma/client'
 import { buildContainsArray } from 'src/system/common/utils/db-helpers'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 @Injectable()
 export class CustomOperationsService {
@@ -35,14 +36,12 @@ export class CustomOperationsService {
   }
 
   async findAll({ cursor, query }: FindAllCustomOperationDto) {
-    const limit = 10
-
     const where: Prisma.CustomFinancialOperationWhereInput = {
       OR: buildContainsArray({ fields: ['name'], query }),
     }
 
     const items = await this.db.customFinancialOperation.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -51,7 +50,7 @@ export class CustomOperationsService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

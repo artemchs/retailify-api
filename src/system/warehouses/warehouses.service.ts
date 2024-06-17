@@ -17,6 +17,7 @@ import {
   getPaginationData,
 } from '../common/utils/db-helpers'
 import { FindAllInfiniteListWarehouseDto } from './dto/findAllInfiniteList-warehouse.dto'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 @Injectable()
 export class WarehousesService {
@@ -84,8 +85,6 @@ export class WarehousesService {
     cursor,
     query,
   }: FindAllInfiniteListWarehouseDto) {
-    const limit = 10
-
     const where: Prisma.WarehouseWhereInput = {
       OR: buildContainsArray({
         fields: ['name', 'address'],
@@ -95,7 +94,7 @@ export class WarehousesService {
     }
 
     const items = await this.db.warehouse.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -104,7 +103,7 @@ export class WarehousesService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

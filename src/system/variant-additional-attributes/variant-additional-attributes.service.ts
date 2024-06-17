@@ -9,6 +9,7 @@ import { DbService } from '../../db/db.service'
 import { FindAllVariantAdditionalAttributeDto } from './dto/findAll-variant-additional-attribute.dto'
 import { Prisma } from '@prisma/client'
 import { buildContainsArray } from '../common/utils/db-helpers'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 @Injectable()
 export class VariantAdditionalAttributesService {
@@ -51,14 +52,12 @@ export class VariantAdditionalAttributesService {
   }
 
   async findAll({ cursor, query }: FindAllVariantAdditionalAttributeDto) {
-    const limit = 10
-
     const where: Prisma.AdditionalAttributeWhereInput = {
       OR: buildContainsArray({ fields: ['name'], query }),
     }
 
     const items = await this.db.additionalAttribute.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -67,7 +66,7 @@ export class VariantAdditionalAttributesService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

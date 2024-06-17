@@ -15,6 +15,7 @@ import {
 } from '../common/utils/db-helpers'
 import { FindAllCustomerDto } from './dto/findAll-customer.dto'
 import parsePhoneNumber from 'libphonenumber-js'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 @Injectable()
 export class CustomersService {
@@ -122,8 +123,6 @@ export class CustomersService {
     cursor?: string
     query?: string
   }) {
-    const limit = 10
-
     const where: Prisma.CustomerWhereInput = {
       OR: buildContainsArray({
         fields: ['firstName', 'lastName', 'email', 'phoneNumber'],
@@ -132,7 +131,7 @@ export class CustomersService {
     }
 
     const items = await this.db.customer.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -141,7 +140,7 @@ export class CustomersService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

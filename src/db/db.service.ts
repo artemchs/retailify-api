@@ -71,6 +71,9 @@ export class DbService
         this.soleProprietorInfo.deleteMany(),
         this.soleProprietorCurrentAccount.deleteMany(),
         this.customFinancialOperation.deleteMany(),
+        this.import.deleteMany(),
+        this.importFile.deleteMany(),
+        this.importSource.deleteMany(),
       ])
     }
   }

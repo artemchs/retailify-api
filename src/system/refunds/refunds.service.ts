@@ -17,6 +17,7 @@ import {
 import { $Enums, Prisma, PrismaClient } from '@prisma/client'
 import { DbService } from '../../db/db.service'
 import { Decimal, DefaultArgs } from '@prisma/client/runtime/library'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 type PrismaTx = Omit<
   PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
@@ -261,8 +262,6 @@ export class RefundsService {
     query,
     warehouseIds,
   }: FindAllRefundInfiniteListDto) {
-    const limit = 10
-
     const where: Prisma.RefundWhereInput = {
       OR: buildContainsArray({ fields: ['name'], query }),
       createdAt: date
@@ -321,7 +320,7 @@ export class RefundsService {
     }
 
     const items = await this.db.refund.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -330,7 +329,7 @@ export class RefundsService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

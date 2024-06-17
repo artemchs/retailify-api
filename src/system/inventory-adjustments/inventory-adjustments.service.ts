@@ -21,6 +21,7 @@ import { Prisma } from '@prisma/client'
 import { compareArrays } from '../common/utils/compare-arrays'
 import { CreateInventoryAdjustmentReasonDto } from './dto/create-inventory-adjustment-reason.dto'
 import { UpdateInventoryAdjustmentReasonDto } from './dto/update-inventory-adjustment-reason.dto'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 @Injectable()
 export class InventoryAdjustmentsService {
@@ -501,14 +502,12 @@ export class InventoryAdjustmentsService {
   }
 
   async findAllReasons({ cursor, query }: { cursor?: string; query?: string }) {
-    const limit = 10
-
     const where: Prisma.InventoryAdjustmentReasonWhereInput = {
       OR: buildContainsArray({ fields: ['name'], query }),
     }
 
     const items = await this.db.inventoryAdjustmentReason.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -517,7 +516,7 @@ export class InventoryAdjustmentsService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

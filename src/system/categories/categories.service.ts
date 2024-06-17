@@ -18,6 +18,7 @@ import {
   getPaginationData,
 } from '../common/utils/db-helpers'
 import { Prisma } from '@prisma/client'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 @Injectable()
 export class CategoriesService {
@@ -169,15 +170,13 @@ export class CategoriesService {
   }
 
   async findAllInfiniteList({ query, cursor }: FindAllInfiniteListCategoryDto) {
-    const limit = 10
-
     const where: Prisma.CategoryWhereInput = {
       OR: buildContainsArray({ fields: ['name'], query }),
       isArchived: false,
     }
 
     const items = await this.db.category.findMany({
-      take: limit + 10,
+      take: DEFAULT_PRISMA_LIMIT + 10,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -186,7 +185,7 @@ export class CategoriesService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

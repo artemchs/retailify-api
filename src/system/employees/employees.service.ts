@@ -12,6 +12,7 @@ import {
   calculateTotalPages,
 } from '../common/utils/db-helpers'
 import { hashData } from '../common/utils/hash-data'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 @Injectable()
 export class EmployeesService {
@@ -92,14 +93,12 @@ export class EmployeesService {
     cursor?: string
     query?: string
   }) {
-    const limit = 10
-
     const where: Prisma.SystemUserWhereInput = {
       OR: buildContainsArray({ fields: ['fullName', 'email'], query }),
     }
 
     const items = await this.db.systemUser.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -108,7 +107,7 @@ export class EmployeesService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

@@ -19,6 +19,7 @@ import {
   calculateTotalPages,
   getPaginationData,
 } from '../common/utils/db-helpers'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 type PrismaTx = Omit<
   PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
@@ -403,8 +404,6 @@ export class OrdersService {
     warehouseIds,
     paymentMethods,
   }: FindAllOrderInfiniteListDto) {
-    const limit = 10
-
     const where: Prisma.OrderWhereInput = {
       OR: buildContainsArray({ fields: ['name'], query }),
       createdAt: date
@@ -456,7 +455,7 @@ export class OrdersService {
     }
 
     const items = await this.db.order.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -497,7 +496,7 @@ export class OrdersService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

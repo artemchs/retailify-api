@@ -9,6 +9,7 @@ import { DbService } from '../../db/db.service'
 import { FindAllCharacteristicDto } from './dto/findAll-characteristic.dto'
 import { Prisma } from '@prisma/client'
 import { buildContainsArray } from '../common/utils/db-helpers'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 @Injectable()
 export class CharacteristicsService {
@@ -49,14 +50,12 @@ export class CharacteristicsService {
   }
 
   async findAll({ cursor, query }: FindAllCharacteristicDto) {
-    const limit = 10
-
     const where: Prisma.CharacteristicWhereInput = {
       OR: buildContainsArray({ fields: ['name'], query }),
     }
 
     const items = await this.db.characteristic.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -65,7 +64,7 @@ export class CharacteristicsService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }

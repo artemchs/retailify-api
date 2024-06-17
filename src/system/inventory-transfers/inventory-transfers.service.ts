@@ -23,6 +23,7 @@ import { compareArrays } from '../common/utils/compare-arrays'
 import { CreateInventoryTransferReasonDto } from './dto/create-inventory-transfer-reason.dto'
 import { UpdateInventoryTransferReasonDto } from './dto/update-inventory-transfer-reason.dto'
 import { DefaultArgs } from '@prisma/client/runtime/library'
+import { DEFAULT_PRISMA_LIMIT } from '../common/constants'
 
 type PrismaTx = Omit<
   PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
@@ -754,14 +755,12 @@ export class InventoryTransfersService {
   }
 
   async findAllReasons({ cursor, query }: { cursor?: string; query?: string }) {
-    const limit = 10
-
     const where: Prisma.InventoryTransferReasonWhereInput = {
       OR: buildContainsArray({ fields: ['name'], query }),
     }
 
     const items = await this.db.inventoryTransferReason.findMany({
-      take: limit + 1,
+      take: DEFAULT_PRISMA_LIMIT + 1,
       where,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
@@ -770,7 +769,7 @@ export class InventoryTransfersService {
     })
 
     let nextCursor: typeof cursor | undefined = undefined
-    if (items.length > limit) {
+    if (items.length > DEFAULT_PRISMA_LIMIT) {
       const nextItem = items.pop()
       nextCursor = nextItem!.id
     }
