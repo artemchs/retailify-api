@@ -672,3 +672,49 @@ model RefundItem {
 
   amount Decimal @db.Decimal(8, 2)
 }
+
+model Import {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  source         ImportSource? @relation(fields: [importSourceId], references: [id])
+  importSourceId String?
+
+  status  ImportStatus @default(IDLE)
+  file    ImportFile?
+  comment String?      @db.Text
+}
+
+enum ImportStatus {
+  ERROR
+  SUCCESS
+  PENDING
+  IDLE
+}
+
+model ImportFile {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  key  String         @unique
+  type ImportFileType
+
+  import   Import @relation(fields: [importId], references: [id], onDelete: Cascade)
+  importId String @unique
+}
+
+enum ImportFileType {
+  EXCEL
+  CSV
+}
+
+model ImportSource {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name   String
+  schema Json
+
+  imports Import[]
+}
