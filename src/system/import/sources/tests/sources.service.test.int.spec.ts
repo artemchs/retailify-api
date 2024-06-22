@@ -2,9 +2,10 @@ import { Test } from '@nestjs/testing'
 import { DbService } from '../../../../db/db.service'
 import { SourcesService } from '../sources.service'
 import { AppModule } from 'src/app.module'
-import { CreateSourceDto, ProductField } from '../dto/create-source.dto'
+import { CreateSourceDto } from '../dto/create-source.dto'
 import { NotFoundException } from '@nestjs/common'
 import { UpdateSourceDto } from '../dto/update-source.dto'
+import { ProductFields } from '../../types'
 
 describe('ImportSourcesService', () => {
   let service: SourcesService
@@ -32,7 +33,7 @@ describe('ImportSourcesService', () => {
       name: 'Test Source 1',
       schema: [
         {
-          field: ProductField.PRODUCT_TITLE,
+          field: ProductFields.PRODUCT_TITLE,
           incomingFileField: 'Наименование товара',
           isAdditionalField: false,
         },
@@ -125,7 +126,7 @@ describe('ImportSourcesService', () => {
     const data: UpdateSourceDto = {
       schema: [
         {
-          field: ProductField.PRODUCT_TITLE,
+          field: ProductFields.PRODUCT_TITLE,
           incomingFileField: 'Название_позиции',
           isAdditionalField: false,
         },

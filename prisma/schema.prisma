@@ -697,15 +697,17 @@ model ImportFile {
   createdAt DateTime @default(now())
 
   key  String         @unique
-  type ImportFileType
+  type ImportFileType @default(OTHER)
 
   import   Import @relation(fields: [importId], references: [id], onDelete: Cascade)
   importId String @unique
 }
 
 enum ImportFileType {
-  EXCEL
+  XLSX
+  XLS
   CSV
+  OTHER
 }
 
 model ImportSource {

@@ -60,6 +60,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.6",
+    "csv-parser": "^3.0.0",
     "helmet": "^7.1.0",
     "iconv-lite": "^0.6.3",
     "libphonenumber-js": "^1.10.59",
@@ -72,6 +73,7 @@
     "rxjs": "^7.8.1",
     "transliteration": "^2.3.5",
     "ts-proto": "^1.171.0",
+    "xlsx": "^0.18.5",
     "xml-crypto": "^6.0.0",
     "xml2js": "^0.6.2"
   },

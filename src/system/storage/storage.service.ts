@@ -3,7 +3,11 @@ import {
   DeleteObjectsCommand,
   GetObjectCommand,
   GetObjectCommandInput,
+  HeadObjectCommand,
+  HeadObjectCommandInput,
   ListObjectsCommand,
+  ListObjectsV2Command,
+  ListObjectsV2CommandInput,
   PutObjectCommand,
   PutObjectCommandInput,
   S3Client,
@@ -13,6 +17,7 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { randomUUID } from 'crypto'
 import { GeneratePresignedPutUrlDto } from './dto/generate-presigned-put-url.dto'
+import { ReadStream } from 'fs'
 
 @Injectable()
 export class StorageService extends S3Client {
@@ -39,12 +44,17 @@ export class StorageService extends S3Client {
       ? 'test'
       : this.configService.getOrThrow('AWS_S3_BUCKET_NAME')
 
-  async uploadFile(Key: string, Body: Buffer) {
+  async uploadFile(
+    Key: string,
+    Body: Buffer | ReadStream,
+    ContentType?: string,
+  ) {
     await this.send(
       new PutObjectCommand({
         Bucket: this.bucketName,
         Key,
         Body,
+        ContentType,
       }),
     )
   }
@@ -124,5 +134,42 @@ export class StorageService extends S3Client {
       url,
       key,
     }
+  }
+
+  getHeader(key: string) {
+    try {
+      const params: HeadObjectCommandInput = {
+        Bucket: this.bucketName,
+        Key: key,
+      }
+      const command = new HeadObjectCommand(params)
+
+      return this.send(command)
+    } catch (e) {
+      console.error('Error in "storage.getHeader": ', e)
+    }
+  }
+
+  getObject(key: string) {
+    try {
+      const params: GetObjectCommandInput = {
+        Bucket: this.bucketName,
+        Key: key,
+      }
+      const command = new GetObjectCommand(params)
+
+      return this.send(command)
+    } catch (e) {
+      console.error('Error in "storage.getObject": ', e)
+    }
+  }
+
+  listObjects() {
+    const params: ListObjectsV2CommandInput = {
+      Bucket: this.bucketName,
+    }
+    const command = new ListObjectsV2Command(params)
+
+    return this.send(command)
   }
 }
