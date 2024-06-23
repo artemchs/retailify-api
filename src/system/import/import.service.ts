@@ -6,7 +6,12 @@ import {
 import { CreateImportDto } from './dto/create-import.dto'
 import { DbService } from '../../db/db.service'
 import { StorageService } from '../storage/storage.service'
-import { ImportFileType, ProductGender, ProductSeason } from '@prisma/client'
+import {
+  ImportFileType,
+  Prisma,
+  ProductGender,
+  ProductSeason,
+} from '@prisma/client'
 import * as xlsx from 'xlsx'
 import * as csv from 'csv-parser'
 import {
@@ -21,6 +26,13 @@ import {
 import { Readable } from 'stream'
 import { PrismaTx } from '../common/types'
 import { minutes } from '@nestjs/throttler'
+import { FindAllImportDto } from './dto/findAll-import.dto'
+import {
+  buildContainsArray,
+  buildOrderByArray,
+  calculateTotalPages,
+  getPaginationData,
+} from '../common/utils/db-helpers'
 
 @Injectable()
 export class ImportService {
@@ -641,7 +653,7 @@ export class ImportService {
     })
   }
 
-  async create({
+  async createProductImport({
     fileKey,
     importSourceId,
     comment,
@@ -694,6 +706,7 @@ export class ImportService {
                   type: importFileType,
                 },
               },
+              type: 'PRODUCTS',
               importSourceId,
               comment,
               status: 'PENDING',
@@ -713,5 +726,61 @@ export class ImportService {
         timeout: minutes(5),
       },
     )
+  }
+
+  async findAllProductImports({
+    page,
+    rowsPerPage,
+    query,
+    orderBy,
+  }: FindAllImportDto) {
+    const { skip, take } = getPaginationData({ page, rowsPerPage })
+
+    const where: Prisma.ImportWhereInput = {
+      OR: buildContainsArray({
+        fields: ['comment'],
+        query,
+      }),
+      type: 'PRODUCTS',
+    }
+
+    const [items, totalItems] = await Promise.all([
+      this.db.import.findMany({
+        where,
+        take,
+        skip,
+        orderBy: buildOrderByArray({ orderBy }),
+      }),
+      this.db.import.count({
+        where,
+      }),
+    ])
+
+    return {
+      items,
+      info: {
+        totalPages: calculateTotalPages(totalItems, take),
+        totalItems,
+      },
+    }
+  }
+
+  async findOneProductImport(id: string) {
+    return this.db.import.findUnique({
+      where: {
+        id,
+      },
+    })
+  }
+
+  async findLastProductImport() {
+    return this.db.import.findFirst({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      where: {
+        type: 'PRODUCTS',
+      },
+    })
   }
 }

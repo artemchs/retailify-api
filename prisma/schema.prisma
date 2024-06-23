@@ -683,6 +683,12 @@ model Import {
   status  ImportStatus @default(IDLE)
   file    ImportFile?
   comment String?      @db.Text
+
+  type ImportType
+}
+
+enum ImportType {
+  PRODUCTS
 }
 
 enum ImportStatus {
