@@ -191,53 +191,44 @@ describe('ImportSourcesService', () => {
       })
     })
 
-    // it(
-    //   'should import products from an Excel file',
-    //   async () => {
-    //     await service.create({
-    //       fileKey: 'Import/TSGoods.xls',
-    //       importSourceId: 'importSource',
-    //       warehouseId,
-    //     })
-    //   },
-    //   minutes(5),
-    // )
-    describe('create', () => {
-      it(
-        'should successfully import products from a .csv file',
-        async () => {
-          await service.create({
-            fileKey: 'Import/sync.csv',
-            importSourceId: 'importSource',
-            warehouseId,
-          })
+    describe('products', () => {
+      describe('create products import', () => {
+        it(
+          'should successfully import products from a .csv file',
+          async () => {
+            await service.createProductImport({
+              fileKey: 'Import/sync.csv',
+              importSourceId: 'importSource',
+              warehouseId,
+            })
 
-          const productsCount = await db.product.count()
-          const variantsCount = await db.variant.count()
+            const productsCount = await db.product.count()
+            const variantsCount = await db.variant.count()
 
-          expect(productsCount).toBe(3)
-          expect(variantsCount).toBe(12)
-        },
-        minutes(1),
-      )
+            expect(productsCount).toBe(3)
+            expect(variantsCount).toBe(12)
+          },
+          minutes(1),
+        )
 
-      it(
-        'should successfully import products from an excel file',
-        async () => {
-          await service.create({
-            fileKey: 'Import/sync.xlsx',
-            importSourceId: 'importSource',
-            warehouseId,
-          })
+        it(
+          'should successfully import products from an excel file',
+          async () => {
+            await service.createProductImport({
+              fileKey: 'Import/sync.xlsx',
+              importSourceId: 'importSource',
+              warehouseId,
+            })
 
-          const productsCount = await db.product.count()
-          const variantsCount = await db.variant.count()
+            const productsCount = await db.product.count()
+            const variantsCount = await db.variant.count()
 
-          expect(productsCount).toBe(3)
-          expect(variantsCount).toBe(12)
-        },
-        minutes(1),
-      )
+            expect(productsCount).toBe(3)
+            expect(variantsCount).toBe(12)
+          },
+          minutes(1),
+        )
+      })
     })
   })
 })
