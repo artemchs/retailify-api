@@ -3,10 +3,10 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Query,
+  Put,
 } from '@nestjs/common'
 import { SourcesService } from './sources.service'
 import { CreateSourceDto } from './dto/create-source.dto'
@@ -32,7 +32,7 @@ export class SourcesController {
     return this.sourcesService.findOne(id)
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateSourceDto: UpdateSourceDto) {
     return this.sourcesService.update(id, updateSourceDto)
   }

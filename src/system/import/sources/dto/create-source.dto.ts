@@ -3,7 +3,6 @@ import {
   IsBoolean,
   IsEnum,
   IsNotEmpty,
-  IsObject,
   IsString,
   ValidateNested,
 } from 'class-validator'
@@ -43,7 +42,6 @@ export class CreateSourceDto {
   name: string
 
   @IsNotEmpty()
-  @IsObject()
   @ValidateNested({ each: true })
   @Type(() => ImportSourceSchemaDto)
   schema: ImportSourceSchemaDto[]
