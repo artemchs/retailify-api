@@ -5,14 +5,7 @@ import {
 } from '@nestjs/common'
 import { DbService } from '../../db/db.service'
 import { StorageService } from '../storage/storage.service'
-import {
-  ImportFileType,
-  Prisma,
-  ProductGender,
-  ProductSeason,
-} from '@prisma/client'
-import * as xlsx from 'xlsx'
-import * as csv from 'csv-parser'
+import { Prisma, ProductGender, ProductSeason } from '@prisma/client'
 import {
   ImportItemSchema,
   ImportProduct,
@@ -21,7 +14,6 @@ import {
   ProductFieldValues,
   ProductFields,
 } from './types'
-import { Readable } from 'stream'
 import { PrismaTx } from '../common/types'
 import { minutes } from '@nestjs/throttler'
 import {
@@ -32,6 +24,9 @@ import {
 } from '../common/utils/db-helpers'
 import { CreateProductImportDto } from './dto/create-product-import.dto'
 import { FindAllProductImportsDto } from './dto/findAll-product-imports.dto'
+import getImportFileType from './utils/get-import-file-type'
+import { readCSVFile, readExcelFile } from './utils/import-file'
+import { Readable } from 'stream'
 
 @Injectable()
 export class ProductsImportService {
@@ -39,12 +34,6 @@ export class ProductsImportService {
     private readonly db: DbService,
     private readonly storage: StorageService,
   ) {}
-
-  private readonly FILE_TYPES = {
-    XLSX: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    XLS: 'application/vnd.ms-excel',
-    CSV: 'text/csv',
-  }
 
   private readonly FIELD_VALUES = {
     product_gender: {
@@ -64,78 +53,6 @@ export class ProductsImportService {
     },
   }
 
-  private async getImportSource(id: string) {
-    const importSource = await this.db.importSource.findUnique({
-      where: { id },
-    })
-
-    if (!importSource) {
-      throw new NotFoundException('Источник импорта не найден.')
-    }
-
-    return importSource
-  }
-
-  private getFileType(contentType?: string): ImportFileType {
-    let importFileType: ImportFileType = 'OTHER'
-
-    if (contentType === this.FILE_TYPES.XLSX) {
-      importFileType = 'XLSX'
-    } else if (contentType === this.FILE_TYPES.XLS) {
-      importFileType = 'XLS'
-    } else if (contentType === this.FILE_TYPES.CSV) {
-      importFileType = 'CSV'
-    }
-
-    return importFileType
-  }
-
-  private async getImportFile(key: string) {
-    const object = await this.storage.getObject(key)
-    if (!object?.Body) return
-
-    const chunks: any[] = []
-
-    for await (const chunk of object.Body as Readable) {
-      chunks.push(chunk)
-    }
-
-    return Buffer.concat(chunks)
-  }
-
-  private async readExcelFile(buffer: Buffer) {
-    const workbook = xlsx.read(buffer, { type: 'buffer' })
-    const workSheetName = workbook.SheetNames[0]
-    const worksheet = workbook.Sheets[workSheetName]
-    return xlsx.utils.sheet_to_json(worksheet, { defval: '' })
-  }
-
-  private async readCSVFile(buffer: Buffer) {
-    return new Promise((resolve, reject) => {
-      const results: ImportProduct[] = []
-      const columnCounts: Record<string, number> = {}
-      const stream = Readable.from(buffer.toString())
-
-      stream
-        .pipe(csv())
-        .on('headers', (headers) => {
-          headers.forEach((header, index) => {
-            if (columnCounts[header] === undefined) {
-              columnCounts[header] = 0
-            } else {
-              columnCounts[header]++
-              headers[index] = `${header}_${columnCounts[header]}`
-            }
-          })
-        })
-        .on('data', (data) => {
-          results.push(data)
-        })
-        .on('end', () => resolve(results))
-        .on('error', (error) => reject(error))
-    })
-  }
-
   private async readImportData(
     contentType: string,
     key: string,
@@ -144,11 +61,11 @@ export class ProductsImportService {
     if (!buffer) throw new NotFoundException('Буфер данных импорта не найден.')
 
     if (contentType === 'CSV') {
-      return this.readCSVFile(buffer) as unknown as any[]
+      return readCSVFile(buffer) as unknown as any[]
     }
 
     if (contentType === 'XLSX' || contentType === 'XLS') {
-      return this.readExcelFile(buffer) as unknown as any[]
+      return readExcelFile(buffer) as unknown as any[]
     }
 
     throw new BadRequestException(
@@ -650,6 +567,31 @@ export class ProductsImportService {
     })
   }
 
+  private async getImportFile(key: string) {
+    const object = await this.storage.getObject(key)
+    if (!object?.Body) return
+
+    const chunks: any[] = []
+
+    for await (const chunk of object.Body as Readable) {
+      chunks.push(chunk)
+    }
+
+    return Buffer.concat(chunks)
+  }
+
+  private async getImportSource(id: string) {
+    const importSource = await this.db.importSource.findUnique({
+      where: { id },
+    })
+
+    if (!importSource) {
+      throw new NotFoundException('Источник импорта не найден.')
+    }
+
+    return importSource
+  }
+
   async createProductImport({
     fileKey,
     importSourceId,
@@ -689,7 +631,7 @@ export class ProductsImportService {
       )
     }
 
-    const importFileType = this.getFileType(objectHeader?.ContentType)
+    const importFileType = getImportFileType(objectHeader?.ContentType)
     await this.db.$transaction(
       async (tx) => {
         const [rawImportData] = await Promise.all([

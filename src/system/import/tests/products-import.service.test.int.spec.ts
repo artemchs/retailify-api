@@ -72,7 +72,7 @@ const TEST_PHOTO_KEYS = [
   '982259_82116_4.jpg',
 ]
 
-describe('ImportSourcesService', () => {
+describe('ProductsImportService', () => {
   let service: ProductsImportService
   let db: DbService
   let storage: StorageService
