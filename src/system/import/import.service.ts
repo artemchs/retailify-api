@@ -15,7 +15,6 @@ import {
 import * as xlsx from 'xlsx'
 import * as csv from 'csv-parser'
 import {
-  AdditionalField,
   ImportItemSchema,
   ImportProduct,
   ImportProductFieldsType,
@@ -175,31 +174,31 @@ export class ImportService {
       )
     }
 
-    const additionalFieldsSchema = schema.filter(
-      (item) => item.isAdditionalField === true,
-    )
+    // const additionalFieldsSchema = schema.filter(
+    //   (item) => item.isAdditionalField === true,
+    // )
 
-    const getAdditionalFields = (row: any): AdditionalField[] => {
-      return Object.entries(row)
-        .filter(([key]) => key.startsWith('Название_Характеристики_'))
-        .map(([key, value]) => {
-          const suffix = key.split('_').pop()
-          const valueKey = `Значение_Характеристики_${suffix}`
-          if (
-            row[valueKey] &&
-            additionalFieldsSchema.some(
-              (item) => item.incomingFileField === String(value),
-            )
-          ) {
-            return {
-              key: String(value),
-              value: String(row[valueKey]),
-            }
-          }
-          return null
-        })
-        .filter(Boolean) as AdditionalField[]
-    }
+    // const getAdditionalFields = (row: any): AdditionalField[] => {
+    //   return Object.entries(row)
+    //     .filter(([key]) => key.startsWith('Название_Характеристики_'))
+    //     .map(([key, value]) => {
+    //       const suffix = key.split('_').pop()
+    //       const valueKey = `Значение_Характеристики_${suffix}`
+    //       if (
+    //         row[valueKey] &&
+    //         additionalFieldsSchema.some(
+    //           (item) => item.incomingFileField === String(value),
+    //         )
+    //       ) {
+    //         return {
+    //           key: String(value),
+    //           value: String(row[valueKey]),
+    //         }
+    //       }
+    //       return null
+    //     })
+    //     .filter(Boolean) as AdditionalField[]
+    // }
 
     const getFieldData = <T>(
       row: any,
@@ -209,21 +208,23 @@ export class ImportService {
       return schema
         .filter((item) => item.field.startsWith(prefix))
         .reduce((acc, item) => {
-          if (item.isAdditionalField) {
+          if (item.isAdditionalField === true) {
             const col = Object.entries(row).find(
               ([key, value]) =>
-                key.startsWith('Название_Характеристики_') &&
+                key.startsWith('Название_Характеристики') &&
                 schema.some(
                   (obj) =>
-                    obj.isAdditionalField &&
+                    obj.isAdditionalField === true &&
                     obj.incomingFileField === String(value) &&
                     obj.field === item.field,
                 ),
             )
             const key = col?.[0]
             if (key) {
-              const suffix = key.split('_').pop()
-              const valueKey = `Значение_Характеристики_${suffix}`
+              const suffix =
+                key.split('_').length === 3 ? `_${key.split('_').pop()}` : ''
+              const valueKey = `Значение_Характеристики${suffix}`
+
               acc[item.field] = String(row[valueKey])
             }
           } else {
@@ -237,7 +238,6 @@ export class ImportService {
     for (let i = 0; i < data.length; i++) {
       const row = data[i]
 
-      const productAdditionalFields = getAdditionalFields(row)
       const variantData = getFieldData<ImportVariantFieldsType>(
         row,
         'variant_',
@@ -248,6 +248,7 @@ export class ImportService {
         'product_',
         schema,
       )
+
       const currentProductId = row[productIdField]
 
       if (lastProductId && currentProductId === lastProductId) {
@@ -263,7 +264,7 @@ export class ImportService {
 
         const newProduct: ImportProduct = {
           ...productData,
-          additionalFields: productAdditionalFields,
+          additionalFields: [],
           variants: [],
         }
         result.push(newProduct)
@@ -320,9 +321,7 @@ export class ImportService {
     field: ProductFields,
     product: ImportProduct,
   ) {
-    return isAdditionalField
-      ? this.getValueFromAdditionalField(incomingFileField, product)
-      : product[field]
+    return product[field]
   }
 
   private getFieldValue(
@@ -503,7 +502,7 @@ export class ImportService {
       data: {
         id,
         sku,
-        supplierSku: String(this.getProductSupplierSku(schema, product)),
+        supplierSku: this.getProductSupplierSku(schema, product),
         title: this.getProductTitle(schema, product) ?? '',
         gender: this.getProductGender(schema, product) ?? 'UNISEX',
         season: this.getProductSeason(schema, product) ?? 'ALL_SEASON',
@@ -551,16 +550,14 @@ export class ImportService {
     const productId = this.getProductId(schema, product)
     let totalProductQuantity = 0
 
-    console.log(JSON.stringify(product, undefined, 4))
-
     for (let i = 0; i < product.variants.length; i++) {
       const variant = product.variants[i]
       const id = String(variant[ProductFields.VARIANT_ID])
       const size = variant[ProductFields.VARIANT_SIZE]
       const price = Number(variant[ProductFields.VARIANT_PRICE])
-      const sale = Number(
-        String(variant[ProductFields.VARIANT_SALE]).replace(/%/g, ''),
-      )
+      const sale = variant[ProductFields.VARIANT_SALE]
+        ? Number(String(variant[ProductFields.VARIANT_SALE]).replace(/%/g, ''))
+        : 0
       const torgsoftId = variant[ProductFields.VARIANT_TORGSOFT_ID]
       const promId = variant[ProductFields.VARIANT_PROM_ID]
       const rozetkaId = variant[ProductFields.VARIANT_ROZETKA_ID]
@@ -679,11 +676,10 @@ export class ImportService {
       )
     }
 
-    const schemaString = importSource.schema?.toString()
-    if (!schemaString) {
+    const schema = importSource.schema as unknown as ImportItemSchema[] | null
+    if (!schema) {
       throw new BadRequestException('Не предоставлена схема источника импорта.')
     }
-    const schema = JSON.parse(schemaString) as unknown as ImportItemSchema[]
     if (
       !schema.find((obj) => obj.field === ProductFields.PRODUCT_ID) ||
       !schema.find((obj) => obj.field === ProductFields.VARIANT_ID)
@@ -715,7 +711,6 @@ export class ImportService {
         ])
 
         const parsedImportData = this.transformData(schema, rawImportData)
-
         for (let i = 0; i < parsedImportData.length; i++) {
           const product = parsedImportData[i]
           await this.createProduct(schema, product, tx)

@@ -25,10 +25,18 @@ export class SourcesService {
   }
 
   create({ name, schema }: CreateSourceDto) {
+    const importSchema: Prisma.JsonArray = schema.map(
+      ({ field, incomingFileField, isAdditionalField }) => ({
+        field,
+        incomingFileField,
+        isAdditionalField: isAdditionalField === 'true' ? true : false,
+      }),
+    )
+
     return this.db.importSource.create({
       data: {
         name,
-        schema: JSON.stringify(schema),
+        schema: importSchema,
       },
     })
   }
@@ -72,13 +80,21 @@ export class SourcesService {
   async update(id: string, { name, schema }: UpdateSourceDto) {
     await this.getImportSource(id)
 
+    const importSchema: Prisma.JsonArray | undefined = schema?.map(
+      ({ field, incomingFileField, isAdditionalField }) => ({
+        field,
+        incomingFileField,
+        isAdditionalField: isAdditionalField === 'true' ? true : false,
+      }),
+    )
+
     return this.db.importSource.update({
       where: {
         id,
       },
       data: {
         name,
-        schema: schema ? JSON.stringify(schema) : undefined,
+        schema: importSchema ?? undefined,
       },
     })
   }

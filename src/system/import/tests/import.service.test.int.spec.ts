@@ -4,10 +4,10 @@ import { StorageService } from '../../../system/storage/storage.service'
 import { AppModule } from '../../../app.module'
 import { Test } from '@nestjs/testing'
 import { join } from 'path'
-import { ImportSourceSchemaDto } from '../sources/dto/create-source.dto'
 import { ProductFields } from '../types'
 import { readFile } from 'fs/promises'
 import { minutes } from '@nestjs/throttler'
+import { Prisma } from '@prisma/client'
 
 const TEST_PHOTO_KEYS = [
   '982257_82096_2.jpg',
@@ -129,7 +129,11 @@ describe('ImportSourcesService', () => {
         ]),
       ])
 
-      const schema: ImportSourceSchemaDto[] = [
+      const schema: {
+        field: ProductFields
+        incomingFileField: string
+        isAdditionalField: boolean
+      }[] = [
         {
           field: ProductFields.PRODUCT_ID,
           incomingFileField: 'ID_группы_разновидностей',
@@ -147,8 +151,8 @@ describe('ImportSourcesService', () => {
         },
         {
           field: ProductFields.PRODUCT_TITLE,
-          incomingFileField: 'Название_позиции',
-          isAdditionalField: false,
+          incomingFileField: 'Название модели',
+          isAdditionalField: true,
         },
         {
           field: ProductFields.VARIANT_PRICE,
@@ -180,13 +184,18 @@ describe('ImportSourcesService', () => {
           incomingFileField: 'Количество',
           isAdditionalField: false,
         },
+        {
+          field: ProductFields.PRODUCT_SUPPLIER_SKU,
+          incomingFileField: 'sku_postav',
+          isAdditionalField: true,
+        },
       ]
 
       await db.importSource.create({
         data: {
           id: 'importSource',
           name: '1',
-          schema: JSON.stringify(schema),
+          schema: schema as unknown as Prisma.JsonArray,
         },
       })
     })

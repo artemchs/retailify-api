@@ -35,7 +35,7 @@ describe('ImportSourcesService', () => {
         {
           field: ProductFields.PRODUCT_TITLE,
           incomingFileField: 'Наименование товара',
-          isAdditionalField: false,
+          isAdditionalField: 'false',
         },
       ],
     }
@@ -128,7 +128,7 @@ describe('ImportSourcesService', () => {
         {
           field: ProductFields.PRODUCT_TITLE,
           incomingFileField: 'Название_позиции',
-          isAdditionalField: false,
+          isAdditionalField: 'false',
         },
       ],
     }
@@ -142,7 +142,13 @@ describe('ImportSourcesService', () => {
         },
       })
 
-      expect(importSource?.schema).toBe(JSON.stringify(data.schema))
+      expect(importSource?.schema).toStrictEqual([
+        {
+          field: ProductFields.PRODUCT_TITLE,
+          incomingFileField: 'Название_позиции',
+          isAdditionalField: false,
+        },
+      ])
     })
 
     it('should throw an exception if the specified import source does not exist', async () => {

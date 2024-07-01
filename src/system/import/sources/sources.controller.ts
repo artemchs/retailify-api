@@ -7,13 +7,19 @@ import {
   Delete,
   Query,
   Put,
+  UseGuards,
 } from '@nestjs/common'
 import { SourcesService } from './sources.service'
 import { CreateSourceDto } from './dto/create-source.dto'
 import { UpdateSourceDto } from './dto/update-source.dto'
 import { FindAllSourceDto } from './dto/findAll-source.dto'
+import { AccessTokenGuard, RolesGuard } from 'src/system/common/guards'
+import { Role } from 'src/system/common/enums'
+import { Roles } from 'src/system/common/decorators'
 
 @Controller('system/import/sources')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class SourcesController {
   constructor(private readonly sourcesService: SourcesService) {}
 

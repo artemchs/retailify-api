@@ -1,9 +1,22 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common'
 import { ImportService } from './import.service'
 import { CreateImportDto } from './dto/create-import.dto'
 import { FindAllImportDto } from './dto/findAll-import.dto'
+import { AccessTokenGuard, RolesGuard } from '../common/guards'
+import { Role } from '../common/enums'
+import { Roles } from '../common/decorators'
 
 @Controller('system/import')
+@UseGuards(AccessTokenGuard, RolesGuard)
+@Roles(Role.Admin)
 export class ImportController {
   constructor(private readonly importService: ImportService) {}
 

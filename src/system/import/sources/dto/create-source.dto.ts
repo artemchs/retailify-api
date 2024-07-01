@@ -1,11 +1,5 @@
 import { Type } from 'class-transformer'
-import {
-  IsBoolean,
-  IsEnum,
-  IsNotEmpty,
-  IsString,
-  ValidateNested,
-} from 'class-validator'
+import { IsEnum, IsNotEmpty, IsString, ValidateNested } from 'class-validator'
 import { ProductFields } from '../../types'
 
 /**
@@ -32,8 +26,8 @@ export class ImportSourceSchemaDto {
    * @example true
    */
   @IsNotEmpty()
-  @IsBoolean()
-  isAdditionalField: boolean
+  @IsString()
+  isAdditionalField: string
 }
 
 export class CreateSourceDto {
