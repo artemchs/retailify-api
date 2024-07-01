@@ -1,6 +1,5 @@
 import { DbService } from '../../../db/db.service'
-import { ImportService } from '../import.service'
-import { StorageService } from '../../../system/storage/storage.service'
+import { StorageService } from '../../storage/storage.service'
 import { AppModule } from '../../../app.module'
 import { Test } from '@nestjs/testing'
 import { join } from 'path'
@@ -8,6 +7,7 @@ import { ProductFields } from '../types'
 import { readFile } from 'fs/promises'
 import { minutes } from '@nestjs/throttler'
 import { Prisma } from '@prisma/client'
+import { ProductsImportService } from '../products-import.service'
 
 const TEST_PHOTO_KEYS = [
   '982257_82096_2.jpg',
@@ -73,7 +73,7 @@ const TEST_PHOTO_KEYS = [
 ]
 
 describe('ImportSourcesService', () => {
-  let service: ImportService
+  let service: ProductsImportService
   let db: DbService
   let storage: StorageService
 
@@ -82,7 +82,7 @@ describe('ImportSourcesService', () => {
       imports: [AppModule],
     }).compile()
 
-    service = moduleRef.get(ImportService)
+    service = moduleRef.get(ProductsImportService)
     db = moduleRef.get(DbService)
     storage = moduleRef.get(StorageService)
 

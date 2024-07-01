@@ -7,36 +7,36 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common'
-import { ImportService } from './import.service'
-import { CreateImportDto } from './dto/create-import.dto'
-import { FindAllImportDto } from './dto/findAll-import.dto'
+import { CreateProductImportDto } from './dto/create-product-import.dto'
+import { FindAllProductImportsDto } from './dto/findAll-product-imports.dto'
 import { AccessTokenGuard, RolesGuard } from '../common/guards'
 import { Role } from '../common/enums'
 import { Roles } from '../common/decorators'
+import { ProductsImportService } from './products-import.service'
 
 @Controller('system/import')
 @UseGuards(AccessTokenGuard, RolesGuard)
 @Roles(Role.Admin)
 export class ImportController {
-  constructor(private readonly importService: ImportService) {}
+  constructor(private readonly importProductsService: ProductsImportService) {}
 
   @Post('/products')
-  createProductImport(@Body() body: CreateImportDto) {
-    return this.importService.createProductImport(body)
+  createProductImport(@Body() body: CreateProductImportDto) {
+    return this.importProductsService.createProductImport(body)
   }
 
   @Get('/products')
-  findAllProductImports(@Query() query: FindAllImportDto) {
-    return this.importService.findAllProductImports(query)
+  findAllProductImports(@Query() query: FindAllProductImportsDto) {
+    return this.importProductsService.findAllProductImports(query)
   }
 
   @Get('/products/:id')
   findOneProductImport(@Param('id') id: string) {
-    return this.importService.findOneProductImport(id)
+    return this.importProductsService.findOneProductImport(id)
   }
 
   @Get('/products/last')
   findLastPorductImport() {
-    return this.importService.findLastProductImport()
+    return this.importProductsService.findLastProductImport()
   }
 }

@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
-export class CreateImportDto {
+export class CreateProductImportDto {
   @IsNotEmpty()
   @IsString()
   importSourceId: string

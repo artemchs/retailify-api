@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-import { CreateImportDto } from './dto/create-import.dto'
 import { DbService } from '../../db/db.service'
 import { StorageService } from '../storage/storage.service'
 import {
@@ -25,16 +24,17 @@ import {
 import { Readable } from 'stream'
 import { PrismaTx } from '../common/types'
 import { minutes } from '@nestjs/throttler'
-import { FindAllImportDto } from './dto/findAll-import.dto'
 import {
   buildContainsArray,
   buildOrderByArray,
   calculateTotalPages,
   getPaginationData,
 } from '../common/utils/db-helpers'
+import { CreateProductImportDto } from './dto/create-product-import.dto'
+import { FindAllProductImportsDto } from './dto/findAll-product-imports.dto'
 
 @Injectable()
-export class ImportService {
+export class ProductsImportService {
   constructor(
     private readonly db: DbService,
     private readonly storage: StorageService,
@@ -655,7 +655,7 @@ export class ImportService {
     importSourceId,
     comment,
     warehouseId,
-  }: CreateImportDto) {
+  }: CreateProductImportDto) {
     const [objectHeader, importSource, warehouse] = await Promise.all([
       this.storage.getHeader(fileKey),
       this.getImportSource(importSourceId),
@@ -728,7 +728,7 @@ export class ImportService {
     rowsPerPage,
     query,
     orderBy,
-  }: FindAllImportDto) {
+  }: FindAllProductImportsDto) {
     const { skip, take } = getPaginationData({ page, rowsPerPage })
 
     const where: Prisma.ImportWhereInput = {
